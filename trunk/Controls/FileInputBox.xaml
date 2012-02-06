@@ -1,0 +1,10 @@
+﻿<UserControl x:Class="HighVoltz.Controls.FileInputBox"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+             xmlns:Controls="clr-namespace:HighVoltz.Controls"
+             x:Name="FileInput">
+    <DockPanel>
+        <Button x:Name="theButton" DockPanel.Dock="Right" Click="TheButtonClick" Content="..."/>
+        <TextBox x:Name="theTextBox" MinWidth="{Binding Source={x:Reference theButton}, Path=ActualWidth}" Margin="0,0,1,0"/> 
+    </DockPanel>
+</UserControl>
