@@ -22,6 +22,8 @@ using System.Windows;
 using System.Windows.Markup;
 using System.Windows.Shell;
 using System.Linq;
+using System.Reflection;
+using System.IO;
 
 namespace HighVoltz
 {
@@ -36,16 +38,6 @@ namespace HighVoltz
                 if (newInstance)
                 {
                     var app = new Application();
-                    /*
-                    List<JumpItem> jumpListCollection = new List<JumpItem>()
-                    {
-                        new JumpTask(){ Title="Start", Description="Starts all enabled accounts", Arguments="/start", IconResourcePath=@"C:\Windows\System32\shell32.dll", IconResourceIndex=137},
-                        new JumpTask(){ Title="Pause", Description="Pauses all enabled accounts", Arguments="/pause", IconResourcePath=@"C:\Windows\System32\mmcndmgr.dll", IconResourceIndex=34},
-                        new JumpTask(){ Title="Stop", Description="Stops all enabled accounts", Arguments="/stop", IconResourcePath=@"C:\Windows\System32\wmploc.dll", IconResourceIndex=157},
-                    };
-                    JumpList jmpList = new JumpList(jumpListCollection, false, false);
-                    JumpList.SetJumpList(app, jmpList);
-                    */
                     Window window = new MainWindow();
                     window.Show();
                     app.Run(window);
@@ -60,7 +52,6 @@ namespace HighVoltz
                     }
                 }
             }
-
         }
     }
 }

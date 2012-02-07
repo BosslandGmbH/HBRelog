@@ -25,6 +25,7 @@ using System.Xml.Serialization;
 using System.Linq;
 using HighVoltz.Tasks;
 using System.Runtime.Serialization;
+using System.IO.IsolatedStorage;
 
 
 namespace HighVoltz.Settings
@@ -34,9 +35,17 @@ namespace HighVoltz.Settings
         private GlobalSettings()
         {
             CharacterProfiles = new ObservableCollection<CharacterProfile>();
+            string settingsFolder = Path.GetDirectoryName(SettingsPath);
+            if (!Directory.Exists(settingsFolder))
+                Directory.CreateDirectory(settingsFolder);
         }
-
-        private string SettingsPath { get; set; }
+        public string SettingsPath { 
+            get 
+            { 
+                return Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + 
+                    "\\HighVoltz\\HBRelog\\Setting.xml"; 
+            } 
+        }
         public ObservableCollection<CharacterProfile> CharacterProfiles { get; set; }
         public string WowVersion { get; set; }
         public uint DxDeviceOffset { get; set; }
@@ -45,9 +54,8 @@ namespace HighVoltz.Settings
         public uint FrameScriptExecuteOffset { get; set; }
         public uint LastHardwareEventOffset { get; set; }
         public uint GlueStateOffset { get; set; }
-        public void Save() { Save(SettingsPath); }
         // serializers giving me issues with colections.. so saving stuff manually.
-        public void Save(string path)
+        public void Save()
         {
             try
             {
@@ -106,7 +114,7 @@ namespace HighVoltz.Settings
                     characterProfilesElement.Add(profileElement);
                 }
                 root.Add(characterProfilesElement);
-                root.Save(path);
+                root.Save(SettingsPath);
             }
             catch (Exception ex)
             {
@@ -118,13 +126,13 @@ namespace HighVoltz.Settings
         /// </summary>
         /// <param name="file"></param>
         /// <returns>A GlocalSettings</returns>
-        public static GlobalSettings Load(string file)
-        {
+        public static GlobalSettings Load()
+        { 
             GlobalSettings settings = new GlobalSettings();
-            if (File.Exists(file))
+            if (File.Exists(settings.SettingsPath))
             {
-                XElement root = XElement.Load(file);
-                 settings.WowVersion = root.Element("WowVersion").Value;
+                XElement root = XElement.Load(settings.SettingsPath);
+                settings.WowVersion = root.Element("WowVersion").Value;
                 settings.DxDeviceOffset = uint.Parse(root.Element("DxDeviceOffset").Value);
                 settings.DxDeviceIndex = uint.Parse(root.Element("DxDeviceIndex").Value);
                 settings.GameStateOffset = uint.Parse(root.Element("GameStateOffset").Value);
@@ -204,7 +212,6 @@ namespace HighVoltz.Settings
                     settings.CharacterProfiles.Add(profile);
                 }
             }
-            settings.SettingsPath = file;
             return settings;
         }
 
