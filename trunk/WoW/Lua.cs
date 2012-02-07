@@ -21,17 +21,16 @@ namespace HighVoltz.WoW
 
                 // Write the asm stuff for Lua_DoString
                 var asm = new[] 
-            {
-                "mov eax, " + doStringArgCodecave,
-                "push 0",
-                "push eax",
-                "push eax",
-                "mov eax, " + ( HBRelog.Settings.FrameScriptExecuteOffset + _wowHook.BaseOffset) , // Lua_DoString
-                "call eax",
-                "add esp, 0xC",
-                "retn"
-            };
-
+                {
+                    "mov eax, " + doStringArgCodecave,
+                    "push 0",
+                    "push eax",
+                    "push eax",
+                    "mov eax, " + ( HBRelog.Settings.FrameScriptExecuteOffset + _wowHook.BaseOffset) , // Lua_DoString
+                    "call eax",
+                    "add esp, 0xC",
+                    "retn"
+                };
                 // Inject
                 _wowHook.InjectAndExecute(asm);
                 // Free memory allocated 
