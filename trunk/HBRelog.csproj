@@ -42,8 +42,13 @@
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Images\Logo.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Accessibility" />
     <Reference Include="BlackMagic, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>bin\Debug\BlackMagic.dll</HintPath>
@@ -160,9 +165,6 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\Logo.png" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Images\delete.png" />
   </ItemGroup>
   <ItemGroup>
@@ -176,6 +178,9 @@
     <Resource Include="Images\pausehot.png" />
     <Resource Include="Images\play1pressed.png" />
     <Resource Include="Images\stop1normalred.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Logo.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

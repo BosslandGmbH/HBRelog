@@ -136,17 +136,22 @@ namespace HighVoltz.WoW
 
         public void Start()
         {
-            if (File.Exists(Settings.WowPath))
+            lock (_lockObject)
             {
-                IsRunning = true;
-                StartWoW();
+                if (File.Exists(Settings.WowPath))
+                {
+                    IsRunning = true;
+                    StartWoW();
+                }
+                else
+                    throw new InvalidOperationException(string.Format("path to WoW.exe does not exist: {0}", Settings.WowPath));
             }
-            else
-                throw new InvalidOperationException(string.Format("path to WoW.exe does not exist: {0}", Settings.WowPath));
         }
-
+        static object _lockObject = new object();
         public void Stop()
         {
+            // try to aquire lock, if fail then kill process anyways.   
+            bool lockAquried = Monitor.TryEnter(_lockObject, 500);
             if (IsRunning)
             {
                 if (WowHook != null && WowHook.Installed)
@@ -159,69 +164,75 @@ namespace HighVoltz.WoW
                 IsRunning = false;
                 StartupSequenceIsComplete = false;
             }
+            if (lockAquried)
+                Monitor.Exit(_lockObject);
+
         }
 
 
         public void Pulse()
         {
-            if (IsRunning)
+            lock (_lockObject)
             {
-                // restart wow WoW if it has exited
-                if (GameProcess.HasExited)
+                if (IsRunning)
                 {
-                    Profile.Log("WoW process was terminated. Restarting");
-                    Profile.Status = "WoW process was terminated. Restarting";
-                    StartWoW();
-                    return;
-                }
-                // return if wow isn't ready for input.
-                if (!GameProcess.WaitForInputIdle(0))
-                    return;
-                if (WowHook == null)
-                {  // resize and position window.
-                    if (Settings.WowWindowWidth > 0 && Settings.WowWindowHeight > 0)
+                    // restart wow WoW if it has exited
+                    if (GameProcess.HasExited)
                     {
-                        Profile.Log("Setting Window location to X:{0}, Y:{1} and Size to Width {2}, Height:{3}",
-                            Settings.WowWindowX, Settings.WowWindowY,
-                            Settings.WowWindowWidth, Settings.WowWindowHeight);
-
-                        Utility.ResizeAndMoveWindow(GameProcess.MainWindowHandle, Settings.WowWindowX, Settings.WowWindowY,
-                            Settings.WowWindowWidth, Settings.WowWindowHeight);
+                        Profile.Log("WoW process was terminated. Restarting");
+                        Profile.Status = "WoW process was terminated. Restarting";
+                        StartWoW();
+                        return;
                     }
-                    WowHook = new Hook(GameProcess);
+                    // return if wow isn't ready for input.
+                    if (!GameProcess.WaitForInputIdle(0))
+                        return;
+                    if (WowHook == null)
+                    {  // resize and position window.
+                        if (Settings.WowWindowWidth > 0 && Settings.WowWindowHeight > 0)
+                        {
+                            Profile.Log("Setting Window location to X:{0}, Y:{1} and Size to Width {2}, Height:{3}",
+                                Settings.WowWindowX, Settings.WowWindowY,
+                                Settings.WowWindowWidth, Settings.WowWindowHeight);
 
-                }
-                if (!StartupSequenceIsComplete && !InGame && !IsConnectiongOrLoading)
-                {
-                    if (!WowHook.Installed)
+                            Utility.ResizeAndMoveWindow(GameProcess.MainWindowHandle, Settings.WowWindowX, Settings.WowWindowY,
+                                Settings.WowWindowWidth, Settings.WowWindowHeight);
+                        }
+                        WowHook = new Hook(GameProcess);
+
+                    }
+                    if (!StartupSequenceIsComplete && !InGame && !IsConnectiongOrLoading)
                     {
-                        Profile.Log("Installing Endscene hook");
-                        Profile.Status = "Logging into WoW";
-                        WowHook.InstallHook();
-                        Lua = new Lua(WowHook);
-                        UpdateLoginString();
+                        if (!WowHook.Installed)
+                        {
+                            Profile.Log("Installing Endscene hook");
+                            Profile.Status = "Logging into WoW";
+                            WowHook.InstallHook();
+                            Lua = new Lua(WowHook);
+                            UpdateLoginString();
+                        }
+                        else if (!_processIsReadyForInput)
+                            _processIsReadyForInput = true;
+                        LoginWoW();
                     }
-                    else if (!_processIsReadyForInput)
-                        _processIsReadyForInput = true;
-                    LoginWoW();
-                }
-                // remove hook since its nolonger needed.
-                if (WowHook.Installed && (InGame || IsConnectiongOrLoading))
-                {
-                    Profile.Log("Login sequence complete. Removing hook");
-                    Profile.Status = "Logged into WoW";
-                    WowHook.DisposeHooking();
-                    StartupSequenceIsComplete = true;
-                    if (OnStartupSequenceIsComplete != null)
-                        OnStartupSequenceIsComplete(this, new ProfileEventArgs(Profile));
-                }
-                // if WoW has disconnected or crashed close wow and start the login sequence again.
-                if ((StartupSequenceIsComplete && GlueStatus == GlueState.Disconnected) || !WoWIsResponding || WowHasCrashed)
-                {
-                    Profile.Log("WoW has disconnected or crashed.. So lets restart WoW");
-                    Profile.Status = "WoW has DCed or crashed. restarting";
-                    KillGameProcess();
-                    StartWoW();
+                    // remove hook since its nolonger needed.
+                    if (WowHook.Installed && (InGame || IsConnectiongOrLoading))
+                    {
+                        Profile.Log("Login sequence complete. Removing hook");
+                        Profile.Status = "Logged into WoW";
+                        WowHook.DisposeHooking();
+                        StartupSequenceIsComplete = true;
+                        if (OnStartupSequenceIsComplete != null)
+                            OnStartupSequenceIsComplete(this, new ProfileEventArgs(Profile));
+                    }
+                    // if WoW has disconnected or crashed close wow and start the login sequence again.
+                    if ((StartupSequenceIsComplete && GlueStatus == GlueState.Disconnected) || !WoWIsResponding || WowHasCrashed)
+                    {
+                        Profile.Log("WoW has disconnected or crashed.. So lets restart WoW");
+                        Profile.Status = "WoW has DCed or crashed. restarting";
+                        KillGameProcess();
+                        StartWoW();
+                    }
                 }
             }
         }

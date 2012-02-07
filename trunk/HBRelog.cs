@@ -33,9 +33,10 @@ namespace HighVoltz
             try
             {
                 // Load Profile
-                string settingsPath = Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName),
-                "HBRelog.xml");
-                Settings = GlobalSettings.Load(settingsPath);
+                //string settingsPath = Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName),
+                //"HBRelog.xml");
+
+                Settings = GlobalSettings.Load();
                 WorkerThread = new Thread(DoWork) { IsBackground = true };
                 WorkerThread.Start();
                 IsInitialized = true;
