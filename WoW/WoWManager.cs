@@ -96,9 +96,9 @@ namespace HighVoltz.WoW
             try
             {
                 // once hook to endscene is removed then we can dispose this timer and check for crashes from the main thread.
-                if (StartupSequenceIsComplete)
+                if (!IsRunning || StartupSequenceIsComplete)
                     _wowLoginTimer.Dispose();
-                else if (!WoWIsResponding || WowHasCrashed)
+                else if (!Profile.IsPaused && !WoWIsResponding || WowHasCrashed)
                 {
                     Profile.Log("WoW has disconnected or crashed.. So lets restart WoW");
                     Profile.Status = "WoW has DCed or crashed. restarting";
@@ -116,7 +116,8 @@ namespace HighVoltz.WoW
         {
             try
             {
-                GameProcess.Kill();
+                if (GameProcess != null && !GameProcess.HasExited)
+                    GameProcess.Kill();
             }
             // handle the "No process is associated with this object' exception while wow process is still 'active'
             catch (InvalidOperationException ex)
@@ -271,6 +272,8 @@ namespace HighVoltz.WoW
             {
                 try
                 {
+                    if (GameProcess.HasExited)
+                        return false;
                     bool isResponding = GameProcess.Responding;
                     if (!isResponding && !_wowRespondingSW.IsRunning)
                         _wowRespondingSW.Start();
@@ -298,6 +301,8 @@ namespace HighVoltz.WoW
                 {
                     try
                     {
+                        if (GameProcess.HasExited)
+                            return true;
                         _crashTimeStamp = DateTime.Now;
                         List<IntPtr> childWinHandles = NativeMethods.EnumerateProcessWindowHandles(GameProcess.Id);
                         foreach (IntPtr hnd in childWinHandles)
@@ -358,13 +363,14 @@ namespace HighVoltz.WoW
             //"GlueDialog_Show('ACCOUNT_MSG',name:upper()..':'..'" + character + "') " + 
                         "if (GetCharacterInfo(i) == \"{3}\") then " +
                             "CharacterSelect_SelectCharacter(i) " +
-                            "EnterWorld() " +
+                            "CharSelectEnterWorldButton:Click() " +
                         "end " +
                     "end " +
                 "end " +
             "elseif (CharCreateRandomizeButton and CharCreateRandomizeButton:IsVisible()) then " +
                 "CharacterCreate_Back() " +
             "end ";
+
 
         private string _loginLua;
         private void UpdateLoginString()

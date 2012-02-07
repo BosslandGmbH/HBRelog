@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using HighVoltz.Settings;
+using System.Linq;
 using Magic;
 
 namespace HighVoltz.WoW
@@ -48,7 +49,6 @@ namespace HighVoltz.WoW
                 uint pEnd = Memory.ReadUInt(pDevice + HBRelog.Settings.DxDeviceIndex);
                 uint pScene = Memory.ReadUInt(pEnd);
                 uint pEndScene = Memory.ReadUInt(pScene + 0xA8);
-
                 if (Memory.IsProcessOpen)
                 {
                     // check if game is already hooked and dispose Hook
@@ -187,7 +187,6 @@ namespace HighVoltz.WoW
                     // Allocation Memory
                     uint injectionAsmCodecave = Memory.AllocateMemory(Memory.Asm.Assemble().Length);
 
-
                     try
                     {
                         // Inject
@@ -198,31 +197,42 @@ namespace HighVoltz.WoW
                             Thread.Sleep(5);
                         } // Wait to launch code
 
+                        // We don't care about return values. besides this only works if a pointer is returned
 
-                        if (returnLength > 0)
-                        {
-                            tempsByte = Memory.ReadBytes(Memory.ReadUInt(_retnInjectionAsm), returnLength);
-                        }
-                        else
-                        {
-                            var retnByte = new List<byte>();
-                            uint dwAddress = Memory.ReadUInt(_retnInjectionAsm);
-                            byte buf = Memory.ReadByte(dwAddress);
-                            while (buf != 0)
-                            {
-                                retnByte.Add(buf);
-                                dwAddress = dwAddress + 1;
-                                buf = Memory.ReadByte(dwAddress);
-                            }
-                            tempsByte = retnByte.ToArray();
-                        }
+                        //if (returnLength > 0)
+                        //{
+                        //    tempsByte = Memory.ReadBytes(Memory.ReadUInt(_retnInjectionAsm), returnLength);
+                        //}
+                        //else
+                        //{
+                        //    var retnByte = new List<byte>();
+                        //    uint dwAddress = Memory.ReadUInt(_retnInjectionAsm);
+                        //    if (dwAddress != 0)
+                        //    {
+                        //        Log.Write("dwAddress {0}", dwAddress);
+                        //        byte buf = Memory.ReadByte(dwAddress);
+                        //        while (buf != 0)
+                        //        {
+                        //            retnByte.Add(buf);
+                        //            dwAddress = dwAddress + 1;
+                        //            buf = Memory.ReadByte(dwAddress);
+                        //            Log.Write("buf: {0}", buf);
+                        //        }
+                        //    }
+                        //    tempsByte = retnByte.ToArray();
+                        //}
                     }
-                    catch
+                    catch (Exception ex)
                     {
+                        Log.Write(ex.ToString());
                     }
-
-                    // Free memory allocated 
-                    Memory.FreeMemory(injectionAsmCodecave);
+                    finally
+                    {
+                        // Free memory allocated 
+                        //Memory.FreeMemory(injectionAsmCodecave);
+                        // schedule resources to be freed at a later date cause freeing it immediately was causing wow crashes
+                        new Timer((state) => { Memory.FreeMemory((uint)state); }, injectionAsmCodecave, 100,0);
+                    }
                 }
                 // return
                 return tempsByte;

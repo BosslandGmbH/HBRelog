@@ -83,19 +83,19 @@
                         </StackPanel>
                     </Button.Content>
                 </Button>
-                <Button x:Name="DelButton" Click="DeleteAccountButtonClick" Grid.Column="5">
-                    <Button.Content>
-                        <StackPanel Orientation="Horizontal">
-                            <Image Source="Images/delete.png" Height="24" />
-                            <TextBlock Text="Delete" Margin="4,0" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Button.Content>
-                </Button>
-                <Button x:Name="EditButton" Click="EditAccountButtonClick" Grid.Column="6">
+                <Button x:Name="EditButton" Click="EditAccountButtonClick" Grid.Column="5">
                     <Button.Content>
                         <StackPanel Orientation="Horizontal">
                             <Image Source="Images/Settings.png" Height="24" />
                             <TextBlock Text="Edit" Margin="4,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button.Content>
+                </Button>
+                <Button x:Name="DelButton" Click="DeleteAccountButtonClick" Grid.Column="6">
+                    <Button.Content>
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="Images/delete.png" Height="24" />
+                            <TextBlock Text="Delete" Margin="4,0" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button.Content>
                 </Button>
