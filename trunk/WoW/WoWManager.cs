@@ -147,10 +147,10 @@ namespace HighVoltz.WoW
                     throw new InvalidOperationException(string.Format("path to WoW.exe does not exist: {0}", Settings.WowPath));
             }
         }
-        static object _lockObject = new object();
+        object _lockObject = new object();
         public void Stop()
         {
-            // try to aquire lock, if fail then kill process anyways.   
+            // try to aquire lock, if fail then kill process anyways.
             bool lockAquried = Monitor.TryEnter(_lockObject, 500);
             if (IsRunning)
             {
@@ -237,16 +237,16 @@ namespace HighVoltz.WoW
             }
         }
 
-        Stopwatch _luaThrottleSW = new Stopwatch();
         Stopwatch _serverSelectionSW = new Stopwatch();
+        DateTime _luaThrottleTimeStamp = DateTime.Now;
         private void LoginWoW()
         {
-            if (!_luaThrottleSW.IsRunning)
-                _luaThrottleSW.Start();
-            if (_luaThrottleSW.ElapsedMilliseconds >= 3000)
+            // throttle lua calls to once per 3 secs, will give the user an option to change this.
+            if (DateTime.Now - _luaThrottleTimeStamp >= TimeSpan.FromSeconds(3))
             {
+                GlueState glueStatus = GlueStatus;
                 // check if at server selection for tooo long.
-                if (GlueStatus == GlueState.ServerSelection)
+                if (glueStatus == GlueState.ServerSelection)
                 {
                     if (!_serverSelectionSW.IsRunning)
                         _serverSelectionSW.Start();
@@ -261,16 +261,32 @@ namespace HighVoltz.WoW
                 }
                 else if (_serverSelectionSW.IsRunning)
                     _serverSelectionSW.Reset();
-                if (GlueStatus == GlueState.Updater)
-                {
-                    Profile.Pause();
-                    Profile.Log("Wow is updating. pausing.");
-                }
+
                 AntiAfk();
+                switch (glueStatus)
+                {
+                    case GlueState.Disconnected:
+                        Profile.Status = "Logging in";
+                        Lua.DoString(_loginLua);
+                        break;
+                    case GlueState.CharacterSelection:
+                        Profile.Status = "At Character Selection";
+                        Lua.DoString(_charSelectLua);
+                        break;
+                    case GlueState.ServerSelection:
+                        Profile.Status = "At Server Selection";
+                        Lua.DoString(_realmSelectLua);
+                        break;
+                    case GlueState.CharacterCreation:
+                        Lua.DoString("if (CharCreateRandomizeButton and CharCreateRandomizeButton:IsVisible()) then CharacterCreate_Back() end ");
+                        break;
+                    case GlueState.Updater:
+                        Profile.Pause();
+                        Profile.Log("Wow is updating. pausing.");
+                        break;
+                }
                 Profile.Log("GlueStatus: {0}", GlueStatus);
-                Lua.DoString(_loginLua);
-                _luaThrottleSW.Reset();
-                _luaThrottleSW.Start();
+                _luaThrottleTimeStamp = DateTime.Now;
             }
         }
         Stopwatch _wowRespondingSW = new Stopwatch();
@@ -342,37 +358,41 @@ namespace HighVoltz.WoW
         }
         // credits mnbvc for original version. modified to work with Cata
         // http://www.ownedcore.com/forums/world-of-warcraft/world-of-warcraft-bots-programs/wow-memory-editing/302552-lua-auto-login-final-solution.html
-        // indexes are {0}=BnetEmail, {1}=password, {2}=accountName, {3}=character, {4}=server
+        // indexes are {0}=BnetEmail, {1}=password, {2}=accountName
+
         const string LoginLuaFormat =
+            "local acct = \"{2}\" " +
             "if (WoWAccountSelectDialog and WoWAccountSelectDialog:IsShown()) then " +
-                "for i = 0, GetNumGameAccounts() do " +
-                    "if GetGameAccountInfo(i) == \"{2}\" then " +
+                "for i = 1, GetNumGameAccounts() do " +
+                    "if GetGameAccountInfo(i):upper() == acct:upper() then " +
                         "WoWAccountSelect_SelectAccount(i) " +
                     "end " +
                 "end " +
             "elseif (AccountLoginUI and AccountLoginUI:IsVisible()) then " +
                 "if (AccountLoginDropDown:IsShown()) then " +
-                    "GlueDropDownMenu_SetSelectedValue(AccountLoginDropDown,\"{2}\") " +
+                   " for i=1, #AccountList  do " +
+                        "if AccountList[i].text:upper() == acct:upper() then " +
+                            "GlueDropDownMenu_SetSelectedName(AccountLoginDropDown,AccountList[i].text) " +
+                            "GlueDialog_Show('ACCOUNT_MSG',AccountList[i].text) " +
+                        "end " +
+                    "end  " +
                 "end " +
                 "DefaultServerLogin(\"{0}\",\"{1}\") " +
                 "AccountLoginUI:Hide() " +
-            "elseif (RealmList and RealmList:IsVisible()) then " +
-                "for i = 1, select('#',GetRealmCategories()) do " +
-                    "for j = 1, GetNumRealms(i) do " +
-                        "if GetRealmInfo(i, j) == \"{4}\" then " +
-                            "RealmList:Hide() " +
-                            "ChangeRealm(i, j) " +
-                        "end " +
-                    "end " +
-                "end " +
-            "elseif (CharacterSelectUI and CharacterSelectUI:IsVisible()) then " +
-                "if GetServerName() ~= \"{4}\" and (not RealmList or not RealmList:IsVisible()) then " +
+            "end ";
+
+        // indexes are {0}=character, {1}=server
+        const string CharSelectLuaFormat =
+            "local name = \"{0}\" " +
+            "local server = \"{1}\" " +
+            "if (CharacterSelectUI and CharacterSelectUI:IsVisible()) then " +
+                "if GetServerName():upper() ~= server:upper() and (not RealmList or not RealmList:IsVisible()) then " +
                     "RequestRealmList(1) " +
                 "else " +
                     "for i = 1,GetNumCharacters() do " +
             //"local name = GetCharacterInfo(i) " +
             //"GlueDialog_Show('ACCOUNT_MSG',name:upper()..':'..'" + character + "') " + 
-                        "if (GetCharacterInfo(i) == \"{3}\") then " +
+                        "if (GetCharacterInfo(i):upper() == name:upper()) then " +
                             "CharacterSelect_SelectCharacter(i) " +
                             "CharSelectEnterWorldButton:Click() " +
                         "end " +
@@ -382,8 +402,24 @@ namespace HighVoltz.WoW
                 "CharacterCreate_Back() " +
             "end ";
 
+        // indexes are {0}=server
+        const string RealmSelectLuaFormat =
+            "local server = \"{0}\" " +
+            "if (RealmList and RealmList:IsVisible()) then " +
+                "for i = 1, select('#',GetRealmCategories()) do " +
+                    "for j = 1, GetNumRealms(i) do " +
+                        "if GetRealmInfo(i, j):upper() == server:upper() then " +
+                            "RealmList:Hide() " +
+                            "ChangeRealm(i, j) " +
+                        "end " +
+                    "end " +
+                "end " +
+            "end ";
 
         private string _loginLua;
+        private string _charSelectLua;
+        private string _realmSelectLua;
+
         private void UpdateLoginString()
         {
             string bnetLogin = Settings.Login;
@@ -391,11 +427,12 @@ namespace HighVoltz.WoW
             string password = Settings.Password;
             string server = Settings.ServerName;
             string character = Settings.CharacterName;
-            if (string.IsNullOrEmpty(character) || character.Length < 2)
-                throw new InvalidOperationException("Character Name is empty or too short");
-            character = Char.ToUpper(character[0]) + character.Substring(1).ToLower();
             // indexes are 0=BnetEmail, 1=password, 2=accountName, 3=character, 4=server
-            _loginLua = string.Format(LoginLuaFormat, bnetLogin, password, accountName, character, server);
+            _loginLua = string.Format(LoginLuaFormat, bnetLogin, password, accountName);
+            // indexes are {0}=character, {1}=server
+            _charSelectLua = string.Format(CharSelectLuaFormat, character, server);
+            // indexes are {0}=server
+            _realmSelectLua = string.Format(RealmSelectLuaFormat, server);
         }
 
         #region Embeded Types

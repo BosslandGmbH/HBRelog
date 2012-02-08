@@ -156,35 +156,7 @@ namespace HighVoltz
             // my debug button :)
             if (Environment.UserName == "highvoltz")
             {
-                var profile = (CharacterProfile)AccountGrid.SelectedItem;
-                //Log.Write("ThreadState: {0}", HBRelog.WorkerThread.ThreadState);
-                //foreach (var profile in HBRelog.Settings.CharacterProfiles.Where(p => p.IsRunning))
-                //{
-                //    var wowWindowList = NativeMethods.EnumerateProcessWindowHandles(profile.TaskManager.WowManager.GameProcess.Id);
-                //    foreach (var hnd in wowWindowList)
-                //    {
-                //        string title = NativeMethods.GetWindowText(hnd);
-                //        if (!string.IsNullOrEmpty(title))
-                //            Log.Write("Wow: {0}", title);
-                //    }
-                //    if (profile.TaskManager.HonorbuddyManager.BotProcess != null)
-                //    {
-                //        var hbWindowList = NativeMethods.EnumerateProcessWindowHandles(profile.TaskManager.HonorbuddyManager.BotProcess.Id);
-                //        foreach (var hnd in hbWindowList)
-                //        {
-                //            string title = NativeMethods.GetWindowText(hnd);
-                //            if (!string.IsNullOrEmpty(title))
-                //                Log.Write("HB: {0}", title);
-                //            var hbChildWindowList = NativeMethods.GetChildWindows(hnd);
-                //            foreach (var ptr in hbChildWindowList)
-                //            {
-                //                string childTitle = NativeMethods.GetWindowText(hnd);
-                //                if (!string.IsNullOrEmpty(childTitle))
-                //                    Log.Write("{0}: {1}", title, childTitle);
-                //            }
-                //        }
-                //    }
-                //}
+
             }
             AccountGrid.SelectAll();
         }
