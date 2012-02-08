@@ -42,7 +42,7 @@ namespace HighVoltz.Tasks
         public string CustomClass { get; set; }
         [HighVoltz.Controls.TaskEditor.CustomTaskEditControl(typeof(ProfilePathEditControl))]
         public string ProfilePath { get; set; }
-        [HighVoltz.Controls.TaskEditor.CustomTaskEditControl(typeof(ProfilePathEditControl))]
+        [HighVoltz.Controls.TaskEditor.CustomTaskEditControl(typeof(HBPathEditControl))]
         public string HonorbuddyPath { get; set; }
         public override void Pulse()
         {
@@ -81,6 +81,36 @@ namespace HighVoltz.Tasks
                 Title = "Browse to and select your profile";
                 DefaultExt = ".xml";
                 Filter = ".xml|*.xml";
+            }
+            void TaskEditor.ICustomTaskEditControlDataBound.SetBinding(BMTask source, string path)
+            {
+                _task = (LogonTask)source;
+                // binding issues.. so just hooking an event.
+                // Binding binding = new Binding(path);
+                // binding.Source = source;
+                // SetBinding(FileNameProperty, binding);
+            }
+
+            void TaskEditor.ICustomTaskEditControlDataBound.SetValue(object value)
+            {
+                FileName = value.ToString();
+                FileNameChanged += ProfilePathEditControlFileNameChanged;
+            }
+
+            void ProfilePathEditControlFileNameChanged(object sender, System.Windows.RoutedEventArgs e)
+            {
+                _task.ProfilePath = FileName;
+            }
+        }
+
+        public class HBPathEditControl : FileInputBox, HighVoltz.Controls.TaskEditor.ICustomTaskEditControlDataBound
+        {
+            LogonTask _task;
+            public HBPathEditControl()
+            {
+                Title = "Browse to and your Honorbuddy .exe";
+                DefaultExt = ".exe";
+                Filter = ".exe|*.exe";
             }
             void TaskEditor.ICustomTaskEditControlDataBound.SetBinding(BMTask source, string path)
             {
