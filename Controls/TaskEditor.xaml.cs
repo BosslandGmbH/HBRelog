@@ -125,9 +125,31 @@ namespace HighVoltz.Controls
             }
             else if (sender is TextBox)
             {
-                pi.SetValue(task, Convert.ChangeType(((TextBox)sender).Text, pi.PropertyType), null);
+                string str = ((TextBox)sender).Text;
+                try
+                {
+                    object val = Convert.ChangeType(str, pi.PropertyType);
+                    pi.SetValue(task, val, null);
+                } // in case the type conversion fails fall back to default value.
+                catch (FormatException)
+                {
+                    object defaultValue = GetDefaultValue(pi.PropertyType);
+                   pi.SetValue(task, defaultValue, null);
+                }
             }
             ((RoutedEventArgs)e).Handled = true;
+        }
+
+        public object GetDefaultValue(Type t)
+        {
+            if (t.IsValueType)
+            {
+                return Activator.CreateInstance(t);
+            }
+            else
+            {
+                return null;
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
