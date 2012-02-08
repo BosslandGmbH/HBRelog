@@ -41,7 +41,7 @@ namespace HighVoltz.Tasks
             if (_waitTime == TimeSpan.FromTicks(0))
             {
                 _waitTime = TimeSpan.FromMinutes(Minutes + Utility.Rand.Next(-RandomMinutes, RandomMinutes));
-                Profile.Log("Idling for {1} minutes before executing next task", _waitTime.TotalMinutes);
+                Profile.Log("Idling for {0} minutes before executing next task", _waitTime.TotalMinutes);
                 _timeStamp = DateTime.Now;
                 if (Profile.TaskManager.WowManager.IsRunning)
                     Profile.TaskManager.WowManager.Stop();
