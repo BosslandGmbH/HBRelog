@@ -28,7 +28,7 @@ namespace HighVoltz.Tasks
     {
         public LogonTask()
         {
-            CustomClass = ProfilePath = BotBase = Server = CharacterName = "";
+            HonorbuddyPath = CustomClass = ProfilePath = BotBase = Server = CharacterName = "";
         }
         [XmlIgnore]
         public override string Name
@@ -39,10 +39,11 @@ namespace HighVoltz.Tasks
         public string CharacterName { get; set; }
         public string Server { get; set; }
         public string BotBase { get; set; }
+        public string CustomClass { get; set; }
         [HighVoltz.Controls.TaskEditor.CustomTaskEditControl(typeof(ProfilePathEditControl))]
         public string ProfilePath { get; set; }
-        public string CustomClass { get; set; }
-
+        [HighVoltz.Controls.TaskEditor.CustomTaskEditControl(typeof(ProfilePathEditControl))]
+        public string HonorbuddyPath { get; set; }
         public override void Pulse()
         {
             var wowSettings = Profile.Settings.WowSettings.ShadowCopy();
@@ -59,6 +60,8 @@ namespace HighVoltz.Tasks
                 hbSettings.HonorbuddyProfile = ProfilePath;
             if (!string.IsNullOrEmpty(CustomClass))
                 hbSettings.CustomClass = CustomClass;
+            if (!string.IsNullOrEmpty(HonorbuddyPath))
+                hbSettings.HonorbuddyPath = HonorbuddyPath;
             Profile.Log("Logging on new character.");
             // exit wow and honorbuddy
             Profile.TaskManager.HonorbuddyManager.Stop();
