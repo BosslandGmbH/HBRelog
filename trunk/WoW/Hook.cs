@@ -74,33 +74,43 @@ namespace HighVoltz.WoW
                     Memory.Asm.Clear(); // $Asm
 
                     // save regs
+                    InsertRandomOpCodes(Memory);
                     Memory.Asm.AddLine("pushad");
+                    InsertRandomOpCodes(Memory);
                     Memory.Asm.AddLine("pushfd");
-
+                    InsertRandomOpCodes(Memory);
                     // Test if you need launch injected code:
                     Memory.Asm.AddLine("mov eax, [" + _addresseInjection + "]");
+                    InsertRandomOpCodes(Memory);
                     Memory.Asm.AddLine("test eax, eax");
+                    InsertRandomOpCodes(Memory);
                     Memory.Asm.AddLine("je @out");
-
+                    InsertRandomOpCodes(Memory);
                     // Launch Fonction:
                     Memory.Asm.AddLine("mov eax, [" + _addresseInjection + "]");
+                    InsertRandomOpCodes(Memory);
                     Memory.Asm.AddLine("call eax");
-
+                    InsertRandomOpCodes(Memory);
                     // Copy pointer return value:
                     Memory.Asm.AddLine("mov [" + _retnInjectionAsm + "], eax");
-
+                    InsertRandomOpCodes(Memory);
                     // Enter value 0 of addresse func inject
                     Memory.Asm.AddLine("mov edx, " + _addresseInjection);
+                    InsertRandomOpCodes(Memory);
                     Memory.Asm.AddLine("mov ecx, 0");
+                    InsertRandomOpCodes(Memory);
                     Memory.Asm.AddLine("mov [edx], ecx");
+                    InsertRandomOpCodes(Memory);
 
                     // Close func
                     Memory.Asm.AddLine("@out:");
+                    InsertRandomOpCodes(Memory);
 
                     // load reg
                     Memory.Asm.AddLine("popfd");
+                    InsertRandomOpCodes(Memory);
                     Memory.Asm.AddLine("popad");
-
+                    InsertRandomOpCodes(Memory);
 
                     // injected code
                     var sizeAsm = (uint)(Memory.Asm.Assemble().Length);
@@ -231,11 +241,31 @@ namespace HighVoltz.WoW
                         // Free memory allocated 
                         //Memory.FreeMemory(injectionAsmCodecave);
                         // schedule resources to be freed at a later date cause freeing it immediately was causing wow crashes
-                        new Timer((state) => { Memory.FreeMemory((uint)state); }, injectionAsmCodecave, 100,0);
+                        new Timer((state) => { Memory.FreeMemory((uint)state); }, injectionAsmCodecave, 100, 0);
                     }
                 }
                 // return
                 return tempsByte;
+            }
+        }
+
+        static string[] _registerNames = new string[] { "AH", "AL", "BH", "BL", "CH", "CL", "DH", "DL", "EAX", "EBX", "ECX", "EDX" };
+        // asm isnt my forte.. but this should mess up any hash scans...
+        void InsertRandomOpCodes(BlackMagic mem)
+        {
+            if (Utility.Rand.Next(10) < 3)
+                return;
+            int ranNum = Utility.Rand.Next(0, _registerNames.Length + 1);
+            // insert a NOP or 2
+            if (ranNum == _registerNames.Length)
+            {
+                mem.Asm.AddLine("nop");
+                if (Utility.Rand.Next(2) == 0)
+                    mem.Asm.AddLine("nop");
+            }
+            else
+            {
+                mem.Asm.AddLine("mov " + _registerNames[ranNum] + "," + _registerNames[ranNum]);
             }
         }
 
@@ -264,6 +294,8 @@ namespace HighVoltz.WoW
             else
                 throw new InvalidOperationException("Can not scan for offsets before attaching to process");
         }
+
+
         /// <summary>
         /// Returns the time that WoW.exe was modified last in a DateTime
         /// </summary>

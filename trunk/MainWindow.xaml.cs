@@ -156,7 +156,6 @@ namespace HighVoltz
             // my debug button :)
             if (Environment.UserName == "highvoltz")
             {
-
             }
             AccountGrid.SelectAll();
         }
