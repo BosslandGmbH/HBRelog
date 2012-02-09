@@ -104,11 +104,15 @@ namespace HighVoltz.Honorbuddy
                 if (!BotProcess.WaitForInputIdle(0))
                     return;
 
-                if (!StartupSequenceIsComplete && NativeMethods.GetWindowText(BotProcess.MainWindowHandle).Contains("Attached"))
+                if (!StartupSequenceIsComplete && NativeMethods.GetWindowText(BotProcess.MainWindowHandle).Contains("ID"))
                 {
-                    StartupSequenceIsComplete = true;
-                    if (OnStartupSequenceIsComplete != null)
-                        OnStartupSequenceIsComplete(this, new ProfileEventArgs(Profile));
+                    string hbName = Path.GetFileNameWithoutExtension(Profile.Settings.HonorbuddySettings.HonorbuddyPath);
+                    if (NativeMethods.GetWindowText(BotProcess.MainWindowHandle).Contains(hbName))
+                    {
+                        StartupSequenceIsComplete = true;
+                        if (OnStartupSequenceIsComplete != null)
+                            OnStartupSequenceIsComplete(this, new ProfileEventArgs(Profile));
+                    }
                 }
                 if (!HBIsResponding || HBHasCrashed)
                 {
@@ -165,7 +169,8 @@ namespace HighVoltz.Honorbuddy
                 {
                     _crashTimeStamp = DateTime.Now;
                     List<IntPtr> childWinHandles = NativeMethods.EnumerateProcessWindowHandles(BotProcess.Id);
-                    return childWinHandles.Count(h => NativeMethods.GetWindowText(h) == "Honorbuddy") > 1;
+                    string hbName = Path.GetFileNameWithoutExtension(Profile.Settings.HonorbuddySettings.HonorbuddyPath);
+                    return childWinHandles.Count(h => NativeMethods.GetWindowText(h) == hbName) > 1;
                 }
                 return false;
             }
