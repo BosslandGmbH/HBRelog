@@ -62,7 +62,8 @@ namespace HighVoltz.Tasks
                 hbSettings.CustomClass = CustomClass;
             if (!string.IsNullOrEmpty(HonorbuddyPath))
                 hbSettings.HonorbuddyPath = HonorbuddyPath;
-            Profile.Log("Logging on new character.");
+            Profile.Log("Logging on different character.");
+            Profile.Status = "Logging on a different character";
             // exit wow and honorbuddy
             Profile.TaskManager.HonorbuddyManager.Stop();
             Profile.TaskManager.WowManager.Stop();

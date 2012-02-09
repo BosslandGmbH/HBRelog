@@ -250,7 +250,7 @@ namespace HighVoltz.WoW
         }
 
         static string[] _registerNames = new string[] { "AH", "AL", "BH", "BL", "CH", "CL", "DH", "DL", "EAX", "EBX", "ECX", "EDX" };
-        // asm isnt my forte.. but this should mess up any hash scans...
+        // This should mess up any hash scans...
         void InsertRandomOpCodes(BlackMagic mem)
         {
             if (Utility.Rand.Next(10) < 3)
