@@ -48,6 +48,7 @@ namespace HighVoltz.Tasks
             {
                 Profile.Log("Loading profile: {0} and {1}",
                     Profile.Settings.ProfileName, ProfilePath, !string.IsNullOrEmpty(Bot) ? "switching to bot " + Bot : "using current bot");
+                Profile.Status = "Changing to profile: " + Path.GetFileNameWithoutExtension(ProfilePath);
                 Profile.TaskManager.HonorbuddyManager.Stop();
                 var hbSettings = Profile.Settings.HonorbuddySettings.ShadowCopy();
                 hbSettings.HonorbuddyProfile = ProfilePath;

@@ -44,7 +44,13 @@ namespace HighVoltz.Tasks
                 Profile.Log("Waiting for {0} minutes before executing next task", _waitTime.TotalMinutes);
                 _timeStamp = DateTime.Now;
             }
-
+            int index = Profile.Tasks.IndexOf(this);
+            if (index >= 0)
+            {
+                BMTask nextTask = index + 1 >= Profile.Tasks.Count ? Profile.Tasks[0] : Profile.Tasks[index + 1];
+                Profile.Status = string.Format("Running {0} task in {1} minutes",
+                    nextTask, (int)((DateTime.Now + _waitTime - _timeStamp).TotalMinutes));
+            }
             if (DateTime.Now - _timeStamp >= _waitTime)
             {
                 IsDone = true;
