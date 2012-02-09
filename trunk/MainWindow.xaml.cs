@@ -122,6 +122,14 @@ namespace HighVoltz
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             Log.Write("HBRelog Version {0}", Assembly.GetExecutingAssembly().GetName().Version);
+            if (Program.AutoStart)
+            {
+                foreach (CharacterProfile character in AccountGrid.Items)
+                {
+                    if ((!character.IsRunning || character.IsPaused) && character.Settings.IsEnabled)
+                        character.Start();
+                }
+            }
         }
 
         private void AccountGridSelectionChanged(object sender, SelectionChangedEventArgs e)
