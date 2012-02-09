@@ -29,14 +29,19 @@ namespace HighVoltz
 {
     public class Program
     {
+        static Dictionary<string, string> CmdLineArgs = new Dictionary<string, string>();
+        public static bool AutoStart { get; private set; }
+
         [STAThread]
-        public static void Main()
+        public static void Main(params string[] args)
         {
             bool newInstance;
             using (Mutex m = new Mutex(true, "HBRelog", out newInstance))
             {
                 if (newInstance)
                 {
+                    CmdLineArgs = ProcessCmdLineArgs(args);
+                    AutoStart = CmdLineArgs.ContainsKey("AUTOSTART") ? true:false;
                     var app = new Application();
                     Window window = new MainWindow();
                     window.Show();
@@ -52,6 +57,24 @@ namespace HighVoltz
                     }
                 }
             }
+        }
+
+        static Dictionary<string, string> ProcessCmdLineArgs(string[] args)
+        {
+            Dictionary<string, string> cmdLineArgs = new Dictionary<string, string>();
+            foreach (string s in args)
+            {
+                string[] tokens = s.Split('=');
+                // make the / character optional
+                string argName = (tokens[0][0] == '/' ? tokens[0].Substring(1) : tokens[0]).ToUpperInvariant();
+                cmdLineArgs.Add(argName, tokens.Length > 1 ? tokens[1] : "");
+            }
+            return cmdLineArgs;
+        }
+
+        static T GetCmdLineArgVal<T>(string arg)
+        {
+            return default(T);
         }
     }
 }
