@@ -49,7 +49,7 @@ namespace HighVoltz.Tasks
             {
                 BMTask nextTask = index + 1 >= Profile.Tasks.Count ? Profile.Tasks[0] : Profile.Tasks[index + 1];
                 Profile.Status = string.Format("Running {0} task in {1} minutes",
-                    nextTask, (int)((DateTime.Now + _waitTime - _timeStamp).TotalMinutes));
+                    nextTask, (int)((_waitTime - (DateTime.Now - _timeStamp)).TotalMinutes));
             }
             if (DateTime.Now - _timeStamp >= _waitTime)
             {

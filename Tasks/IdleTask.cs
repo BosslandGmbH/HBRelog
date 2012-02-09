@@ -52,7 +52,7 @@ namespace HighVoltz.Tasks
                 if (Profile.TaskManager.HonorbuddyManager.IsRunning)
                     Profile.TaskManager.HonorbuddyManager.Stop();
             }
-            Profile.Status = string.Format("Idling for {0} minutes", (int)((DateTime.Now + _waitTime - _timeStamp).TotalMinutes));
+            Profile.Status = string.Format("Idling for {0} minutes", (int)((_waitTime - (DateTime.Now - _timeStamp)).TotalMinutes));
             if (DateTime.Now - _timeStamp >= _waitTime)
             {
                 IsDone = true;
