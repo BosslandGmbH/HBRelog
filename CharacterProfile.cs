@@ -69,6 +69,7 @@ namespace HighVoltz
 
         public void Start()
         {
+            Status = "Running";
             if (!IsPaused)
                 TaskManager.Start();
             IsRunning = true;
@@ -77,8 +78,10 @@ namespace HighVoltz
 
         public void Stop()
         {
+            Status = "Stopped";
             TaskManager.Stop();
             IsRunning = false;
+            IsPaused = false;
         }
 
         public void Log(string format, params object[] args)

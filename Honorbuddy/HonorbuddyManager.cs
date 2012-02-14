@@ -104,7 +104,8 @@ namespace HighVoltz.Honorbuddy
                 if (!BotProcess.WaitForInputIdle(0))
                     return;
 
-                if (!StartupSequenceIsComplete && NativeMethods.GetWindowText(BotProcess.MainWindowHandle).Contains("ID"))
+                if (!StartupSequenceIsComplete && NativeMethods.GetWindowText(BotProcess.MainWindowHandle).
+                    Contains(Profile.TaskManager.WowManager.GameProcess.Id.ToString()))
                 {
                     string hbName = Path.GetFileNameWithoutExtension(Profile.Settings.HonorbuddySettings.HonorbuddyPath);
                     if (NativeMethods.GetWindowText(BotProcess.MainWindowHandle).Contains(hbName))
@@ -170,7 +171,8 @@ namespace HighVoltz.Honorbuddy
                     _crashTimeStamp = DateTime.Now;
                     List<IntPtr> childWinHandles = NativeMethods.EnumerateProcessWindowHandles(BotProcess.Id);
                     string hbName = Path.GetFileNameWithoutExtension(Profile.Settings.HonorbuddySettings.HonorbuddyPath);
-                    return childWinHandles.Count(h => NativeMethods.GetWindowText(h) == hbName) > 1;
+                    return childWinHandles.Count(h => NativeMethods.GetWindowText(h).Contains("Honorbuddy") ||
+                        NativeMethods.GetWindowText(h).Contains(hbName)) > 1;
                 }
                 return false;
             }
