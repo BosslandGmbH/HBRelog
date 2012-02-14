@@ -44,34 +44,47 @@ namespace HighVoltz.Tasks
         public string ProfilePath { get; set; }
         [HighVoltz.Controls.TaskEditor.CustomTaskEditControl(typeof(HBPathEditControl))]
         public string HonorbuddyPath { get; set; }
+
+        bool _runOnce = false;
         public override void Pulse()
         {
-            var wowSettings = Profile.Settings.WowSettings.ShadowCopy();
-            var hbSettings = Profile.Settings.HonorbuddySettings.ShadowCopy();
+            if (!_runOnce)
+            {
+                var wowSettings = Profile.Settings.WowSettings.ShadowCopy();
+                var hbSettings = Profile.Settings.HonorbuddySettings.ShadowCopy();
 
-            if (!string.IsNullOrEmpty(CharacterName))
-                wowSettings.CharacterName = CharacterName;
-            if (!string.IsNullOrEmpty(Server))
-                wowSettings.CharacterName = Server;
+                if (!string.IsNullOrEmpty(CharacterName))
+                    wowSettings.CharacterName = CharacterName;
+                if (!string.IsNullOrEmpty(Server))
+                    wowSettings.ServerName = Server;
 
-            if (!string.IsNullOrEmpty(BotBase))
-                hbSettings.BotBase = BotBase;
-            if (!string.IsNullOrEmpty(ProfilePath))
-                hbSettings.HonorbuddyProfile = ProfilePath;
-            if (!string.IsNullOrEmpty(CustomClass))
-                hbSettings.CustomClass = CustomClass;
-            if (!string.IsNullOrEmpty(HonorbuddyPath))
-                hbSettings.HonorbuddyPath = HonorbuddyPath;
-            Profile.Log("Logging on different character.");
-            Profile.Status = "Logging on a different character";
-            // exit wow and honorbuddy
-            Profile.TaskManager.HonorbuddyManager.Stop();
-            Profile.TaskManager.WowManager.Stop();
-            // assign new settings
-            Profile.TaskManager.HonorbuddyManager.SetSettings(hbSettings);
-            Profile.TaskManager.WowManager.SetSettings(wowSettings);
-            Profile.TaskManager.WowManager.Start();
-            IsDone = true;
+                if (!string.IsNullOrEmpty(BotBase))
+                    hbSettings.BotBase = BotBase;
+                if (!string.IsNullOrEmpty(ProfilePath))
+                    hbSettings.HonorbuddyProfile = ProfilePath;
+                if (!string.IsNullOrEmpty(CustomClass))
+                    hbSettings.CustomClass = CustomClass;
+                if (!string.IsNullOrEmpty(HonorbuddyPath))
+                    hbSettings.HonorbuddyPath = HonorbuddyPath;
+                Profile.Log("Logging on different character.");
+                Profile.Status = "Logging on a different character";
+                // exit wow and honorbuddy
+                Profile.TaskManager.HonorbuddyManager.Stop();
+                Profile.TaskManager.WowManager.Stop();
+                // assign new settings
+                Profile.TaskManager.HonorbuddyManager.SetSettings(hbSettings);
+                Profile.TaskManager.WowManager.SetSettings(wowSettings);
+                Profile.TaskManager.WowManager.Start();
+                _runOnce = true;
+            }
+            if (Profile.TaskManager.WowManager.InGame)
+                IsDone = true;
+        }
+
+        public override void Reset()
+        {
+            base.Reset();
+            _runOnce = false;
         }
 
         public class ProfilePathEditControl : FileInputBox, HighVoltz.Controls.TaskEditor.ICustomTaskEditControlDataBound

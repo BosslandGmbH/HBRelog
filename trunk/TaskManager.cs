@@ -29,7 +29,7 @@ namespace HighVoltz
         public readonly ObservableCollection<BMTask> Tasks;
         public readonly WowManager WowManager;
         public readonly HonorbuddyManager HonorbuddyManager;
-        public CharacterProfile Profile {get;set;}
+        public CharacterProfile Profile { get; set; }
         public bool StartupSequenceIsComplete { get; private set; }
         public event EventHandler<ProfileEventArgs> OnStartupSequenceIsComplete;
         public bool IsRunning { get; private set; }
@@ -88,8 +88,11 @@ namespace HighVoltz
 
         public void Start()
         {
-            WowManager.SetSettings(Profile.Settings.WowSettings);
-            WowManager.Start();
+            if (!WowManager.IsRunning)
+            {
+                WowManager.SetSettings(Profile.Settings.WowSettings);
+                WowManager.Start();
+            }
             IsRunning = true;
         }
 

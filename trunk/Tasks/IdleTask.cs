@@ -25,10 +25,6 @@ namespace HighVoltz.Tasks
 {
     public class IdleTask : BMTask
     {
-        public IdleTask()
-        {
-            LogBackIn = true;
-        }
         public int Minutes { get; set; }
         public int RandomMinutes { get; set; }
         [XmlIgnore]
@@ -39,7 +35,6 @@ namespace HighVoltz.Tasks
 
         TimeSpan _waitTime = new TimeSpan(0);
         DateTime _timeStamp;
-        public bool LogBackIn { get; set; }
         public override void Pulse()
         {
             if (_waitTime == TimeSpan.FromTicks(0))
@@ -56,8 +51,7 @@ namespace HighVoltz.Tasks
             if (DateTime.Now - _timeStamp >= _waitTime)
             {
                 IsDone = true;
-                if (LogBackIn)
-                    Profile.Start();
+                Profile.Start();
                 Profile.Log("Idle complete");
             }
         }

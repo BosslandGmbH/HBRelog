@@ -239,6 +239,7 @@ namespace HighVoltz.WoW
 
         Stopwatch _serverSelectionSW = new Stopwatch();
         DateTime _luaThrottleTimeStamp = DateTime.Now;
+        GlueState _lastGlueStatus;
         private void LoginWoW()
         {
             // throttle lua calls to once per 3 secs, will give the user an option to change this.
@@ -246,14 +247,14 @@ namespace HighVoltz.WoW
             {
                 GlueState glueStatus = GlueStatus;
                 // check if at server selection for tooo long.
-                if (glueStatus == GlueState.ServerSelection)
+                if (glueStatus == _lastGlueStatus)
                 {
                     if (!_serverSelectionSW.IsRunning)
                         _serverSelectionSW.Start();
-                    // check once every 30 seconds
-                    if (_serverSelectionSW.ElapsedMilliseconds > 30000)
+                    // check once every 20 seconds
+                    if (_serverSelectionSW.ElapsedMilliseconds > 20000)
                     {
-                        Profile.Log("Wow has been at server selection for too long, lets restart");
+                        Profile.Log("Failed to login wow, lets restart");
                         GameProcess.Kill();
                         StartWoW();
                         return;
@@ -287,6 +288,7 @@ namespace HighVoltz.WoW
                 }
                 Profile.Log("GlueStatus: {0}", GlueStatus);
                 _luaThrottleTimeStamp = DateTime.Now;
+                _lastGlueStatus = glueStatus;
             }
         }
         Stopwatch _wowRespondingSW = new Stopwatch();
