@@ -239,7 +239,7 @@ namespace HighVoltz.WoW
 
         Stopwatch _serverSelectionSW = new Stopwatch();
         DateTime _luaThrottleTimeStamp = DateTime.Now;
-        GlueState _lastGlueStatus;
+        GlueState _lastGlueStatus = GlueState.None;
         private void LoginWoW()
         {
             // throttle lua calls to once per 3 secs, will give the user an option to change this.
@@ -257,6 +257,8 @@ namespace HighVoltz.WoW
                         Profile.Log("Failed to login wow, lets restart");
                         GameProcess.Kill();
                         StartWoW();
+                        // set to 'None' to prevent an infinite loop if set to 'Disconnected'
+                        _lastGlueStatus = GlueState.None;
                         return;
                     }
                 }
@@ -441,6 +443,7 @@ namespace HighVoltz.WoW
         // incomplete. missing Server Queue (if there is one).
         public enum GlueState
         {
+            None = -1,
             Disconnected = 0,
             Updater,
             CharacterSelection = 2,
