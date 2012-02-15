@@ -171,8 +171,9 @@ namespace HighVoltz.Honorbuddy
                     _crashTimeStamp = DateTime.Now;
                     List<IntPtr> childWinHandles = NativeMethods.EnumerateProcessWindowHandles(BotProcess.Id);
                     string hbName = Path.GetFileNameWithoutExtension(Profile.Settings.HonorbuddySettings.HonorbuddyPath);
-                    return childWinHandles.Select(h =>NativeMethods.GetWindowText(h)).
-                        Count(n => n == "Honorbuddy" || (n != "Honorbuddy" && n.Contains(hbName))) > 1;
+                    return childWinHandles.Select(h => NativeMethods.GetWindowText(h)).
+                        Count(n => !string.IsNullOrEmpty(n) && n == "Honorbuddy" || 
+                            (hbName != "Honorbuddy" && n.Contains(hbName))) > 1;
                 }
                 return false;
             }
