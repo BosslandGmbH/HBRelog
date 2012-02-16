@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace HighVoltz.WoW
+namespace HighVoltz.HBRelog.WoW
 {
     public class Lua
     {
@@ -26,7 +26,7 @@ namespace HighVoltz.WoW
                     "push 0",
                     "push eax",
                     "push eax",
-                    "mov eax, " + ( HBRelog.Settings.FrameScriptExecuteOffset + _wowHook.BaseOffset) , // Lua_DoString
+                    "mov eax, " + ( HBRelogManager.Settings.FrameScriptExecuteOffset + _wowHook.BaseOffset) , // Lua_DoString
                     "call eax",
                     "add esp, 0xC",
                     "retn"

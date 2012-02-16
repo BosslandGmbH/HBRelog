@@ -18,10 +18,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
-using HighVoltz.Settings;
+using HighVoltz.HBRelog;
 
-namespace HighVoltz.Honorbuddy
+namespace HighVoltz.HBRelog.Honorbuddy
 {
     public class HonorbuddyManager : IBotManager
     {
@@ -47,12 +48,33 @@ namespace HighVoltz.Honorbuddy
             Settings = settings;
         }
 
+        static bool _pluginIsUptodate = false;
         public void Start()
         {
             if (File.Exists(Settings.HonorbuddyPath))
             {
                 // remove internet zone restrictions from Honorbuddy.exe if it exists
                 Utility.UnblockFileIfZoneRestricted(Settings.HonorbuddyPath);
+                // check if we need to copy over plugin.
+                if (!_pluginIsUptodate)
+                {
+                    using (var reader = new StreamReader(
+                        Assembly.GetExecutingAssembly().
+                        GetManifestResourceStream("HighVoltz.HBRelog.HBPlugin.HBRelogHelper.cs")))
+                    {
+                        string pluginString = reader.ReadToEnd();
+                        // copy the HBPlugin over to the Honorbuddy plugin folder if it doesn't exist.
+                        // or length doesn't match with the version in resource.
+                        string pluginPath = Path.Combine(Path.GetDirectoryName(Settings.HonorbuddyPath),
+                                            "Plugins\\HBRelogHelper.cs");
+                        FileInfo fi = new FileInfo(pluginPath);
+                        if (!fi.Exists || fi.Length != pluginString.Length)
+                        {
+                            File.WriteAllText(pluginPath, pluginString);
+                        }
+                    }
+                    _pluginIsUptodate = true;
+                }
                 IsRunning = true;
                 StartHonorbuddy();
             }
@@ -71,6 +93,12 @@ namespace HighVoltz.Honorbuddy
         {
             if (IsRunning)
             {
+                var gameProc = Profile.TaskManager.WowManager.GameProcess;
+                if (gameProc == null || gameProc.HasExited)
+                {
+                    Stop();
+                    return;
+                }
                 if (_waitingToStart)
                 {  // we need to delay starting honorbuddy for a few seconds if another instance from same path was started a few seconds ago
                     if (HBStartupManager.CanStart(Settings.HonorbuddyPath))
@@ -104,17 +132,7 @@ namespace HighVoltz.Honorbuddy
                 if (!BotProcess.WaitForInputIdle(0))
                     return;
 
-                if (!StartupSequenceIsComplete && NativeMethods.GetWindowText(BotProcess.MainWindowHandle).
-                    Contains(Profile.TaskManager.WowManager.GameProcess.Id.ToString()))
-                {
-                    string hbName = Path.GetFileNameWithoutExtension(Profile.Settings.HonorbuddySettings.HonorbuddyPath);
-                    if (NativeMethods.GetWindowText(BotProcess.MainWindowHandle).Contains(hbName))
-                    {
-                        StartupSequenceIsComplete = true;
-                        if (OnStartupSequenceIsComplete != null)
-                            OnStartupSequenceIsComplete(this, new ProfileEventArgs(Profile));
-                    }
-                }
+
                 if (!HBIsResponding || HBHasCrashed)
                 {
                     if (!HBIsResponding) // we need to kill the process if it's not responding. 
@@ -139,6 +157,13 @@ namespace HighVoltz.Honorbuddy
                 IsRunning = false;
                 StartupSequenceIsComplete = false;
             }
+        }
+
+        public void SetStartupSequenceToComplete()
+        {
+            StartupSequenceIsComplete = true;
+            if (OnStartupSequenceIsComplete != null)
+                OnStartupSequenceIsComplete(this, new ProfileEventArgs(Profile));
         }
 
         Stopwatch _hbRespondingSW = new Stopwatch();
@@ -172,7 +197,7 @@ namespace HighVoltz.Honorbuddy
                     List<IntPtr> childWinHandles = NativeMethods.EnumerateProcessWindowHandles(BotProcess.Id);
                     string hbName = Path.GetFileNameWithoutExtension(Profile.Settings.HonorbuddySettings.HonorbuddyPath);
                     return childWinHandles.Select(h => NativeMethods.GetWindowText(h)).
-                        Count(n => !string.IsNullOrEmpty(n) && n == "Honorbuddy" || 
+                        Count(n => !string.IsNullOrEmpty(n) && n == "Honorbuddy" ||
                             (hbName != "Honorbuddy" && n.Contains(hbName))) > 1;
                 }
                 return false;
@@ -181,19 +206,20 @@ namespace HighVoltz.Honorbuddy
 
         static public class HBStartupManager
         {
+            static object _lockObject = new object();
             static Dictionary<string, DateTime> TimeStamps = new Dictionary<string, DateTime>();
             static public bool CanStart(string path)
             {
                 string key = path.ToUpper();
-                if (TimeStamps.ContainsKey(key))
+                lock (_lockObject)
                 {
-                    if (DateTime.Now - TimeStamps[key] < TimeSpan.FromSeconds(10))
+                    if (TimeStamps.ContainsKey(key) &&
+                        DateTime.Now - TimeStamps[key] < TimeSpan.FromSeconds(Program.HbStartDelay))
+                    {
                         return false;
-                    else
-                        TimeStamps.Remove(key);
-                }
-                else
+                    }
                     TimeStamps[key] = DateTime.Now;
+                }
                 return true;
             }
         }

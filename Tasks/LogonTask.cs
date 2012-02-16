@@ -19,10 +19,10 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Xml.Serialization;
-using HighVoltz.Controls;
-using HighVoltz.Settings;
+using HighVoltz.HBRelog.Controls;
+using HighVoltz.HBRelog;
 
-namespace HighVoltz.Tasks
+namespace HighVoltz.HBRelog.Tasks
 {
     public class LogonTask : BMTask
     {
@@ -40,9 +40,9 @@ namespace HighVoltz.Tasks
         public string Server { get; set; }
         public string BotBase { get; set; }
         public string CustomClass { get; set; }
-        [HighVoltz.Controls.TaskEditor.CustomTaskEditControl(typeof(ProfilePathEditControl))]
+        [HighVoltz.HBRelog.Controls.TaskEditor.CustomTaskEditControl(typeof(ProfilePathEditControl))]
         public string ProfilePath { get; set; }
-        [HighVoltz.Controls.TaskEditor.CustomTaskEditControl(typeof(HBPathEditControl))]
+        [HighVoltz.HBRelog.Controls.TaskEditor.CustomTaskEditControl(typeof(HBPathEditControl))]
         public string HonorbuddyPath { get; set; }
 
         bool _runOnce = false;
@@ -87,7 +87,7 @@ namespace HighVoltz.Tasks
             _runOnce = false;
         }
 
-        public class ProfilePathEditControl : FileInputBox, HighVoltz.Controls.TaskEditor.ICustomTaskEditControlDataBound
+        public class ProfilePathEditControl : HighVoltz.HBRelog.Controls.FileInputBox, HighVoltz.HBRelog.Controls.TaskEditor.ICustomTaskEditControlDataBound
         {
             LogonTask _task;
             public ProfilePathEditControl()
@@ -117,7 +117,7 @@ namespace HighVoltz.Tasks
             }
         }
 
-        public class HBPathEditControl : FileInputBox, HighVoltz.Controls.TaskEditor.ICustomTaskEditControlDataBound
+        public class HBPathEditControl : FileInputBox, HighVoltz.HBRelog.Controls.TaskEditor.ICustomTaskEditControlDataBound
         {
             LogonTask _task;
             public HBPathEditControl()

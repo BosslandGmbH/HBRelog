@@ -22,7 +22,7 @@ using System.Xml.Serialization;
 using System.Runtime.Serialization;
 using System.Threading;
 
-namespace HighVoltz.Settings
+namespace HighVoltz.HBRelog.Settings
 {
     public class ProfileSettings : INotifyPropertyChanged
     {
@@ -62,14 +62,14 @@ namespace HighVoltz.Settings
                 if (_settingSaveTimer != null)
                     _settingSaveTimer.Dispose();
                 // only save to file if BotManager been initialized. We don't want it to save when this property was modifed after being loaded from .xml file
-                if (HBRelog.IsInitialized)
+                if (HBRelogManager.IsInitialized)
                     _settingSaveTimer = new Timer(FileSaveTimerCallback, null, 6000, Timeout.Infinite);
             }
         }
 
         static void FileSaveTimerCallback(object state)
         {
-            HBRelog.Settings.Save();
+            HBRelogManager.Settings.Save();
         }
 
         public ProfileSettings ShadowCopy()

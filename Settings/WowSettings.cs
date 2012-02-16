@@ -23,7 +23,7 @@ using System.Text;
 using System.Windows;
 using System.Xml.Serialization;
 
-namespace HighVoltz.Settings
+namespace HighVoltz.HBRelog
 {
     public class WowSettings : INotifyPropertyChanged
     {

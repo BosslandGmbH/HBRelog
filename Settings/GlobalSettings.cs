@@ -23,12 +23,12 @@ using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 using System.Linq;
-using HighVoltz.Tasks;
 using System.Runtime.Serialization;
 using System.IO.IsolatedStorage;
+using HighVoltz.HBRelog.Tasks;
 
 
-namespace HighVoltz.Settings
+namespace HighVoltz.HBRelog.Settings
 {
     public class GlobalSettings
     {
@@ -47,7 +47,9 @@ namespace HighVoltz.Settings
             } 
         }
         public ObservableCollection<CharacterProfile> CharacterProfiles { get; set; }
+
         public string WowVersion { get; set; }
+        // offsets
         public uint DxDeviceOffset { get; set; }
         public uint DxDeviceIndex { get; set; }
         public uint GameStateOffset { get; set; }
@@ -61,6 +63,7 @@ namespace HighVoltz.Settings
             {
                 XElement root = new XElement("BotManager");
                 root.Add(new XElement("WowVersion", WowVersion));
+
                 root.Add(new XElement("DxDeviceOffset", DxDeviceOffset));
                 root.Add(new XElement("DxDeviceIndex", DxDeviceIndex));
                 root.Add(new XElement("GameStateOffset", GameStateOffset));

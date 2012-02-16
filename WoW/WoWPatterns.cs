@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using HighVoltz.CleanPattern;
 
-namespace HighVoltz.WoW
+namespace HighVoltz.HBRelog.WoW
 {
     static public class WoWPatterns
     {

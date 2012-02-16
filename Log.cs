@@ -23,7 +23,7 @@ using System.IO;
 using System.Diagnostics;
 using System.Windows.Documents;
 
-namespace HighVoltz
+namespace HighVoltz.HBRelog
 {
     public class Log
     {

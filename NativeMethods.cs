@@ -6,7 +6,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace HighVoltz
+namespace HighVoltz.HBRelog
 {
     public class NativeMethods
     {

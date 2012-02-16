@@ -23,11 +23,10 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Windows.Media;
 using System.Xml.Serialization;
-using HighVoltz.Settings;
-using HighVoltz.Tasks;
-using HighVoltz.WoW;
+using HighVoltz.HBRelog.Tasks;
+using HighVoltz.HBRelog.Settings;
 
-namespace HighVoltz
+namespace HighVoltz.HBRelog
 {
     sealed public class CharacterProfile : INotifyPropertyChanged
     {
@@ -86,12 +85,12 @@ namespace HighVoltz
 
         public void Log(string format, params object[] args)
         {
-            HighVoltz.Log.Write(Colors.DarkSlateBlue, Settings.ProfileName + ": ", Colors.DarkGreen, format, args);
+            HighVoltz.HBRelog.Log.Write(Colors.DarkSlateBlue, Settings.ProfileName + ": ", Colors.DarkGreen, format, args);
         }
 
         public void Err(string format, params object[] args)
         {
-            HighVoltz.Log.Write(Colors.DarkSlateBlue, Settings.ProfileName + ": ", Colors.Red, format, args);
+            HighVoltz.HBRelog.Log.Write(Colors.DarkSlateBlue, Settings.ProfileName + ": ", Colors.Red, format, args);
         }
         public event PropertyChangedEventHandler PropertyChanged;
         private void NotifyPropertyChanged(string name)

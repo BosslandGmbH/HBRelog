@@ -18,7 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace HighVoltz
+namespace HighVoltz.HBRelog
 {
     public class ProfileEventArgs : EventArgs
     {

@@ -14,9 +14,9 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Xml.Serialization;
-using HighVoltz.Tasks;
+using HighVoltz.HBRelog.Tasks;
 
-namespace HighVoltz.Controls
+namespace HighVoltz.HBRelog.Controls
 {
     /// <summary>
     /// Interaction logic for TaskEditor.xaml

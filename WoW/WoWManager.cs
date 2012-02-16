@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Diagnostics;
-using HighVoltz.Settings;
+using HighVoltz.HBRelog;
 using Magic;
 using System.IO;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace HighVoltz.WoW
+namespace HighVoltz.HBRelog.WoW
 {
     sealed public class WowManager : IGameManager
     {
@@ -41,7 +41,7 @@ namespace HighVoltz.WoW
                 try
                 {
                     return WowHook != null &&
-                        Memory.ReadByte(HBRelog.Settings.GameStateOffset + WowHook.BaseOffset) == 1;
+                        Memory.ReadByte(HBRelogManager.Settings.GameStateOffset + WowHook.BaseOffset) == 1;
                 }
                 catch
                 {
@@ -59,7 +59,7 @@ namespace HighVoltz.WoW
                 try
                 {
                     return WowHook != null &&
-                        Memory.ReadByte((HBRelog.Settings.GameStateOffset + 1) + WowHook.BaseOffset) == 1;
+                        Memory.ReadByte((HBRelogManager.Settings.GameStateOffset + 1) + WowHook.BaseOffset) == 1;
                 }
                 catch
                 {
@@ -70,18 +70,22 @@ namespace HighVoltz.WoW
 
         public GlueState GlueStatus
         {
-            get { return WowHook != null ? (GlueState)Memory.ReadInt(HBRelog.Settings.GlueStateOffset + WowHook.BaseOffset) : GlueState.Disconnected; }
+            get { return WowHook != null ? (GlueState)Memory.ReadInt(HBRelogManager.Settings.GlueStateOffset + WowHook.BaseOffset) : GlueState.Disconnected; }
         }
         public bool IsRunning { get; private set; }
         public bool StartupSequenceIsComplete { get; private set; }
         bool _processIsReadyForInput;
         Timer _wowLoginTimer;
         public event EventHandler<ProfileEventArgs> OnStartupSequenceIsComplete;
+        bool _waitingToStart;
         /// <summary>
         /// Starts the WoW process
         /// </summary>
         void StartWoW()
         {
+            _waitingToStart = !WowStartupManager.CanStart(Settings.WowPath);
+            if (_waitingToStart)
+                return;
             Profile.Log("starting {0}", Settings.WowPath);
             Profile.Status = "Starting WoW";
             _processIsReadyForInput = StartupSequenceIsComplete = false;
@@ -177,10 +181,15 @@ namespace HighVoltz.WoW
                 if (IsRunning)
                 {
                     // restart wow WoW if it has exited
-                    if (GameProcess.HasExited)
+                    if (GameProcess == null || GameProcess.HasExited)
                     {
-                        Profile.Log("WoW process was terminated. Restarting");
-                        Profile.Status = "WoW process was terminated. Restarting";
+                        if (_waitingToStart)
+                            Profile.Status = "Waiting to start";
+                        else
+                        {
+                            Profile.Log("WoW process was terminated. Restarting");
+                            Profile.Status = "WoW process was terminated. Restarting";
+                        }
                         StartWoW();
                         return;
                     }
@@ -358,7 +367,7 @@ namespace HighVoltz.WoW
         void AntiAfk()
         {
             if (WowHook != null)
-                WowHook.Memory.WriteInt(HBRelog.Settings.LastHardwareEventOffset + WowHook.BaseOffset, System.Environment.TickCount);
+                WowHook.Memory.WriteInt(HBRelogManager.Settings.LastHardwareEventOffset + WowHook.BaseOffset, System.Environment.TickCount);
         }
         // credits mnbvc for original version. modified to work with Cata
         // http://www.ownedcore.com/forums/world-of-warcraft/world-of-warcraft-bots-programs/wow-memory-editing/302552-lua-auto-login-final-solution.html
@@ -451,6 +460,26 @@ namespace HighVoltz.WoW
             ServerSelection = 6,
             Credits = 7,
             RegionalSelection = 8
+        }
+
+        static public class WowStartupManager
+        {
+            static object _lockObject = new object();
+            static Dictionary<string, DateTime> TimeStamps = new Dictionary<string, DateTime>();
+            static public bool CanStart(string path)
+            {
+                string key = path.ToUpper();
+                lock (_lockObject)
+                {
+                    if (TimeStamps.ContainsKey(key) &&
+                        DateTime.Now - TimeStamps[key] < TimeSpan.FromSeconds(Program.WowStartDelay))
+                    {
+                        return false;
+                    }
+                    TimeStamps[key] = DateTime.Now;
+                }
+                return true;
+            }
         }
         #endregion
 

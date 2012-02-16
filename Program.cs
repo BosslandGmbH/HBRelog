@@ -25,13 +25,16 @@ using System.Linq;
 using System.Reflection;
 using System.IO;
 
-namespace HighVoltz
+namespace HighVoltz.HBRelog
 {
     public class Program
     {
         static Dictionary<string, string> CmdLineArgs = new Dictionary<string, string>();
         public static bool AutoStart { get; private set; }
-
+        // delay in-between starting wow processes from same .exe
+        public static int WowStartDelay { get; private set; }
+        // delay in-between starting Honorbuddy processes from same .exe
+        public static int HbStartDelay { get; private set; }
         [STAThread]
         public static void Main(params string[] args)
         {
@@ -41,7 +44,11 @@ namespace HighVoltz
                 if (newInstance)
                 {
                     CmdLineArgs = ProcessCmdLineArgs(args);
-                    AutoStart = CmdLineArgs.ContainsKey("AUTOSTART") ? true:false;
+                    AutoStart = CmdLineArgs.ContainsKey("AUTOSTART") ? true : false;
+                    WowStartDelay = CmdLineArgs.ContainsKey("WOWDELAY") ?
+                        GetCmdLineArgVal<int>(CmdLineArgs["WOWDELAY"]) : 0;
+                    HbStartDelay = CmdLineArgs.ContainsKey("HBDELAY") ?
+                        GetCmdLineArgVal<int>(CmdLineArgs["HBDELAY"]) : 0;
                     var app = new Application();
                     Window window = new MainWindow();
                     window.Show();
@@ -74,7 +81,15 @@ namespace HighVoltz
 
         static T GetCmdLineArgVal<T>(string arg)
         {
-            return default(T);
+            try
+            {
+                return (T)Convert.ChangeType(arg, typeof(T));
+            }
+            catch (Exception ex)
+            {
+                Log.Err("Unable to convert {0} to type: {1}\n{2}", arg, typeof(T), ex);
+                return default(T);
+            }
         }
     }
 }
