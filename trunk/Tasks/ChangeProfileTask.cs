@@ -21,9 +21,9 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Windows.Data;
 using System.Xml.Serialization;
-using HighVoltz.Controls;
-using HighVoltz.Settings;
-namespace HighVoltz.Tasks
+using HighVoltz.HBRelog.Controls;
+using HighVoltz.HBRelog;
+namespace HighVoltz.HBRelog.Tasks
 {
     public class ChangeProfileTask : BMTask
     {
@@ -39,7 +39,7 @@ namespace HighVoltz.Tasks
             get { return "ChangeProfile"; }
         }
 
-        [HighVoltz.Controls.TaskEditor.CustomTaskEditControl(typeof(ProfilePathEditControl))]
+        [HighVoltz.HBRelog.Controls.TaskEditor.CustomTaskEditControl(typeof(ProfilePathEditControl))]
         public string ProfilePath { get; set; }
         public string Bot { get; set; }
         public override void Pulse()
@@ -64,7 +64,7 @@ namespace HighVoltz.Tasks
             IsDone = true;
         }
 
-        public class ProfilePathEditControl : FileInputBox, HighVoltz.Controls.TaskEditor.ICustomTaskEditControlDataBound
+        public class ProfilePathEditControl : FileInputBox, HighVoltz.HBRelog.Controls.TaskEditor.ICustomTaskEditControlDataBound
         {
             ChangeProfileTask _task;
             public ProfilePathEditControl()

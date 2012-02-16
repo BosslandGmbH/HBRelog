@@ -23,7 +23,7 @@ using System.Security.Permissions;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace HighVoltz
+namespace HighVoltz.HBRelog
 {
     static public class Utility
     {
@@ -68,9 +68,9 @@ namespace HighVoltz
                 NativeMethods.SetWindowPosFlags.SWP_NOZORDER | NativeMethods.SetWindowPosFlags.SWP_NOACTIVATE);
         }
 
-        public static HighVoltz.NativeMethods.Rect GetWindowRect(IntPtr hWnd)
+        public static NativeMethods.Rect GetWindowRect(IntPtr hWnd)
         {
-            var result = new HighVoltz.NativeMethods.Rect();
+            var result = new NativeMethods.Rect();
             NativeMethods.GetWindowRect(hWnd, out result);
             return result;
         }

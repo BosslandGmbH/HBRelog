@@ -14,7 +14,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Microsoft.Win32;
 
-namespace HighVoltz.Controls
+namespace HighVoltz.HBRelog.Controls
 {
     /// <summary>
     /// Interaction logic for FileBrowser.xaml

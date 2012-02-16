@@ -19,9 +19,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
-using HighVoltz.Settings;
+using HighVoltz.HBRelog;
 
-namespace HighVoltz
+namespace HighVoltz.HBRelog
 {
     interface IBotManager : IManager
     {
@@ -31,5 +31,6 @@ namespace HighVoltz
         [XmlIgnore]
         Process BotProcess { get; }
         void SetSettings(HonorbuddySettings settings);
+        void SetStartupSequenceToComplete();
     }
 }

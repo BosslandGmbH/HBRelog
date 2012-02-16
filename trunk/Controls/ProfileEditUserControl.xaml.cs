@@ -4,15 +4,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Linq;
-using HighVoltz.Settings;
-using HighVoltz.Tasks;
+using HighVoltz.HBRelog;
 using System.Collections.Generic;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Data;
+using HighVoltz.HBRelog.Tasks;
+using HighVoltz.HBRelog.Settings;
 
 
-namespace HighVoltz.Controls
+namespace HighVoltz.HBRelog.Controls
 {
     /// <summary>
     /// Interaction logic for AccountConfigUserControl.xaml

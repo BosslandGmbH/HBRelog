@@ -19,7 +19,7 @@ using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
 
-namespace HighVoltz
+namespace HighVoltz.HBRelog
 {
     interface IManager
     {

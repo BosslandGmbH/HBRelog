@@ -5,11 +5,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
-using HighVoltz.Settings;
+using HighVoltz.HBRelog;
 using System.Linq;
 using Magic;
 
-namespace HighVoltz.WoW
+namespace HighVoltz.HBRelog.WoW
 {
     public class Hook
     {
@@ -42,11 +42,11 @@ namespace HighVoltz.WoW
             try
             {
                 // check if we need to scan for offsets
-                if (string.IsNullOrEmpty(HBRelog.Settings.WowVersion) || !HBRelog.Settings.WowVersion.Equals(WoWVersion))
+                if (string.IsNullOrEmpty(HBRelogManager.Settings.WowVersion) || !HBRelogManager.Settings.WowVersion.Equals(WoWVersion))
                     ScanForOffset();
                 // Get address of EndScene
-                uint pDevice = Memory.ReadUInt(HBRelog.Settings.DxDeviceOffset + BaseOffset);
-                uint pEnd = Memory.ReadUInt(pDevice + HBRelog.Settings.DxDeviceIndex);
+                uint pDevice = Memory.ReadUInt(HBRelogManager.Settings.DxDeviceOffset + BaseOffset);
+                uint pEnd = Memory.ReadUInt(pDevice + HBRelogManager.Settings.DxDeviceIndex);
                 uint pScene = Memory.ReadUInt(pEnd);
                 uint pEndScene = Memory.ReadUInt(pScene + 0xA8);
                 if (Memory.IsProcessOpen)
@@ -74,43 +74,28 @@ namespace HighVoltz.WoW
                     Memory.Asm.Clear(); // $Asm
 
                     // save regs
-                    InsertRandomOpCodes(Memory);
-                    Memory.Asm.AddLine("pushad");
-                    InsertRandomOpCodes(Memory);
-                    Memory.Asm.AddLine("pushfd");
-                    InsertRandomOpCodes(Memory);
+                    AddAsmAndRandomOPs("pushad");
+                    AddAsmAndRandomOPs("pushfd");
                     // Test if you need launch injected code:
-                    Memory.Asm.AddLine("mov eax, [" + _addresseInjection + "]");
-                    InsertRandomOpCodes(Memory);
-                    Memory.Asm.AddLine("test eax, eax");
-                    InsertRandomOpCodes(Memory);
-                    Memory.Asm.AddLine("je @out");
-                    InsertRandomOpCodes(Memory);
+                    AddAsmAndRandomOPs("mov eax, [" + _addresseInjection + "]");
+                    AddAsmAndRandomOPs("test eax, eax");
+                    AddAsmAndRandomOPs("je @out");
                     // Launch Fonction:
-                    Memory.Asm.AddLine("mov eax, [" + _addresseInjection + "]");
-                    InsertRandomOpCodes(Memory);
-                    Memory.Asm.AddLine("call eax");
-                    InsertRandomOpCodes(Memory);
+                    AddAsmAndRandomOPs("mov eax, [" + _addresseInjection + "]");
+                    AddAsmAndRandomOPs("call eax");
                     // Copy pointer return value:
-                    Memory.Asm.AddLine("mov [" + _retnInjectionAsm + "], eax");
-                    InsertRandomOpCodes(Memory);
+                    AddAsmAndRandomOPs("mov [" + _retnInjectionAsm + "], eax");
                     // Enter value 0 of addresse func inject
-                    Memory.Asm.AddLine("mov edx, " + _addresseInjection);
-                    InsertRandomOpCodes(Memory);
-                    Memory.Asm.AddLine("mov ecx, 0");
-                    InsertRandomOpCodes(Memory);
-                    Memory.Asm.AddLine("mov [edx], ecx");
-                    InsertRandomOpCodes(Memory);
+                    AddAsmAndRandomOPs("mov edx, " + _addresseInjection);
+                    AddAsmAndRandomOPs("mov ecx, 0");
+                    AddAsmAndRandomOPs("mov [edx], ecx");
 
                     // Close func
-                    Memory.Asm.AddLine("@out:");
-                    InsertRandomOpCodes(Memory);
+                    AddAsmAndRandomOPs("@out:");
 
                     // load reg
-                    Memory.Asm.AddLine("popfd");
-                    InsertRandomOpCodes(Memory);
-                    Memory.Asm.AddLine("popad");
-                    InsertRandomOpCodes(Memory);
+                    AddAsmAndRandomOPs("popfd");
+                    AddAsmAndRandomOPs("popad");
 
                     // injected code
                     var sizeAsm = (uint)(Memory.Asm.Assemble().Length);
@@ -151,8 +136,8 @@ namespace HighVoltz.WoW
             try
             {
                 // Get address of EndScene
-                uint pDevice = Memory.ReadUInt(HBRelog.Settings.DxDeviceOffset + BaseOffset);
-                uint pEnd = Memory.ReadUInt(pDevice + HBRelog.Settings.DxDeviceIndex);
+                uint pDevice = Memory.ReadUInt(HBRelogManager.Settings.DxDeviceOffset + BaseOffset);
+                uint pEnd = Memory.ReadUInt(pDevice + HBRelogManager.Settings.DxDeviceIndex);
                 uint pScene = Memory.ReadUInt(pEnd);
                 uint pEndScene = Memory.ReadUInt(pScene + 0xA8);
 
@@ -251,7 +236,7 @@ namespace HighVoltz.WoW
 
         static string[] _registerNames = new string[] { "AH", "AL", "BH", "BL", "CH", "CL", "DH", "DL", "EAX", "EBX", "ECX", "EDX" };
         // This should mess up any hash scans...
-        void InsertRandomOpCodes(BlackMagic mem)
+        void InsertRandomOpCodes()
         {
             if (Utility.Rand.Next(10) < 3)
                 return;
@@ -259,16 +244,21 @@ namespace HighVoltz.WoW
             // insert a NOP or 2
             if (ranNum == _registerNames.Length)
             {
-                mem.Asm.AddLine("nop");
+                Memory.Asm.AddLine("nop");
                 if (Utility.Rand.Next(2) == 0)
-                    mem.Asm.AddLine("nop");
+                    Memory.Asm.AddLine("nop");
             }
             else
             {
-                mem.Asm.AddLine("mov " + _registerNames[ranNum] + "," + _registerNames[ranNum]);
+                Memory.Asm.AddLine("mov " + _registerNames[ranNum] + "," + _registerNames[ranNum]);
             }
         }
-
+        void AddAsmAndRandomOPs(string asm)
+        {
+            InsertRandomOpCodes();
+            Memory.Asm.AddLine(asm);
+            InsertRandomOpCodes();
+        }
         /// <summary>
         /// Scans for new memory offsets and saves them in WoWSettings. 
         /// </summary>
@@ -276,20 +266,20 @@ namespace HighVoltz.WoW
         {
             if (Memory != null)
             {
-                HBRelog.Settings.DxDeviceOffset = WoWPatterns.Dx9DevicePattern.Find(Memory);
-                Log.Debug("DxDevice9 Offset found at 0x{0:X}", HBRelog.Settings.DxDeviceOffset);
-                HBRelog.Settings.DxDeviceIndex = Memory.ReadUInt(WoWPatterns.Dx9DeviceInxPattern.Find(Memory) + BaseOffset);
-                Log.Debug("DxDevice9 Index is 0x{0:X}", HBRelog.Settings.DxDeviceIndex);
-                HBRelog.Settings.GameStateOffset = WoWPatterns.GameStatePattern.Find(Memory);
-                Log.Debug("GameState Offset found at 0x{0:X}", HBRelog.Settings.GameStateOffset);
-                HBRelog.Settings.FrameScriptExecuteOffset = WoWPatterns.FrameScriptExecutePattern.Find(Memory);
-                Log.Debug("FrameScriptExecute Offset found at 0x{0:X}", HBRelog.Settings.FrameScriptExecuteOffset);
-                HBRelog.Settings.LastHardwareEventOffset = WoWPatterns.LastHardwareEventPattern.Find(Memory);
-                Log.Debug("LastHardwareEvent Offset found at 0x{0:X}", HBRelog.Settings.LastHardwareEventOffset);
-                HBRelog.Settings.GlueStateOffset = WoWPatterns.GlueStatePattern.Find(Memory);
-                Log.Debug("GlueStateOffset Offset found at 0x{0:X}", HBRelog.Settings.GlueStateOffset);
-                HBRelog.Settings.WowVersion = WoWVersion;
-                HBRelog.Settings.Save();
+                HBRelogManager.Settings.DxDeviceOffset = WoWPatterns.Dx9DevicePattern.Find(Memory);
+                Log.Debug("DxDevice9 Offset found at 0x{0:X}", HBRelogManager.Settings.DxDeviceOffset);
+                HBRelogManager.Settings.DxDeviceIndex = Memory.ReadUInt(WoWPatterns.Dx9DeviceInxPattern.Find(Memory) + BaseOffset);
+                Log.Debug("DxDevice9 Index is 0x{0:X}", HBRelogManager.Settings.DxDeviceIndex);
+                HBRelogManager.Settings.GameStateOffset = WoWPatterns.GameStatePattern.Find(Memory);
+                Log.Debug("GameState Offset found at 0x{0:X}", HBRelogManager.Settings.GameStateOffset);
+                HBRelogManager.Settings.FrameScriptExecuteOffset = WoWPatterns.FrameScriptExecutePattern.Find(Memory);
+                Log.Debug("FrameScriptExecute Offset found at 0x{0:X}", HBRelogManager.Settings.FrameScriptExecuteOffset);
+                HBRelogManager.Settings.LastHardwareEventOffset = WoWPatterns.LastHardwareEventPattern.Find(Memory);
+                Log.Debug("LastHardwareEvent Offset found at 0x{0:X}", HBRelogManager.Settings.LastHardwareEventOffset);
+                HBRelogManager.Settings.GlueStateOffset = WoWPatterns.GlueStatePattern.Find(Memory);
+                Log.Debug("GlueStateOffset Offset found at 0x{0:X}", HBRelogManager.Settings.GlueStateOffset);
+                HBRelogManager.Settings.WowVersion = WoWVersion;
+                HBRelogManager.Settings.Save();
             }
             else
                 throw new InvalidOperationException("Can not scan for offsets before attaching to process");

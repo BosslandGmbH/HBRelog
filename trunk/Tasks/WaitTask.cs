@@ -21,9 +21,8 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Xml.Serialization;
 
-namespace HighVoltz.Tasks
+namespace HighVoltz.HBRelog.Tasks
 {
-    [DataContract]
     public class WaitTask : BMTask
     {
         public int Minutes { get; set; }
@@ -44,13 +43,13 @@ namespace HighVoltz.Tasks
                 Profile.Log("Waiting for {0} minutes before executing next task", _waitTime.TotalMinutes);
                 _timeStamp = DateTime.Now;
             }
-            int index = Profile.Tasks.IndexOf(this);
-            if (index >= 0)
-            {
-                BMTask nextTask = index + 1 >= Profile.Tasks.Count ? Profile.Tasks[0] : Profile.Tasks[index + 1];
-                Profile.Status = string.Format("Running {0} task in {1} minutes",
-                    nextTask, (int)((_waitTime - (DateTime.Now - _timeStamp)).TotalMinutes));
-            }
+            //int index = Profile.Tasks.IndexOf(this);
+            //if (index >= 0)
+            //{
+            //    BMTask nextTask = index + 1 >= Profile.Tasks.Count ? Profile.Tasks[0] : Profile.Tasks[index + 1];
+            //    Profile.Status = string.Format("Running {0} task in {1} minutes",
+            //        nextTask, (int)((_waitTime - (DateTime.Now - _timeStamp)).TotalMinutes));
+            //}
             if (DateTime.Now - _timeStamp >= _waitTime)
             {
                 IsDone = true;

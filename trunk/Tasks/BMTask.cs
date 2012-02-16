@@ -20,7 +20,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Xml.Serialization;
 
-namespace HighVoltz.Tasks
+namespace HighVoltz.HBRelog.Tasks
 {
     [DataContract]
     abstract public class BMTask : IBMTask

@@ -26,9 +26,10 @@ using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media.Animation;
 using System.Windows.Resources;
-using HighVoltz.Settings;
+using HighVoltz.HBRelog;
+using HighVoltz.HBRelog.Settings;
 
-namespace HighVoltz
+namespace HighVoltz.HBRelog
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -53,7 +54,7 @@ namespace HighVoltz
 
             if (character.Settings != null)
             {
-                HBRelog.Settings.CharacterProfiles.Add(character);
+                HBRelogManager.Settings.CharacterProfiles.Add(character);
                 AccountGrid.SelectedItem = character;
                 EditAccount(character.Settings);
             }
@@ -71,7 +72,7 @@ namespace HighVoltz
             ani.AccelerationRatio = 0.7;
             AccountConfigGrid.BeginAnimation(Grid.WidthProperty, ani);
             AccountConfig.IsEditing = false;
-            HBRelog.Settings.Save();
+            HBRelogManager.Settings.Save();
         }
 
         private void EditAccount(ProfileSettings charSettings)
@@ -95,9 +96,9 @@ namespace HighVoltz
                 for (int i = AccountGrid.SelectedItems.Count - 1; i >= 0; i--)
                 {
                     var character = (CharacterProfile)AccountGrid.SelectedItems[i];
-                    HBRelog.Settings.CharacterProfiles.Remove(character);
+                    HBRelogManager.Settings.CharacterProfiles.Remove(character);
                 }
-                HBRelog.Settings.Save();
+                HBRelogManager.Settings.Save();
             }
         }
 
@@ -170,7 +171,7 @@ namespace HighVoltz
 
         private void StartThumbButtonClick(object sender, EventArgs e)
         {
-            foreach (CharacterProfile character in HBRelog.Settings.CharacterProfiles)
+            foreach (CharacterProfile character in HBRelogManager.Settings.CharacterProfiles)
             {
                 if ((!character.IsRunning || character.IsPaused) && character.Settings.IsEnabled)
                     character.Start();
@@ -179,7 +180,7 @@ namespace HighVoltz
 
         private void PauseThumbButtonClick(object sender, EventArgs e)
         {
-            foreach (CharacterProfile character in HBRelog.Settings.CharacterProfiles)
+            foreach (CharacterProfile character in HBRelogManager.Settings.CharacterProfiles)
             {
                 if (character.Settings.IsEnabled)
                     character.Pause();
@@ -188,7 +189,7 @@ namespace HighVoltz
 
         private void StopThumbButtonClick(object sender, EventArgs e)
         {
-            foreach (CharacterProfile character in HBRelog.Settings.CharacterProfiles)
+            foreach (CharacterProfile character in HBRelogManager.Settings.CharacterProfiles)
             {
                 if (character.IsRunning && character.Settings.IsEnabled)
                     character.Stop();

@@ -20,7 +20,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 
-namespace HighVoltz.Settings
+namespace HighVoltz.HBRelog
 {
     public class HonorbuddySettings : INotifyPropertyChanged
     {

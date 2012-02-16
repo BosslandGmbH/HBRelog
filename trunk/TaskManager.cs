@@ -18,11 +18,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
-using HighVoltz.Honorbuddy;
-using HighVoltz.Tasks;
-using HighVoltz.WoW;
+using HighVoltz.HBRelog;
+using HighVoltz.HBRelog.Honorbuddy;
+using HighVoltz.HBRelog.Tasks;
+using HighVoltz.HBRelog.WoW;
 
-namespace HighVoltz
+namespace HighVoltz.HBRelog
 {
     sealed public class TaskManager : IManager
     {
