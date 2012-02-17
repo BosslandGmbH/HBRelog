@@ -22,7 +22,7 @@ namespace HighVoltz.HBRelog.Remoting
                     FirstOrDefault(p => p.Settings.ProfileName.
                         Equals(name, StringComparison.InvariantCultureIgnoreCase));
         }
-        
+
         public bool Init(int hbProcID)
         {
             CharacterProfile profile = GetProfileByHbProcID(hbProcID);
@@ -107,7 +107,7 @@ namespace HighVoltz.HBRelog.Remoting
             ((CharacterProfile)profile).Start();
         }
 
-        public void Logon(int hbProcID,string character, string server, string customClass, string botBase,string profilePath)
+        public void Logon(int hbProcID, string character, string server, string customClass, string botBase, string profilePath)
         {
             CharacterProfile profile = GetProfileByHbProcID(hbProcID);
             if (profile != null)
