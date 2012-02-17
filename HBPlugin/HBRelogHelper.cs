@@ -42,8 +42,9 @@ namespace HighVoltz.HBRelogHelper
     public class HBRelogHelper : HBPlugin
     {
         static public bool IsConnected { get; private set; }
-        static internal IRemotingApi HBRelogRemoteApi;
-        static internal int HbProcId;
+        static internal IRemotingApi HBRelogRemoteApi { get; private set; }
+        static internal int HbProcId { get; private set; }
+        static internal string CurrentProfileName { get; private set; }
         static DispatcherTimer _monitorTimer;
         static IpcChannel _ipcChannel;
         static internal HBRelogHelper Instance { get; private set; }
@@ -78,6 +79,8 @@ namespace HighVoltz.HBRelogHelper
                             _monitorTimer.Start();
                         }));
                     IsConnected = HBRelogRemoteApi.Init(HbProcId);
+                    if (IsConnected)
+                        CurrentProfileName = HBRelogRemoteApi.GetCurrentProfileName(HbProcId);
                 }
             }
             catch (Exception ex)
@@ -85,6 +88,7 @@ namespace HighVoltz.HBRelogHelper
                 Logging.Write(Color.Red, ex.ToString());
             }
             // since theres no point of this plugin showing up in plugin list lets just throw an exception.
+
             throw new Exception("Ignore this exception");
         }
 
@@ -94,8 +98,10 @@ namespace HighVoltz.HBRelogHelper
         {
             if (!TreeRoot.IsRunning)
             {
-                // HB isn't running.. so lets restart it 
-                if (DateTime.Now - RunningTimeStamp >= TimeSpan.FromSeconds(30))
+                int profileStatus = HBRelogRemoteApi.GetProfileStatus(CurrentProfileName);
+                // if HB isn't running after 30 seconds 
+                // and the HBRelog profile isn't paused then restart hb
+                if (profileStatus != 1 && DateTime.Now - RunningTimeStamp >= TimeSpan.FromSeconds(30))
                     HBRelogRemoteApi.RestartHB(HbProcId);
             }
             else
@@ -137,28 +143,15 @@ namespace HighVoltz.HBRelogHelper
             }
         }
     }
-    /*
-     * 
-       void RestartHB(int hbProcID);
-        void RestartWoW(int hbProcID);
-        string[] GetProfileNames();
-        string GetCurrentProfileName(int hbProcID);
-        void StartProfile(string profileName);
-        void StopProfile(string profileName);
-        void PauseProfile(string profileName);
-        void IdleProfile(string profileName, TimeSpan time);
-        void Logon(int hbProcID, string character, string server, string customClass, string botBase, string profilePath);
-        int GetProfileStatus(string profileName);
-        void SetProfileStatusText(int hbProcID, string status);
-     */
     static public class HBRelogApi
     {
         static int HbProcID { get { return HBRelogHelper.HbProcId; } }
         static IRemotingApi HBRelogRemoteApi { get { return HBRelogHelper.HBRelogRemoteApi; } }
         public static bool IsConnected { get { return HBRelogHelper.IsConnected; } }
+        public static string CurrentProfileName { get { return HBRelogHelper.CurrentProfileName; } }
         public static void RestartWow() { HBRelogRemoteApi.RestartWow(HbProcID); }
         public static void RestartHB() { HBRelogRemoteApi.RestartHB(HbProcID); }
-        public static string[] GetProfileeNames() { return HBRelogRemoteApi.GetProfileNames(); }
+        public static string[] GetProfileNames() { return HBRelogRemoteApi.GetProfileNames(); }
         public static void StartProfile(string profileName) { HBRelogRemoteApi.StartProfile(profileName); }
         public static void StopProfile(string profileName) { HBRelogRemoteApi.StopProfile(profileName); }
         public static void PauseProfile(string profileName) { HBRelogRemoteApi.PauseProfile(profileName); }
@@ -167,32 +160,10 @@ namespace HighVoltz.HBRelogHelper
             HBRelogRemoteApi.IdleProfile(profileName, time);
         }
 
-        #region Logon
-        public static void Logon(string character)
-        {
-            Logon(character, null, null, null, null);
-        }
-
-        public static void Logon(string character, string server)
-        {
-            Logon(character, server, null, null, null);
-        }
-
-        public static void Logon(string character, string server, string customClass)
-        {
-            Logon(character, server, customClass, null, null);
-        }
-
-        public static void Logon(string character, string server, string customClass, string botBase)
-        {
-            Logon(character, server, customClass, botBase, null);
-        }
-
         public static void Logon(string character, string server, string customClass, string botBase, string profilePath)
         {
             HBRelogRemoteApi.Logon(HbProcID, character, server, customClass, botBase, profilePath);
         }
-        #endregion
 
         public static int GetProfileStatus(string profileName)
         {
@@ -201,7 +172,7 @@ namespace HighVoltz.HBRelogHelper
 
         public static void SetProfileStatusText(string status)
         {
-            HBRelogRemoteApi.SetProfileStatusText(HbProcID,status);
+            HBRelogRemoteApi.SetProfileStatusText(HbProcID, status);
         }
     }
 }
