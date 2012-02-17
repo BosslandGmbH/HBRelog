@@ -147,8 +147,8 @@
                     <TextBlock Text="Drag and drop tasks to the right Pane" DockPanel.Dock="Top"/>
                     <Grid >
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="4*" />
-                            <RowDefinition Height="3*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto"  />
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -159,13 +159,15 @@
                         </Border>
                         <Border BorderBrush="SlateGray" BorderThickness="1" Grid.Column="1" >
                             <ListBox x:Name="ProfileTaskList" AllowDrop="True" 
-                                     Drop="ProfileTaskList_Drop" MouseMove="ProfileTaskList_MouseMove" 
+                                     
+                                     Drop="ProfileTaskList_Drop" PreviewMouseMove="ProfileTaskList_PreviewMouseMove" 
+                                     PreviewMouseLeftButtonDown="ProfileTaskList_PreviewMouseLeftButtonDown"
                                      ItemsSource="{Binding CharacterProfiles/Tasks, 
                                      Source={x:Static HighVoltz:HBRelogManager.Settings}}" KeyDown="ProfileTaskList_KeyDown"
                                      SelectionChanged="ProfileTaskListSelectionChanged" />
                         </Border>
                         <Border BorderBrush="SlateGray" BorderThickness="2" Grid.ColumnSpan="2" Grid.Row="1">
-                            <Controls:TaskEditor  x:Name="TaskPropEditor" />
+                            <Controls:TaskEditor  x:Name="TaskPropEditor" MinHeight="50" />
                         </Border>
                     </Grid>
                 </DockPanel>

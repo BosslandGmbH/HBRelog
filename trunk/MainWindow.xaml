@@ -152,7 +152,7 @@
                      IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Padding="0" AcceptsReturn="False" AllowDrop="False" AutoWordSelection="False" />
         </Expander>
         <Grid x:Name="AccountConfigGrid" Margin="0,4,-8,4" Grid.Row="1" Grid.RowSpan="2" 
-              MaxHeight="300" MinHeight="300" VerticalAlignment="Top" Width="0" HorizontalAlignment="Right">
+              MinHeight="300" VerticalAlignment="Top" Width="0" HorizontalAlignment="Right">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
                 <ColumnDefinition Width="255" MinWidth="255" />

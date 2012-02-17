@@ -11,6 +11,7 @@ using System.Windows.Media;
 using System.Windows.Data;
 using HighVoltz.HBRelog.Tasks;
 using HighVoltz.HBRelog.Settings;
+using System.Windows.Input;
 
 
 namespace HighVoltz.HBRelog.Controls
@@ -40,7 +41,7 @@ namespace HighVoltz.HBRelog.Controls
             ProfileTaskList.ContextMenuOpening += (sender, e) => { if (ProfileTaskList.SelectedItem == null) e.Handled = true; };
             var contextMenu = new System.Windows.Controls.ContextMenu();
             var menuItem = new MenuItem() { Header = "Delete" };
-            menuItem.Click += new RoutedEventHandler((sender, e) => 
+            menuItem.Click += new RoutedEventHandler((sender, e) =>
             {
                 CharacterProfile profile = (CharacterProfile)MainWindow.Instance.AccountGrid.SelectedItem;
                 profile.Tasks.Remove((BMTask)ProfileTaskList.SelectedItem);
@@ -143,6 +144,7 @@ namespace HighVoltz.HBRelog.Controls
                 if (task == null)
                     return;
                 ListBoxItem targetItem = FindParent<ListBoxItem>((DependencyObject)e.OriginalSource);
+
                 if (targetItem != null)
                 {
                     BMTask targetTask = (BMTask)targetItem.Content;
@@ -161,6 +163,7 @@ namespace HighVoltz.HBRelog.Controls
                 }
                 else if (!removeSource)
                     profile.Tasks.Add(task);
+                _isDragging = false;
                 e.Handled = true;
             }
         }
@@ -216,12 +219,35 @@ namespace HighVoltz.HBRelog.Controls
             }
         }
 
-        private void ProfileTaskList_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+        bool _isDragging;
+        private void ProfileTaskList_PreviewMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
         {
-            if (e.LeftButton == System.Windows.Input.MouseButtonState.Pressed && ProfileTaskList.SelectedItem != null)
+            if (e.LeftButton == MouseButtonState.Pressed && !_isDragging)
             {
-                DragDrop.DoDragDrop(TaskList, ProfileTaskList.SelectedItem, DragDropEffects.Move);
-                //ProfileTaskList.CaptureMouse();
+                Point position = e.GetPosition(null);
+
+                if (Math.Abs(position.X - _startPoint.X) > SystemParameters.MinimumHorizontalDragDistance ||
+                    Math.Abs(position.Y - _startPoint.Y) > SystemParameters.MinimumVerticalDragDistance)
+                {
+                    if (ProfileTaskList.SelectedItem != null && e.OriginalSource.GetType() == typeof(TextBlock))
+                    {
+                        _isDragging = true;
+                        DragDrop.DoDragDrop(TaskList, ProfileTaskList.SelectedItem, DragDropEffects.Move);
+                    }
+                }
+            }
+        }
+
+        Point _startPoint;
+        private void ProfileTaskList_PreviewMouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            _startPoint = e.GetPosition(null);
+            // fix a bug with selecting a task in the task list.
+            ListBoxItem targetItem = FindParent<ListBoxItem>((DependencyObject)e.OriginalSource);
+            if (targetItem != null)
+            {
+                ProfileTaskList.SelectedItem = targetItem.Content;
+                e.Handled = true;
             }
         }
 
