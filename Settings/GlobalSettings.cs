@@ -178,7 +178,7 @@ namespace HighVoltz.HBRelog.Settings
                     // Load the Task list.
                     foreach (XElement taskElement in tasksElement.Elements())
                     {
-                        Type taskType = Type.GetType("HighVoltz.Tasks." + taskElement.Name);
+                        Type taskType = Type.GetType("HighVoltz.HBRelog.Tasks." + taskElement.Name);
                         if (taskType != null)
                         {
                             BMTask task = (BMTask)Activator.CreateInstance(taskType);
