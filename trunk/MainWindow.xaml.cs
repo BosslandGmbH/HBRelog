@@ -46,6 +46,11 @@ namespace HighVoltz.HBRelog
 
         public static MainWindow Instance { get; private set; }
 
+        protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+        {
+            HBRelogManager.Settings.Save();
+        }
+
         private void AddAccountButton_Click(object sender, RoutedEventArgs e)
         {
             var character = new CharacterProfile();
