@@ -111,18 +111,23 @@
             <DataGrid.Columns>
                 <DataGridTemplateColumn  Header="*">
                     <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate ><!-- Bindings get destroyed once user changes the value of the checkbox so I'll have to use callbacks to -->
+                        <DataTemplate >
+                            <!-- Bindings get destroyed once user changes the value of the checkbox so I'll have to use callbacks to -->
                             <CheckBox  x:Name="ProfileEnabledCheckBox" IsChecked="{Binding Settings.IsEnabled}" 
                                        Tag="{Binding Settings}" Checked="ProfileEnabledCheckBoxChecked" Unchecked="ProfileEnabledCheckBoxUnchecked"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn >
-
                 <DataGridTextColumn Binding="{Binding Settings.ProfileName}" Header="Profile" MinWidth="100" IsReadOnly="True"/>
                 <DataGridTextColumn Binding="{Binding Settings.WowSettings.ServerName}" Header="Server" MinWidth="70" IsReadOnly="True"/>
                 <DataGridTextColumn Binding="{Binding Settings.WowSettings.CharacterName}" Header="Character" MinWidth="70" IsReadOnly="True"/>
-                <DataGridTextColumn Binding="{Binding Status}" Header="Status" Width="*" IsReadOnly="True"/>
+                <DataGridTextColumn Binding="{Binding Status}" Header="Status" Width="*" IsReadOnly="True" />
             </DataGrid.Columns>
+            <DataGrid.RowStyle>
+                <Style TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource  {x:Type DataGridRow}}">
+                    <Setter Property="ToolTipService.ToolTip" Value="{Binding Status}"/>
+                </Style>
+            </DataGrid.RowStyle>
         </DataGrid>
         <Expander x:Name="LogExpander" Grid.Row="2" Height="15" >
             <Expander.Header>

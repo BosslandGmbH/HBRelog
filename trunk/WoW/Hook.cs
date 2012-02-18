@@ -124,8 +124,9 @@ namespace HighVoltz.HBRelog.WoW
                     Installed = true;
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                Log.WriteToLog(ex.ToString());
                 return false;
             }
             return Installed;
@@ -157,8 +158,9 @@ namespace HighVoltz.HBRelog.WoW
                 Memory.FreeMemory(_retnInjectionAsm);
                 Installed = false;
             }
-            catch
+            catch (Exception ex)
             {
+                Log.Write(ex.ToString());
             }
         }
 
