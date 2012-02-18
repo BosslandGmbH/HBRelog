@@ -51,7 +51,15 @@ namespace HighVoltz.HBRelog
             get { return _status; }
             set { _status = value; NotifyPropertyChanged("Status"); }
         }
-
+        private string _tooltip;
+        /// <summary>
+        /// Status message
+        /// </summary>
+        public string Tooltip
+        {
+            get { return _tooltip; }
+            set { _tooltip = value; NotifyPropertyChanged("Tooltip"); }
+        }
         public void Pulse()
         {
             if (IsRunning && !IsPaused)

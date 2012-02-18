@@ -73,13 +73,13 @@ namespace HighVoltz.HBRelog
             }
         }
 
-        static public void Write(Color hColor,string header,Color mColor, string format, params object[] args)
+        static public void Write(Color hColor, string header, Color mColor, string format, params object[] args)
         {
             if (MainWindow.Instance == null)
                 return;
             if (Thread.CurrentThread == MainWindow.Instance.Dispatcher.Thread)
             {
-                InternalWrite(hColor,header,mColor, string.Format(format, args));
+                InternalWrite(hColor, header, mColor, string.Format(format, args));
                 WriteToLog(header + format, args);
             }
             else
@@ -88,7 +88,7 @@ namespace HighVoltz.HBRelog
                     new Action(() =>
                     {
                         InternalWrite(hColor, header, mColor, string.Format(format, args));
-                        WriteToLog(header+format, args);
+                        WriteToLog(header + format, args);
                     }));
             }
         }
@@ -120,7 +120,7 @@ namespace HighVoltz.HBRelog
                 var rtb = MainWindow.Instance.LogTextBox;
                 System.Windows.Media.Color msgColorMedia = System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B);
                 var messageTR = new TextRange(rtb.Document.ContentEnd, rtb.Document.ContentEnd);
-                messageTR.Text = text + '\r';
+                messageTR.Text = string.Format("[{0:T}] {1}\r", DateTime.Now, text);
                 messageTR.ApplyPropertyValue(TextElement.ForegroundProperty, new System.Windows.Media.SolidColorBrush(msgColorMedia));
                 rtb.ScrollToEnd();
             }
@@ -135,7 +135,10 @@ namespace HighVoltz.HBRelog
                 System.Windows.Media.Color headerColorMedia = System.Windows.Media.Color.FromArgb(headerColor.A, headerColor.R, headerColor.G, headerColor.B);
                 System.Windows.Media.Color msgColorMedia = System.Windows.Media.Color.FromArgb(msgColor.A, msgColor.R, msgColor.G, msgColor.B);
 
-                var headerTR = new TextRange(rtb.Document.ContentEnd, rtb.Document.ContentEnd) { Text = header };
+                var headerTR = new TextRange(rtb.Document.ContentEnd, rtb.Document.ContentEnd)
+                {
+                    Text = string.Format("[{0:T}] {1}", DateTime.Now, header)
+                };
                 headerTR.ApplyPropertyValue(TextElement.ForegroundProperty, new System.Windows.Media.SolidColorBrush(headerColorMedia));
 
                 var messageTR = new TextRange(rtb.Document.ContentEnd, rtb.Document.ContentEnd);
@@ -154,7 +157,7 @@ namespace HighVoltz.HBRelog
                 using (StreamWriter logStringWriter = new StreamWriter(_logPath, true))
                 {
                     if (logStringWriter != null)
-                        logStringWriter.WriteLine(string.Format(format, args));
+                        logStringWriter.WriteLine(string.Format("[" + DateTime.Now.ToString() + "] " + format, args));
                 }
             }
             catch { }

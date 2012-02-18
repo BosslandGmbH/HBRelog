@@ -208,7 +208,6 @@ namespace HighVoltz.HBRelog.WoW
                                 Settings.WowWindowWidth, Settings.WowWindowHeight);
                         }
                         WowHook = new Hook(GameProcess);
-
                     }
                     if (!StartupSequenceIsComplete && !InGame && !IsConnectiongOrLoading)
                     {
