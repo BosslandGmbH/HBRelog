@@ -143,7 +143,7 @@ namespace HighVoltz.HBRelog.Tasks
 
             void ProfilePathEditControlFileNameChanged(object sender, System.Windows.RoutedEventArgs e)
             {
-                _task.ProfilePath = FileName;
+                _task.HonorbuddyPath = FileName;
             }
         }
     }
