@@ -15,7 +15,7 @@ Copyright 2012 HighVoltz
 */
 using System;
 using System.IO;
-
+using System.Linq;
 using HighVoltz.HBRelog;
 using System.Diagnostics;
 using System.Threading;
@@ -27,6 +27,8 @@ using HighVoltz.HBRelog.Remoting;
 using HighVoltz.HBRelog.Settings;
 using System.Runtime.Serialization.Formatters;
 using System.Collections;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace HighVoltz.HBRelog
 {
@@ -51,14 +53,14 @@ namespace HighVoltz.HBRelog
 
                 IDictionary properties = new Hashtable();
                 properties["portName"] = "HBRelogChannel";
-                _ipcChannel =  new IpcChannel(properties, null, serverSinkProvider);
+                _ipcChannel = new IpcChannel(properties, null, serverSinkProvider);
                 ChannelServices.RegisterChannel(_ipcChannel, true);
 
                 RemotingConfiguration.RegisterWellKnownServiceType(
                     typeof(Remoting.RemotingApi),
                            "RemoteApi",
                            WellKnownObjectMode.Singleton);
-                
+
                 IsInitialized = true;
             }
             catch (Exception ex)
@@ -66,7 +68,7 @@ namespace HighVoltz.HBRelog
                 Log.Err(ex.ToString());
             }
         }
-
+        static Regex _hbTitleRegex = new Regex(@"^\D*(?<id>\d+)\D*$");
         static void DoWork()
         {
             int pulseStartTime = 0;
@@ -82,16 +84,35 @@ namespace HighVoltz.HBRelog
                             if (character.IsRunning)
                                 character.Pulse();
                         }
-                        // check for wow error windows
+
                         if (DateTime.Now - _killWowErrsTimeStamp >= TimeSpan.FromMinutes(1))
                         {
+                            // check for wow error windows
                             foreach (var process in Process.GetProcessesByName("WowError"))
                             {
                                 process.Kill();
                                 Log.Write("Killing WowError process");
                             }
+                            // check for stray HB instances that are not attached to a valid WOW process
+                            foreach (var process in Process.GetProcessesByName("Honorbuddy"))
+                            {
+                                string title = NativeMethods.GetWindowText(process.MainWindowHandle);
+                                var match = _hbTitleRegex.Match(title);
+                                if (match.Success)
+                                {
+                                    int wowProcId = int.Parse(match.Groups["id"].Value);
+                                    bool hbIsStray = !Settings.CharacterProfiles.Select(p => p.TaskManager.WowManager.GameProcess).
+                                        Any(proc => proc != null && !proc.HasExited && proc.Id == wowProcId);
+                                    if (hbIsStray)
+                                    {
+                                        process.CloseMainWindow();
+                                        Log.Write("Closing stray honorbuddy process.");
+                                    }
+                                }
+                            }
                             _killWowErrsTimeStamp = DateTime.Now;
                         }
+
                     }
                 }
                 catch (Exception ex)
