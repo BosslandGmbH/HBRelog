@@ -89,6 +89,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
             _waitingToStart = true;
         }
 
+        DateTime _hbStartupTimeStamp;
         public void Pulse()
         {
             if (IsRunning)
@@ -113,12 +114,13 @@ namespace HighVoltz.HBRelog.Honorbuddy
                             !string.IsNullOrEmpty(Settings.BotBase) ? string.Format("/botname=\"{0}\" ", Settings.BotBase) : string.Empty
                             );
                         BotProcess = Process.Start(Settings.HonorbuddyPath, hbArgs);
+                        _hbStartupTimeStamp = DateTime.Now;
                         _waitingToStart = false;
                     }
                     else
                         return;
                 }
-                // restart wow hb if it has exited
+                 // restart wow hb if it has exited
                 if (BotProcess.HasExited)
                 {
                     Profile.Log("Honorbuddy process was terminated. Restarting");
@@ -129,10 +131,12 @@ namespace HighVoltz.HBRelog.Honorbuddy
                     return;
                 }
                 // return if hb isn't ready for input.
-                if (!BotProcess.WaitForInputIdle(0))
+                if ( !BotProcess.WaitForInputIdle(0))
                     return;
-
-
+               
+                // check if it's taking Honorbuddy too long to connect.
+                if (!StartupSequenceIsComplete && DateTime.Now - _hbStartupTimeStamp > TimeSpan.FromMinutes(3))
+                    BotProcess.CloseMainWindow();
                 if (!HBIsResponding || HBHasCrashed)
                 {
                     if (!HBIsResponding) // we need to kill the process if it's not responding. 
@@ -190,7 +194,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
         {
             get
             {
-                // check for crash every 10 seconds and cache the result
+                // check for crash every 10 seconds
                 if (DateTime.Now - _crashTimeStamp >= TimeSpan.FromSeconds(10))
                 {
                     _crashTimeStamp = DateTime.Now;

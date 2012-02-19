@@ -48,7 +48,7 @@ namespace HighVoltz.HBRelog
                     WowStartDelay = CmdLineArgs.ContainsKey("WOWDELAY") ?
                         GetCmdLineArgVal<int>(CmdLineArgs["WOWDELAY"]) : 0;
                     HbStartDelay = CmdLineArgs.ContainsKey("HBDELAY") ?
-                        GetCmdLineArgVal<int>(CmdLineArgs["HBDELAY"]) : 0;
+                        GetCmdLineArgVal<int>(CmdLineArgs["HBDELAY"]) : 10;
                     var app = new Application();
                     Window window = new MainWindow();
                     window.Show();

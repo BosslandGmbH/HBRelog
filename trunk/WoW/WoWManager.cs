@@ -197,16 +197,7 @@ namespace HighVoltz.HBRelog.WoW
                     if (!GameProcess.WaitForInputIdle(0))
                         return;
                     if (WowHook == null)
-                    {  // resize and position window.
-                        if (Settings.WowWindowWidth > 0 && Settings.WowWindowHeight > 0)
-                        {
-                            Profile.Log("Setting Window location to X:{0}, Y:{1} and Size to Width {2}, Height:{3}",
-                                Settings.WowWindowX, Settings.WowWindowY,
-                                Settings.WowWindowWidth, Settings.WowWindowHeight);
-
-                            Utility.ResizeAndMoveWindow(GameProcess.MainWindowHandle, Settings.WowWindowX, Settings.WowWindowY,
-                                Settings.WowWindowWidth, Settings.WowWindowHeight);
-                        }
+                    { 
                         WowHook = new Hook(GameProcess);
                     }
                     if (!StartupSequenceIsComplete && !InGame && !IsConnectiongOrLoading)
@@ -219,8 +210,21 @@ namespace HighVoltz.HBRelog.WoW
                             Lua = new Lua(WowHook);
                             UpdateLoginString();
                         }
+                        // hook is installed so lets assume proces is ready for input.
                         else if (!_processIsReadyForInput)
+                        {
+                            // resize and position window.
+                            if (Settings.WowWindowWidth > 0 && Settings.WowWindowHeight > 0)
+                            {
+                                Profile.Log("Setting Window location to X:{0}, Y:{1} and Size to Width {2}, Height:{3}",
+                                    Settings.WowWindowX, Settings.WowWindowY,
+                                    Settings.WowWindowWidth, Settings.WowWindowHeight);
+
+                                Utility.ResizeAndMoveWindow(GameProcess.MainWindowHandle, Settings.WowWindowX, Settings.WowWindowY,
+                                    Settings.WowWindowWidth, Settings.WowWindowHeight);
+                            }
                             _processIsReadyForInput = true;
+                        }
                         LoginWoW();
                     }
                     // remove hook since its nolonger needed.
