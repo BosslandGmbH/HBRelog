@@ -48,7 +48,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
             Settings = settings;
         }
 
-        static bool _pluginIsUptodate = false;
+        bool _pluginIsUptodate = false;
         public void Start()
         {
             if (File.Exists(Settings.HonorbuddyPath))
