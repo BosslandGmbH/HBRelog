@@ -101,8 +101,8 @@ namespace HighVoltz.HBRelog
                                 if (match.Success)
                                 {
                                     int wowProcId = int.Parse(match.Groups["id"].Value);
-                                    bool hbIsStray = !Settings.CharacterProfiles.Select(p => p.TaskManager.WowManager.GameProcess).
-                                        Any(proc => proc != null && !proc.HasExited && proc.Id == wowProcId);
+                                    Process[] wowProcessIds = Process.GetProcessesByName("Wow");
+                                    bool hbIsStray = !wowProcessIds.Any(proc => proc != null && !proc.HasExited && proc.Id == wowProcId);
                                     if (hbIsStray)
                                     {
                                         process.CloseMainWindow();
