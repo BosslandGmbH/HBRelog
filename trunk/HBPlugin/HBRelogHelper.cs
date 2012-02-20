@@ -101,7 +101,7 @@ namespace HighVoltz.HBRelogHelper
                 int profileStatus = HBRelogRemoteApi.GetProfileStatus(CurrentProfileName);
                 // if HB isn't running after 30 seconds 
                 // and the HBRelog profile isn't paused then restart hb
-                if (profileStatus != 1 && DateTime.Now - RunningTimeStamp >= TimeSpan.FromSeconds(30))
+                if (profileStatus != 1 && DateTime.Now - RunningTimeStamp >= TimeSpan.FromSeconds(50))
                     HBRelogRemoteApi.RestartHB(HbProcId);
             }
             else
