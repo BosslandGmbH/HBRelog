@@ -1,4 +1,5 @@
-﻿using System;
+﻿//!CompilerOption:AddRef:Remoting.dll
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -85,7 +86,8 @@ namespace HighVoltz.HBRelogHelper
             }
             catch (Exception ex)
             {
-                Logging.Write(Color.Red, ex.ToString());
+                // fail silently.
+                //Logging.Write(Color.Red, ex.ToString());
             }
             // since theres no point of this plugin showing up in plugin list lets just throw an exception.
 
