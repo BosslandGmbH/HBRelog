@@ -14,6 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Xml.Serialization;
+using HighVoltz.HBRelog.Converters;
 using HighVoltz.HBRelog.Tasks;
 
 namespace HighVoltz.HBRelog.Controls
@@ -50,8 +51,7 @@ namespace HighVoltz.HBRelog.Controls
                 PropertyGrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(22) });
                 TextBlock propNameText = new TextBlock()
                 {
-                    Text = propertyList[index].Name,
-                    FontWeight = FontWeight.FromOpenTypeWeight(999),
+                    Text = SpacifierConverter.GetSpaciousString(propertyList[index].Name),
                     Margin = new Thickness(2, 0, 2, 0)
                 };
                 Grid.SetRow(propNameText, index);

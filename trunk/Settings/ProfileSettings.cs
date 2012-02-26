@@ -45,7 +45,6 @@ namespace HighVoltz.HBRelog.Settings
             get { return _profileName; }
             set { _profileName = value; NotifyPropertyChanged("ProfileName"); }
         }
-        static Timer _settingSaveTimer;
 
         private bool _isEnabled;
         /// <summary>
@@ -58,18 +57,7 @@ namespace HighVoltz.HBRelog.Settings
             {
                 _isEnabled = value;
                 NotifyPropertyChanged("IsEnabled");
-                // save to file if no changes are made in 6 seconds.
-                if (_settingSaveTimer != null)
-                    _settingSaveTimer.Dispose();
-                // only save to file if BotManager been initialized. We don't want it to save when this property was modifed after being loaded from .xml file
-                if (HBRelogManager.IsInitialized)
-                    _settingSaveTimer = new Timer(FileSaveTimerCallback, null, 6000, Timeout.Infinite);
             }
-        }
-
-        static void FileSaveTimerCallback(object state)
-        {
-            HBRelogManager.Settings.Save();
         }
 
         public ProfileSettings ShadowCopy()

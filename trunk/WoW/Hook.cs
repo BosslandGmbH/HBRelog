@@ -45,11 +45,12 @@ namespace HighVoltz.HBRelog.WoW
                 if (string.IsNullOrEmpty(HBRelogManager.Settings.WowVersion) || !HBRelogManager.Settings.WowVersion.Equals(WoWVersion))
                     ScanForOffset();
                 // Get address of EndScene
-                Log.WriteToLog("Getting DX9 device");
                 uint pDevice = Memory.ReadUInt(HBRelogManager.Settings.DxDeviceOffset + BaseOffset);
-                Log.WriteToLog("pDevice: {0}", pDevice);
                 uint pEnd = Memory.ReadUInt(pDevice + HBRelogManager.Settings.DxDeviceIndex);
-                Log.WriteToLog("pEnd: {0}", pEnd);
+                if (pEnd == 0)
+                {
+                    throw new InvalidOperationException("Wow needs to be using DirectX 9");
+                }
                 uint pScene = Memory.ReadUInt(pEnd);
                 Log.WriteToLog("pScene: {0}", pScene);
                 uint pEndScene = Memory.ReadUInt(pScene + 0xA8);

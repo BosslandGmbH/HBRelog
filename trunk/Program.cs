@@ -30,11 +30,6 @@ namespace HighVoltz.HBRelog
     public class Program
     {
         static Dictionary<string, string> CmdLineArgs = new Dictionary<string, string>();
-        public static bool AutoStart { get; private set; }
-        // delay in-between starting wow processes from same .exe
-        public static int WowStartDelay { get; private set; }
-        // delay in-between starting Honorbuddy processes from same .exe
-        public static int HbStartDelay { get; private set; }
         [STAThread]
         public static void Main(params string[] args)
         {
@@ -43,12 +38,17 @@ namespace HighVoltz.HBRelog
             {
                 if (newInstance)
                 {
+                    AppDomain.CurrentDomain.ProcessExit += CurrentDomainProcessExit;
+                    AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+                    
                     CmdLineArgs = ProcessCmdLineArgs(args);
-                    AutoStart = CmdLineArgs.ContainsKey("AUTOSTART") ? true : false;
-                    WowStartDelay = CmdLineArgs.ContainsKey("WOWDELAY") ?
-                        GetCmdLineArgVal<int>(CmdLineArgs["WOWDELAY"]) : 0;
-                    HbStartDelay = CmdLineArgs.ContainsKey("HBDELAY") ?
-                        GetCmdLineArgVal<int>(CmdLineArgs["HBDELAY"]) : 10;
+                    if (CmdLineArgs.ContainsKey("AUTOSTART"))
+                        HBRelogManager.Settings.AutoStart = true;
+                    if (CmdLineArgs.ContainsKey("WOWDELAY"))
+                        HBRelogManager.Settings.WowDelay = GetCmdLineArgVal<int>(CmdLineArgs["WOWDELAY"]);
+                    if (CmdLineArgs.ContainsKey("HBDELAY"))
+                        HBRelogManager.Settings.HBDelay = GetCmdLineArgVal<int>(CmdLineArgs["HBDELAY"]);
+
                     var app = new Application();
                     Window window = new MainWindow();
                     window.Show();
@@ -64,6 +64,18 @@ namespace HighVoltz.HBRelog
                     }
                 }
             }
+        }
+
+        static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            HBRelogManager.Settings.Save();
+            HBRelogManager.Shutdown();           
+        }
+
+        static void CurrentDomainProcessExit(object sender, EventArgs e)
+        {
+            HBRelogManager.Settings.Save();
+            HBRelogManager.Shutdown();
         }
 
         static Dictionary<string, string> ProcessCmdLineArgs(string[] args)

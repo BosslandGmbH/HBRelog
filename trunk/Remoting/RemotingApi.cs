@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.ServiceModel;
 using System.Text;
 using System.Threading;
 using System.Windows.Threading;
 
 namespace HighVoltz.HBRelog.Remoting
 {
+    [ServiceBehavior(InstanceContextMode = InstanceContextMode.PerSession)]
     class RemotingApi : MarshalByRefObject, IRemotingApi
     {
         CharacterProfile GetProfileByHbProcID(int hbProcID)
@@ -160,6 +162,13 @@ namespace HighVoltz.HBRelog.Remoting
             CharacterProfile profile = GetProfileByHbProcID(hbProcID);
             if (profile != null)
                 profile.Status = status;
+        }
+
+        public void SetBotInfoToolTip(int hbProcID, string tooltip)
+        {
+            CharacterProfile profile = GetProfileByHbProcID(hbProcID);
+            if (profile != null)
+                profile.BotInfoTooltip = tooltip;
         }
     }
 }

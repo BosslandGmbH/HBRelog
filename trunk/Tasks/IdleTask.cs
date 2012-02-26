@@ -33,6 +33,27 @@ namespace HighVoltz.HBRelog.Tasks
             get { return "Idle"; }
         }
 
+        [XmlIgnore]
+        override public string Help { get { return "Logs out of Wow for a duration then logs back in"; } }
+
+        string _toolTip;
+        [XmlIgnore]
+        public override string ToolTip
+        {
+            get
+            {
+                return _toolTip ?? (ToolTip = string.Format("Idle: {0} minutes", Minutes));
+            }
+            set
+            {
+                if (value != _toolTip)
+                {
+                    _toolTip = value;
+                    OnPropertyChanged("ToolTip");
+                }
+            }
+        }
+
         TimeSpan _waitTime = new TimeSpan(0);
         DateTime _timeStamp;
         public override void Pulse()
@@ -48,6 +69,7 @@ namespace HighVoltz.HBRelog.Tasks
                     Profile.TaskManager.HonorbuddyManager.Stop();
             }
             Profile.Status = string.Format("Idling for {0} minutes", (int)((_waitTime - (DateTime.Now - _timeStamp)).TotalMinutes));
+            ToolTip = Profile.Status;
             if (DateTime.Now - _timeStamp >= _waitTime)
             {
                 IsDone = true;
@@ -60,6 +82,7 @@ namespace HighVoltz.HBRelog.Tasks
         {
             base.Reset();
             _waitTime = new TimeSpan(0);
+            ToolTip = string.Format("Idle: {0} minutes", Minutes);
         }
     }
 }

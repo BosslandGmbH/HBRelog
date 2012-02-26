@@ -40,7 +40,10 @@ namespace HighVoltz.HBRelog
 
         static public void Write(string format, params object[] args)
         {
-            Write(Colors.Black, format, args);
+            if (HBRelogManager.Settings.UseDarkStyle)
+                Write(Colors.White, format, args);
+            else
+                Write(Colors.Black, format, args);
         }
 
         static public void Err(string format, params object[] args)
@@ -50,7 +53,10 @@ namespace HighVoltz.HBRelog
 
         static public void Debug(string format, params object[] args)
         {
-            Debug(Colors.Black, format, args);
+            if (HBRelogManager.Settings.UseDarkStyle)
+                Debug(Colors.White, format, args);
+            else
+                Debug(Colors.Black, format, args);
         }
 
         static public void Write(Color color, string format, params object[] args)

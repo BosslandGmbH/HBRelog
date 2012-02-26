@@ -64,6 +64,7 @@
     <Reference Include="System.Runtime.Remoting" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Security" />
+    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -78,6 +79,12 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="HBPlugin\HBRelogHelper.cs" />
+    <Compile Include="Converters\SkipTaskMenuVisibilityConverter.cs" />
+    <Compile Include="Converters\SpacifierConverter.cs" />
+    <Compile Include="Converters\TaskIsRunningConverter.cs" />
+    <Compile Include="Controls\OptionsUserControl.xaml.cs">
+      <DependentUpon>OptionsUserControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Remoting\IRemotingApi.cs" />
     <Compile Include="Controls\ProfileEditUserControl.xaml.cs">
       <DependentUpon>ProfileEditUserControl.xaml</DependentUpon>
@@ -150,7 +157,13 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="BureauBlue.xaml">
+    <Page Include="Controls\OptionsUserControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Resource Include="Styles\ExpressionDark.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Resource>
+    <Resource Include="Styles\BureauBlue.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Resource>
     <Page Include="Controls\ProfileEditUserControl.xaml">

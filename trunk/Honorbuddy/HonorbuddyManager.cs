@@ -155,7 +155,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
         {
             if (IsRunning)
             {
-                if (BotProcess != null)
+                if (BotProcess != null && !BotProcess.HasExited)
                     BotProcess.CloseMainWindow();
                 BotProcess = null;
                 IsRunning = false;
@@ -218,7 +218,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
                 lock (_lockObject)
                 {
                     if (TimeStamps.ContainsKey(key) &&
-                        DateTime.Now - TimeStamps[key] < TimeSpan.FromSeconds(Program.HbStartDelay))
+                        DateTime.Now - TimeStamps[key] < TimeSpan.FromSeconds(HBRelogManager.Settings.HBDelay))
                     {
                         return false;
                     }

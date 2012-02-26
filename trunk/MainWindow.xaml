@@ -3,19 +3,24 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:HighVoltz.HBRelog" 
         xmlns:Controls="clr-namespace:HighVoltz.HBRelog.Controls"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d"
+        xmlns:Converters="clr-namespace:HighVoltz.HBRelog.Converters"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d"
         x:Class="HighVoltz.HBRelog.MainWindow"
         Title="HBRelog" Height="400" Width="650" MinWidth="650" MinHeight="400" Loaded="Window_Loaded"
         DataContext="{Binding CharacterProfiles, Source={x:Static local:HBRelogManager.Settings}}"
         Icon="Images/Logo.ico"
     >
+    <!--
     <Window.Resources>
         <ResourceDictionary >
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="BureauBlue.xaml"/>
+                <ResourceDictionary Source="Styles/BureauBlue.xaml"/>
+                <ResourceDictionary Source="Styles/ExpressionDark.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
+        -->
     <Window.TaskbarItemInfo>
         <TaskbarItemInfo>
             <TaskbarItemInfo.ThumbButtonInfos>
@@ -32,8 +37,7 @@
             <RowDefinition x:Name="LogRow"  Height="Auto" />
         </Grid.RowDefinitions>
 
-        <Border Background="LightBlue"  BorderBrush="SlateGray" 
-                    BorderThickness="2">
+        <Border BorderThickness="2">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -103,11 +107,14 @@
             </Grid>
         </Border>
         <DataGrid x:Name="AccountGrid" IsSynchronizedWithCurrentItem="True"
+                  GridLinesVisibility="Vertical"
     		ItemsSource="{Binding}" Grid.Row="1" CanUserAddRows="False"
     	    CanUserReorderColumns="False" CanUserResizeColumns="False" CanUserSortColumns="False" 
     		AutoGenerateColumns="False" CanUserResizeRows="False" 
-    		HorizontalContentAlignment="Left" SelectionChanged="AccountGridSelectionChanged" MouseDoubleClick="AccountGridMouseDoubleClick" 
-                  ScrollViewer.HorizontalScrollBarVisibility="Disabled" >
+    		HorizontalContentAlignment="Left" SelectionChanged="AccountGridSelectionChanged"
+                  MouseDoubleClick="AccountGridMouseDoubleClick" 
+                  ScrollViewer.HorizontalScrollBarVisibility="Disabled" 
+                  >
             <DataGrid.Columns>
                 <DataGridTemplateColumn  Header="*">
                     <DataGridTemplateColumn.CellTemplate>
@@ -125,37 +132,62 @@
             </DataGrid.Columns>
             <DataGrid.RowStyle>
                 <Style TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource  {x:Type DataGridRow}}">
-                    <Setter Property="ToolTipService.ToolTip" Value="{Binding Status}"/>
+                    <Style.Resources>
+                        <Converters:SkipTaskMenuVisibilityConverter x:Key="SkipTaskMenuVisibityConverter" />
+                    </Style.Resources>
+                    <Setter Property="ToolTipService.ToolTip" Value="{Binding Tooltip}"/>
+                    <Setter Property="ToolTipService.InitialShowDelay" Value="0"/>
+                    <Setter Property="ToolTipService.ShowDuration" Value="10000"/>
+                    <Setter Property="ContextMenu">
+                        <Setter.Value>
+                            <ContextMenu x:Name="RowContextMenu">
+                                <MenuItem  x:Name="SkipMenu" Header="Skip Current Task"  Tag="{Binding}" 
+                                           Visibility="{Binding Converter={StaticResource SkipTaskMenuVisibityConverter}}">
+                                    <!-- Workaround for a bug. -->
+                                    <MenuItem.Style>
+                                        <Style TargetType="{x:Type MenuItem}" BasedOn="{StaticResource  {x:Type MenuItem}}">
+                                            <EventSetter Event="Click" Handler="SkipTaskMenuItem_Click" />
+                                        </Style>
+                                    </MenuItem.Style>
+                                </MenuItem>
+                            </ContextMenu>
+                        </Setter.Value>
+                    </Setter>
                 </Style>
             </DataGrid.RowStyle>
         </DataGrid>
-        <Expander x:Name="LogExpander" Grid.Row="2" Height="15" >
-            <Expander.Header>
-                <TextBlock Text="Log" HorizontalAlignment="Center" Margin="0,-8,0,-4" FontWeight="Bold" />
-            </Expander.Header>
-            <Expander.Triggers>
-                <EventTrigger RoutedEvent="Expander.Expanded" >
-                    <EventTrigger.Actions>
-                        <BeginStoryboard>
-                            <Storyboard TargetProperty="Height">
-                                <DoubleAnimation To="200" Duration="0:0:0.300" DecelerationRatio="0.7"/>
-                            </Storyboard>
-                        </BeginStoryboard>
-                    </EventTrigger.Actions>
-                </EventTrigger>
-                <EventTrigger RoutedEvent="Expander.Collapsed" >
-                    <EventTrigger.Actions>
-                        <BeginStoryboard>
-                            <Storyboard TargetProperty="Height">
-                                <DoubleAnimation To="15" Duration="0:0:0.300" AccelerationRatio="0.7"/>
-                            </Storyboard>
-                        </BeginStoryboard>
-                    </EventTrigger.Actions>
-                </EventTrigger>
-            </Expander.Triggers>
-            <RichTextBox Grid.Row="2" HorizontalAlignment="Stretch" x:Name="LogTextBox" VerticalAlignment="Stretch" 
-                     IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Padding="0" AcceptsReturn="False" AllowDrop="False" AutoWordSelection="False" />
-        </Expander>
+        <Grid x:Name="OptionsAndLogGrid" Grid.Row="2" Height="20">
+            <Grid.Resources>
+                <Style TargetType="TabItem" BasedOn="{StaticResource {x:Type TabItem}}" >
+                    <Setter Property="Height" Value="20"/>
+                    <Setter Property="Padding" Value="0"/>
+                    <Setter Property="Margin" Value="0"/>
+                    <Setter Property="Foreground" Value="Black"/>
+                </Style>
+            </Grid.Resources>
+            <TabControl x:Name="OptionsAndLogTabCtrl" Grid.Row="2" Height="200" >
+
+                <TabItem x:Name="OptionsTab" VerticalContentAlignment="Stretch"
+                         PreviewMouseLeftButtonDown="TabItem_PreviewMouseLeftButtonDown"
+                         HorizontalContentAlignment="Left" 
+                         >
+                    <TabItem.Header>
+                        <TextBlock Text="Options" Margin="-10" Padding="15,0"/>
+                    </TabItem.Header>
+                    <Controls:OptionsUserControl DataContext="{x:Static local:HBRelogManager.Settings}"/>
+                </TabItem>
+                <TabItem PreviewMouseLeftButtonDown="TabItem_PreviewMouseLeftButtonDown"
+                         VerticalContentAlignment="Stretch">
+                    <TabItem.Header>
+                        <TextBlock Text="Log" Margin="-10" Padding="15,0"/>
+                    </TabItem.Header>
+                    <RichTextBox Grid.Row="2" HorizontalAlignment="Stretch" x:Name="LogTextBox" VerticalAlignment="Stretch" 
+                     IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Padding="0"
+                             AcceptsReturn="False" AllowDrop="False" AutoWordSelection="False" />
+                </TabItem>
+            </TabControl>
+        </Grid>
+        
         <Grid x:Name="AccountConfigGrid" Margin="0,4,-8,4" Grid.Row="1" Grid.RowSpan="2" 
               MinHeight="300" VerticalAlignment="Top" Width="0" HorizontalAlignment="Right">
             <Grid.ColumnDefinitions>
@@ -166,8 +198,9 @@
                 <RowDefinition/>
                 <RowDefinition Height="25"/>
             </Grid.RowDefinitions>
-            <Border Grid.Column="1" Grid.RowSpan="2" Background="LightBlue"  BorderBrush="SlateGray" 
-                    BorderThickness="2" CornerRadius="4"   />
+
+            <Border Grid.Column="1" Grid.RowSpan="2" BorderThickness="2" CornerRadius="4"   />
+
             <Controls:AccountConfigUserControl x:Name="AccountConfig"  Grid.Column="1" Margin="4"  />
             <Button Content="Save and Close" Grid.Column="1" HorizontalAlignment="Left" Margin="4,0,4,4"
                     x:Name="AccountConfigCloseButton"  Grid.Row="1" FontSize="11" Click="AcountConfigCloseButtonClick"/>

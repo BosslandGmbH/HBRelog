@@ -53,13 +53,62 @@ namespace HighVoltz.HBRelog
         }
         private string _tooltip;
         /// <summary>
-        /// Status message
+        /// Tooltip message
         /// </summary>
         public string Tooltip
         {
             get { return _tooltip; }
-            set { _tooltip = value; NotifyPropertyChanged("Tooltip"); }
+            set
+            {
+                if (value != _tooltip)
+                {
+                    _tooltip = value;
+                    NotifyPropertyChanged("Tooltip");
+                }
+            }
         }
+
+        private string _taskTooltip;
+        /// <summary>
+        /// Current Task Tooltip message. Displayed in main ToolTip
+        /// </summary>
+        public string TaskTooltip
+        {
+            get { return _taskTooltip; }
+            set
+            {
+                if (value != _taskTooltip)
+                {
+                    _taskTooltip = value;
+                    UpdateTooltip();
+                }
+            }
+        }
+
+        private string _botInfoTooltip;
+        /// <summary>
+        /// Bot info Tooltip message. Displayed in main ToolTip
+        /// </summary>
+        public string BotInfoTooltip
+        {
+            get { return _botInfoTooltip; }
+            set
+            {
+                if (value != _botInfoTooltip)
+                {
+                    _botInfoTooltip = value;
+                    UpdateTooltip();
+                }
+            }
+        }
+
+        void UpdateTooltip()
+        {
+            Tooltip = string.Format("{0}{1}",
+                        !string.IsNullOrEmpty(TaskTooltip) ? TaskTooltip + "\n" : null,
+                        BotInfoTooltip);
+        }
+
         public void Pulse()
         {
             if (IsRunning && !IsPaused)
@@ -93,12 +142,18 @@ namespace HighVoltz.HBRelog
 
         public void Log(string format, params object[] args)
         {
-            HighVoltz.HBRelog.Log.Write(Colors.DarkSlateBlue, Settings.ProfileName + ": ", Colors.DarkGreen, format, args);
+            if (HBRelogManager.Settings.UseDarkStyle)
+                HighVoltz.HBRelog.Log.Write(Colors.LightBlue, Settings.ProfileName + ": ", Colors.LightGreen, format, args);
+            else
+                HighVoltz.HBRelog.Log.Write(Colors.DarkSlateBlue, Settings.ProfileName + ": ", Colors.DarkGreen, format, args);
         }
 
         public void Err(string format, params object[] args)
         {
-            HighVoltz.HBRelog.Log.Write(Colors.DarkSlateBlue, Settings.ProfileName + ": ", Colors.Red, format, args);
+            if (HBRelogManager.Settings.UseDarkStyle)
+                HighVoltz.HBRelog.Log.Write(Colors.LightBlue, Settings.ProfileName + ": ", Colors.Red, format, args);
+            else
+                HighVoltz.HBRelog.Log.Write(Colors.DarkSlateBlue, Settings.ProfileName + ": ", Colors.Red, format, args);
         }
         public event PropertyChangedEventHandler PropertyChanged;
         private void NotifyPropertyChanged(string name)
