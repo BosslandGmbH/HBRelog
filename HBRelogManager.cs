@@ -29,6 +29,8 @@ using System.Runtime.Serialization.Formatters;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.ServiceModel;
+using System.Windows;
 
 namespace HighVoltz.HBRelog
 {
@@ -38,8 +40,8 @@ namespace HighVoltz.HBRelog
         static public Thread WorkerThread { get; private set; }
         public static bool IsInitialized { get; private set; }
         private static DateTime _killWowErrsTimeStamp = DateTime.Now;
-
-        static IpcChannel _ipcChannel;
+        static ServiceHost host;
+        //static IpcChannel _ipcChannel;
         static HBRelogManager()
         {
             try
@@ -48,23 +50,18 @@ namespace HighVoltz.HBRelog
                 WorkerThread = new Thread(DoWork) { IsBackground = true };
                 WorkerThread.Start();
 
-                var serverSinkProvider = new BinaryServerFormatterSinkProvider();
-                serverSinkProvider.TypeFilterLevel = TypeFilterLevel.Full;
-
-                IDictionary properties = new Hashtable();
-                properties["portName"] = "HBRelogChannel";
-                _ipcChannel = new IpcChannel(properties, null, serverSinkProvider);
-                ChannelServices.RegisterChannel(_ipcChannel, true);
-
-                RemotingConfiguration.RegisterWellKnownServiceType(
-                    typeof(Remoting.RemotingApi),
-                           "RemoteApi",
-                           WellKnownObjectMode.Singleton);
+                host = new ServiceHost(typeof(RemotingApi), new Uri("net.pipe://localhost/HBRelog"));
+                var np = new NetNamedPipeBinding();
+                host.AddServiceEndpoint(typeof(IRemotingApi),
+                    new NetNamedPipeBinding() { ReceiveTimeout = TimeSpan.MaxValue },
+                    "Server");
+                host.Open();
 
                 IsInitialized = true;
             }
             catch (Exception ex)
             {
+                MessageBox.Show(ex.ToString());
                 Log.Err(ex.ToString());
             }
         }
@@ -121,14 +118,23 @@ namespace HighVoltz.HBRelog
                 }
                 finally
                 {
-                    // sleep for 1000 sec minus time it took to execute the fsm
+                    // sleep for 1000 millisec minus time it took to execute
                     int sleepTime = 1000 - (Environment.TickCount - pulseStartTime);
                     if (sleepTime > 0)
                         Thread.Sleep(sleepTime);
                 }
             }
-            // ReSharper disable FunctionNeverReturns
+
         }
-        // ReSharper restore FunctionNeverReturns
+
+        public static void Shutdown()
+        {
+            if (host.State == CommunicationState.Opened || host.State == CommunicationState.Opening)
+            {
+                host.Close();
+                host.Abort();
+            }
+        }
+
     }
 }

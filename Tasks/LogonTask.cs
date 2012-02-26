@@ -36,6 +36,28 @@ namespace HighVoltz.HBRelog.Tasks
             get { return "Logon"; }
         }
 
+        [XmlIgnore]
+        override public string Help { get { return "Logs on a Character in Wow"; } }
+
+        string _toolTip;
+        [XmlIgnore]
+        public override string ToolTip
+        {
+            get
+            {
+                return _toolTip ?? (ToolTip = string.Format("Logon: {0} {1}", CharacterName,
+                                                    !string.IsNullOrEmpty(Server) ? "- " + Server : null));
+            }
+            set
+            {
+                if (value != _toolTip)
+                {
+                    _toolTip = value;
+                    OnPropertyChanged("ToolTip");
+                }
+            }
+        }
+
         public string CharacterName { get; set; }
         public string Server { get; set; }
         public string BotBase { get; set; }

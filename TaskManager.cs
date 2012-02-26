@@ -83,7 +83,15 @@ namespace HighVoltz.HBRelog
                 // get the 1st task that isn't done and pulse it.
                 BMTask currentTask = Tasks.FirstOrDefault(t => !t.IsDone);
                 if (currentTask != null)
+                {
+                    if (!currentTask.IsRunning)
+                        currentTask.Start();
                     currentTask.Pulse();
+                    if (currentTask is WaitTask && currentTask.IsRunning)
+                        Profile.TaskTooltip = currentTask.ToolTip;
+                    else if (!string.IsNullOrEmpty(Profile.TaskTooltip))
+                        Profile.TaskTooltip = null;
+                }
             }
         }
 

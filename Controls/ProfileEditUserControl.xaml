@@ -4,10 +4,16 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:Controls="clr-namespace:HighVoltz.HBRelog.Controls"
+             xmlns:Converters="clr-namespace:HighVoltz.HBRelog.Converters"
              xmlns:HighVoltz="clr-namespace:HighVoltz.HBRelog"
              mc:Ignorable="d" 
              x:Name="root"
              d:DesignHeight="300" d:DesignWidth="300">
+    <UserControl.Resources>
+        <Converters:SpacifierConverter x:Key="SpaceConverter" />
+        <Converters:TaskIsRunningConverter x:Key="TaskIsRunningConverter" />
+        <!-- <Style TargetType="MenuItem" /> -->
+    </UserControl.Resources>
     <Grid >
         <!-- Account Settings Tab -->
         <!-- Bind to the currently selected profile in grid -->
@@ -32,29 +38,36 @@
                             </Grid.ColumnDefinitions>
                             <!--Identifier-->
                             <TextBlock Text="Profile Name" HorizontalAlignment="Left" Height="20" Margin="5,0,5,0" />
-                            <TextBox x:Name="ProfileNameText" Grid.Column="1" Text="{Binding Path=ProfileName}"/>
+                            <TextBox x:Name="ProfileNameText" Grid.Column="1" Text="{Binding Path=ProfileName}"
+                                     ToolTip="This can be anything, preferably something relevant and easy to remember. This will be used in log files"/>
                             <!--Bnet Account-->
                             <TextBlock Text="BattleNet" HorizontalAlignment="Left" Height="20" Margin="5,0,5,0" Grid.Row="1" />
-                            <TextBox x:Name="WoWBNetAccountText" Grid.Column="1" Grid.Row="1" Text="{Binding Path=WowSettings.Login}"/>
+                            <TextBox x:Name="WoWBNetAccountText" Grid.Column="1" Grid.Row="1" Text="{Binding Path=WowSettings.Login}"
+                                     ToolTip="This is your battlenet email address"/>
                             <!--Account Name-->
                             <TextBlock Text="Account Name" Grid.Row="2" HorizontalAlignment="Left" Height="20" Margin="5,0,5,0" />
                             <TextBox x:Name="AccountNameText" Grid.Column="1" Grid.Row="2" 
-                                                      Text="{Binding Path=WowSettings.AcountName}"/>
+                                                      Text="{Binding Path=WowSettings.AcountName}"
+                                                      ToolTip="This is the name of the wow account. e.g WoW1"/>
                             <!--Password Name-->
                             <TextBlock Text="Password" Grid.Row="3" HorizontalAlignment="Left" Height="20" Margin="5,0,5,0" />
-                            <PasswordBox Name="PasswordText" Grid.Column="1" Grid.Row="3" PasswordChanged="PasswordTextPasswordChanged" />
+                            <PasswordBox Name="PasswordText" Grid.Column="1" Grid.Row="3" PasswordChanged="PasswordTextPasswordChanged" 
+                                         ToolTip="this is your wow password. It is encrypted when saved"/>
                             <!--Character Name-->
                             <TextBlock Text="Character" Grid.Row="4" HorizontalAlignment="Left" Height="20" Margin="5,0,5,0" />
-                            <TextBox x:Name="CharacterText" Grid.Column="1" Grid.Row="4"  Text="{Binding Path=WowSettings.CharacterName}"/>
+                            <TextBox x:Name="CharacterText" Grid.Column="1" Grid.Row="4"  Text="{Binding Path=WowSettings.CharacterName}"
+                                     ToolTip="This is the name of your WoW Character"/>
                             <!--Server Name-->
                             <TextBlock Text="Server" Grid.Row="5" HorizontalAlignment="Left" Height="20" Margin="5,0,5,0" />
-                            <TextBox x:Name="ServerText" Grid.Column="1" Grid.Row="5" Text="{Binding Path=WowSettings.ServerName}"/>
+                            <TextBox x:Name="ServerText" Grid.Column="1" Grid.Row="5" Text="{Binding Path=WowSettings.ServerName}"
+                                     ToolTip="Name of the server/realm that your character is located on"/>
                             <!--WoW Path-->
                             <TextBlock Text="WoW Path" Grid.Row="6" HorizontalAlignment="Left" Height="20" Margin="5,0,5,0" />
                             <Controls:FileInputBox x:Name="WoWFileInput" Grid.Row="6" Grid.Column="1" 
                                                        FileNameChanged="WoWFileInputFileNameChanged"
                                                        Title="Browse to and select your WoW.exe file"
-                                                       DefaultExt=".exe" Filter=".exe|*.exe"/>
+                                                       DefaultExt=".exe" Filter=".exe|*.exe"
+                                                       ToolTip="The path to Wow.exe. click the '...' button on the right to browse to it."/>
 
                         </Grid>
                     </ScrollViewer>
@@ -77,22 +90,26 @@
                             </Grid.ColumnDefinitions>
                             <!--CustomClass-->
                             <TextBlock Text="Custom Class" HorizontalAlignment="Left" Height="20" Margin="5,0,5,0" />
-                            <TextBox x:Name="CustomClassText" Grid.Column="1" Text="{Binding Path=HonorbuddySettings.CustomClass}"/>
+                            <TextBox x:Name="CustomClassText" Grid.Column="1" Text="{Binding Path=HonorbuddySettings.CustomClass}"
+                                     ToolTip="The name of the CustomClass that you want to use e.g. Singular (optional)"/>
                             <!-- BotBase -->
                             <TextBlock Text="Bot" Grid.Row="1" HorizontalAlignment="Left" Height="20" Margin="5,0,5,0" />
-                            <TextBox x:Name="BotBaseText" Grid.Row="1" Grid.Column="1" Text="{Binding Path=HonorbuddySettings.BotBase}"/>
+                            <TextBox x:Name="BotBaseText" Grid.Row="1" Grid.Column="1" Text="{Binding Path=HonorbuddySettings.BotBase}"
+                                     ToolTip="The name of the bot that you want to use e.g. ProfessionBuddy (optional)"/>
                             <!--HB Profile-->
                             <TextBlock Text="Profile Path" HorizontalAlignment="Left" Height="20" Margin="5,0,5,0" Grid.Row="2" />
                             <Controls:FileInputBox x:Name="HBProfileInput" Grid.Row="2" Grid.Column="1" 
                                                        FileNameChanged="HBProfileFileInputFileNameChanged"
                                                        Title="Browse to and select your Honorbuddyy profile"
-                                                       DefaultExt=".xml" Filter=".xml|*.xml"/>
+                                                       DefaultExt=".xml" Filter=".xml|*.xml"
+                                                       ToolTip="The path to a Honorbuddy/Professionbuddy profile that you want to use. (optional)"/>
                             <!--HB Path-->
                             <TextBlock Text="Honorbuddy Path" HorizontalAlignment="Left" Height="20" Margin="5,0,5,0" Grid.Row="3" />
                             <Controls:FileInputBox x:Name="HBPathInput" Grid.Row="3" Grid.Column="1" 
                                                        FileNameChanged="HBPathInputFileNameChanged"
                                                        Title="Browse to and select your WoW.exe file"
-                                                       DefaultExt=".exe" Filter=".exe|*.exe"/>
+                                                       DefaultExt=".exe" Filter=".exe|*.exe"
+                                                       ToolTip=" Path to your honorbuddy.exe file (it can be renamed)"/>
                         </Grid>
                     </ScrollViewer>
                 </Border>
@@ -117,26 +134,32 @@
                             </Grid.ColumnDefinitions>
                             <!--WoW Window X-->
                             <TextBlock Text="WoW Window X" HorizontalAlignment="Left" Height="20" Margin="5,0,5,0" />
-                            <TextBox x:Name="WowWindowXText" Grid.Column="1" Text="{Binding Path=WowSettings.WowWindowX}"/>
+                            <TextBox x:Name="WowWindowXText" Grid.Column="1" Text="{Binding Path=WowSettings.WowWindowX}"
+                                     ToolTip="The X screen location where you want the Wow window placed (optional)"/>
                             <!--WoW Window Y-->
                             <TextBlock Text="WoW Window Y" Grid.Row="1" HorizontalAlignment="Left" Height="20" Margin="5,0,5,0" />
-                            <TextBox x:Name="WowWindowYText" Grid.Column="1" Grid.Row="1" Text="{Binding Path=WowSettings.WowWindowY}"/>
+                            <TextBox x:Name="WowWindowYText" Grid.Column="1" Grid.Row="1" Text="{Binding Path=WowSettings.WowWindowY}"
+                                     ToolTip="The Y screen location where you want the Wow window placed (optional)"/>
                             <!--WoW Window Width -->
                             <TextBlock Text="WoW Window Width" Grid.Row="2" HorizontalAlignment="Left" Height="20" Margin="5,0,5,0" />
-                            <TextBox x:Name="WowWindowWidthText" Grid.Column="1" Grid.Row="2" Text="{Binding Path=WowSettings.WowWindowWidth}"/>
+                            <TextBox x:Name="WowWindowWidthText" Grid.Column="1" Grid.Row="2" Text="{Binding Path=WowSettings.WowWindowWidth}"
+                                     ToolTip="The Wow window Width (optional)"/>
                             <!--WoW Window Height-->
                             <TextBlock Text="WoW Window Height" Grid.Row="3" HorizontalAlignment="Left" Height="20" Margin="5,0,5,0" />
-                            <TextBox x:Name="WowWindowHeightText" Grid.Column="1" Grid.Row="3" Text="{Binding Path=WowSettings.WowWindowHeight}"/>
+                            <TextBox x:Name="WowWindowHeightText" Grid.Column="1" Grid.Row="3" Text="{Binding Path=WowSettings.WowWindowHeight}"
+                                     ToolTip="The Wow window Height (optional)"/>
                             <!--Grab window size and location-->
                             <TextBlock Text="Grab window size/location" Grid.Row="4" HorizontalAlignment="Left" Height="20" Margin="5,0,5,0" />
-                            <Button x:Name="WowWindowGrabText" Content="Grab"  Grid.Column="1" Grid.Row="4" Click="WowWindowGrabTextClick"/>
+                            <Button x:Name="WowWindowGrabText" Content="Grab"  Grid.Column="1" Grid.Row="4" Click="WowWindowGrabTextClick"
+                                    ToolTip="Grabs the Wow window size and location, requires wow to be running"/>
                             <!--Grab window size and location-->
-                            <StackPanel Grid.Row="5" Orientation="Horizontal">
+                            <StackPanel Grid.Row="5" Orientation="Horizontal" ToolTip="Automatically re-sizes the Wow window to the entered ratio of the monitor that its on">
                                 <TextBlock Text="Resize to 1/" HorizontalAlignment="Left" Height="20" Margin="5,0,5,0" />
                                 <TextBox x:Name="WowWindowRatioText" Text="3"/>
                                 <TextBlock Text="ratio of screen" HorizontalAlignment="Left" Height="20" Margin="5,0,5,0" />
                             </StackPanel>
-                            <Button x:Name="WowWindowRatioButton" Grid.Row="5" Grid.Column="1" Content="Resize"  Click="WowWindowRatioButtonClick"/>
+                            <Button x:Name="WowWindowRatioButton" Grid.Row="5" Grid.Column="1" Content="Resize"  Click="WowWindowRatioButtonClick"
+                                    ToolTip="Automatically re-sizes the Wow window to the entered ratio of the monitor that its on"/>
                         </Grid>
                     </ScrollViewer>
                 </Border>
@@ -159,12 +182,26 @@
                         </Border>
                         <Border BorderBrush="SlateGray" BorderThickness="1" Grid.Column="1" >
                             <ListBox x:Name="ProfileTaskList" AllowDrop="True" 
-                                     
                                      Drop="ProfileTaskList_Drop" PreviewMouseMove="ProfileTaskList_PreviewMouseMove" 
                                      PreviewMouseLeftButtonDown="ProfileTaskList_PreviewMouseLeftButtonDown"
                                      ItemsSource="{Binding CharacterProfiles/Tasks, 
                                      Source={x:Static HighVoltz:HBRelogManager.Settings}}" KeyDown="ProfileTaskList_KeyDown"
-                                     SelectionChanged="ProfileTaskListSelectionChanged" />
+                                     SelectionChanged="ProfileTaskListSelectionChanged" >
+                                <!-- Insert spaces into the listbox item text.-->
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Path=Name, Converter={StaticResource SpaceConverter}}"
+                                                   ToolTip="{Binding Path=ToolTip}" ToolTipService.InitialShowDelay="0"
+                                                   FontWeight="{Binding Path=IsRunning, Converter={StaticResource TaskIsRunningConverter}}"
+                                                   TextDecorations="{Binding Path=IsRunning, Converter={StaticResource TaskIsRunningConverter}}"/>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                                    <ListBox.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Header="Delete" Click="DeleteMenuItem_Click"/>
+                                        </ContextMenu>
+                                    </ListBox.ContextMenu>
+                            </ListBox>
                         </Border>
                         <Border BorderBrush="SlateGray" BorderThickness="2" Grid.ColumnSpan="2" Grid.Row="1">
                             <Controls:TaskEditor  x:Name="TaskPropEditor" MinHeight="50" />

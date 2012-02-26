@@ -15,6 +15,7 @@ Copyright 2012 HighVoltz
 */
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
@@ -25,10 +26,34 @@ namespace HighVoltz.HBRelog.Tasks
     [DataContract]
     abstract public class BMTask : IBMTask
     {
+        bool _isDone;
         [XmlIgnore]
-        virtual public bool IsDone { get; protected set; }
+        public bool IsDone
+        {
+            get { return _isDone; }
+            protected set
+            {
+                _isDone = value;
+                if (_isDone && _isRunning)
+                    Stop();
+                OnPropertyChanged("IsDone");
+            }
+        }
+
+        bool _isRunning;
+        [XmlIgnore]
+        public bool IsRunning
+        {
+            get { return _isRunning; }
+            protected set
+            {
+                _isRunning = value;
+                OnPropertyChanged("IsRunning");
+            }
+        }
         [XmlIgnore]
         public CharacterProfile Profile { get; private set; }
+        
         [XmlIgnore]
         abstract public string Name { get; }
         public void SetProfile(CharacterProfile profile)
@@ -36,13 +61,46 @@ namespace HighVoltz.HBRelog.Tasks
             Profile = profile;
         }
         abstract public void Pulse();
+        /// <summary>
+        /// resets any variables to their default values. Any overrides must call base
+        /// </summary>
         public virtual void Reset()
         {
             IsDone = false;
         }
+        /// <summary>
+        /// Called by the TaskManager when Task is started. Any overrides of this method needs to call base
+        /// </summary>
+        public virtual void Start()
+        {
+            IsRunning = true;
+        }
+        /// <summary>
+        /// sets IsDone to true and IsRunning to false. Any overrides need to call base.
+        /// </summary>
+        public virtual void Stop()
+        {
+            IsRunning = false;
+            IsDone = true;
+        }
+
         public override string ToString()
         {
             return Name;
+        }
+
+        abstract public string Help { get; }
+
+        abstract public string ToolTip { get; set; }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged(string name)
+        {
+            PropertyChangedEventHandler handler = PropertyChanged;
+            if (handler != null)
+            {
+                handler(this, new PropertyChangedEventArgs(name));
+            }
         }
     }
 }

@@ -254,8 +254,8 @@ namespace HighVoltz.HBRelog.WoW
         GlueState _lastGlueStatus = GlueState.None;
         private void LoginWoW()
         {
-            // throttle lua calls to once per 3 secs, will give the user an option to change this.
-            if (DateTime.Now - _luaThrottleTimeStamp >= TimeSpan.FromSeconds(3))
+            // throttle lua calls.
+            if (DateTime.Now - _luaThrottleTimeStamp >= TimeSpan.FromSeconds(HBRelogManager.Settings.LoginDelay))
             {
                 GlueState glueStatus = GlueStatus;
                 // check if at server selection for tooo long.
@@ -475,7 +475,7 @@ namespace HighVoltz.HBRelog.WoW
                 lock (_lockObject)
                 {
                     if (TimeStamps.ContainsKey(key) &&
-                        DateTime.Now - TimeStamps[key] < TimeSpan.FromSeconds(Program.WowStartDelay))
+                        DateTime.Now - TimeStamps[key] < TimeSpan.FromSeconds(HBRelogManager.Settings.WowDelay))
                     {
                         return false;
                     }

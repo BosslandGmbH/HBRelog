@@ -47,6 +47,15 @@ namespace HighVoltz.HBRelog.Settings
             } 
         }
         public ObservableCollection<CharacterProfile> CharacterProfiles { get; set; }
+        // Automatically start all enabled profiles on start
+        public bool AutoStart { get; set; }
+        // delay in seconds between starting multiple Wow instance
+        public int WowDelay { get; set; }
+        // delay in seconds between starting multiple Honorbuddy instance
+        public int HBDelay { get; set; }
+        // delay in seconds between executing login actions.
+        public int LoginDelay { get; set; }
+        public bool UseDarkStyle { get; set; }
 
         public string WowVersion { get; set; }
         // offsets
@@ -62,6 +71,11 @@ namespace HighVoltz.HBRelog.Settings
             try
             {
                 XElement root = new XElement("BotManager");
+                root.Add(new XElement("AutoStart", AutoStart));
+                root.Add(new XElement("WowDelay", WowDelay));
+                root.Add(new XElement("HBDelay", HBDelay));
+                root.Add(new XElement("LoginDelay", LoginDelay));
+                root.Add(new XElement("UseDarkStyle", UseDarkStyle));
                 root.Add(new XElement("WowVersion", WowVersion));
 
                 root.Add(new XElement("DxDeviceOffset", DxDeviceOffset));
@@ -136,6 +150,12 @@ namespace HighVoltz.HBRelog.Settings
             {
                 XElement root = XElement.Load(settings.SettingsPath);
                 settings.WowVersion = root.Element("WowVersion").Value;
+                settings.AutoStart = GetElementValue<bool>(root.Element("AutoStart"));
+                settings.WowDelay = GetElementValue<int>(root.Element("WowDelay"));
+                settings.HBDelay = GetElementValue<int>(root.Element("HBDelay"),10);
+                settings.LoginDelay = GetElementValue<int>(root.Element("LoginDelay"),3);
+                settings.UseDarkStyle = GetElementValue<bool>(root.Element("UseDarkStyle"),true); 
+
                 settings.DxDeviceOffset = uint.Parse(root.Element("DxDeviceOffset").Value);
                 settings.DxDeviceIndex = uint.Parse(root.Element("DxDeviceIndex").Value);
                 settings.GameStateOffset = uint.Parse(root.Element("GameStateOffset").Value);
@@ -218,12 +238,12 @@ namespace HighVoltz.HBRelog.Settings
             return settings;
         }
 
-        static T GetElementValue<T>(XElement element)
+        static T GetElementValue<T>(XElement element, T defaultValue = default(T))
         {
             if (element != null)
                 return (T)Convert.ChangeType(element.Value, typeof(T));
             else
-                return default(T);
+                return defaultValue;
         }
     }
 }

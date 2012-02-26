@@ -15,19 +15,25 @@ Copyright 2012 HighVoltz
 */
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
 
 namespace HighVoltz.HBRelog.Tasks
 {
-    interface IBMTask
+    interface IBMTask : INotifyPropertyChanged
     {
+        string Help { get; }
         bool IsDone { get; }
+        bool IsRunning { get; }
         string Name { get; }
+        string ToolTip { get; }
         CharacterProfile Profile { get; }
         void SetProfile(CharacterProfile profile);
         void Pulse();
+        void Start();
+        void Stop();
         void Reset();
     }
 }

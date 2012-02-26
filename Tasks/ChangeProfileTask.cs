@@ -38,6 +38,27 @@ namespace HighVoltz.HBRelog.Tasks
         {
             get { return "ChangeProfile"; }
         }
+        [XmlIgnore]
+        override public string Help { get { return "Loads a Honorbuddy/Professionbuddy profile"; } }
+
+        string _toolTip;
+        [XmlIgnore]
+        public override string ToolTip
+        {
+            get
+            {
+                return _toolTip ?? (ToolTip = string.Format("ChangeProfile {0}{1}", Path.GetFileName(ProfilePath),
+                                    !string.IsNullOrEmpty(Bot) ? " Bot: " + Bot : null));
+            }
+            set
+            {
+                if (value != _toolTip)
+                {
+                    _toolTip = value;
+                    OnPropertyChanged("ToolTip");
+                }
+            }
+        }
 
         [HighVoltz.HBRelog.Controls.TaskEditor.CustomTaskEditControl(typeof(ProfilePathEditControl))]
         public string ProfilePath { get; set; }

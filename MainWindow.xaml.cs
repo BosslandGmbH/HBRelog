@@ -28,6 +28,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Resources;
 using HighVoltz.HBRelog;
 using HighVoltz.HBRelog.Settings;
+using HighVoltz.HBRelog.Tasks;
 
 namespace HighVoltz.HBRelog
 {
@@ -36,19 +37,27 @@ namespace HighVoltz.HBRelog
     /// </summary>
     public partial class MainWindow : Window
     {
+        public static MainWindow Instance { get; private set; }
         public MainWindow()
         {
             //InitializeComponent();
+            Instance = this;
+            LoadStyle();
             var resourceLocater = new Uri("/HBRelog;component/mainwindow.xaml", UriKind.Relative);
             Application.LoadComponent(this, resourceLocater);
-            Instance = this;
         }
 
-        public static MainWindow Instance { get; private set; }
-
-        protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+        public void LoadStyle()
         {
-            HBRelogManager.Settings.Save();
+            Uri resourceLocater;
+            if (HBRelogManager.Settings.UseDarkStyle)
+                resourceLocater = new Uri("/styles/ExpressionDark.xaml", UriKind.Relative);
+            else
+                resourceLocater = new Uri("/styles/BureauBlue.xaml", UriKind.Relative);
+            ResourceDictionary rDict = new ResourceDictionary();
+            rDict.Source = resourceLocater;
+            this.Resources.MergedDictionaries.Clear();
+            this.Resources.MergedDictionaries.Add(rDict);
         }
 
         private void AddAccountButton_Click(object sender, RoutedEventArgs e)
@@ -127,8 +136,9 @@ namespace HighVoltz.HBRelog
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            OptionsTab.IsSelected = false;
             Log.Write("HBRelog Version {0}", Assembly.GetExecutingAssembly().GetName().Version);
-            if (Program.AutoStart)
+            if (HBRelogManager.Settings.AutoStart)
             {
                 foreach (CharacterProfile character in AccountGrid.Items)
                 {
@@ -170,6 +180,7 @@ namespace HighVoltz.HBRelog
             // my debug button :)
             if (Environment.UserName == "highvoltz")
             {
+                LoadStyle();
             }
             AccountGrid.SelectAll();
         }
@@ -212,6 +223,36 @@ namespace HighVoltz.HBRelog
             ProfileSettings settings = (ProfileSettings)((CheckBox)sender).Tag;
             settings.IsEnabled = false;
         }
+        // Options And Log Tab Control
+        private void TabItem_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            TabItem tabItem = (TabItem)sender;
+            if (e.OriginalSource != tabItem.Header)
+                return;
+            double destHeight = 200;
+            if (tabItem.IsSelected)
+            {
+                destHeight = 20;
+                OptionsAndLogTabCtrl.SelectedIndex = -1;
+            }
+            else
+            {
+                OptionsAndLogTabCtrl.SelectedItem = tabItem;
+            }
+            e.Handled = true;
+            DoubleAnimation ani = new DoubleAnimation(destHeight, new Duration(TimeSpan.Parse("0:0:0.300")));
+            ani.DecelerationRatio = 0.7;
+            OptionsAndLogGrid.BeginAnimation(Grid.HeightProperty, ani);
+        }
 
+        private void SkipTaskMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            CharacterProfile profile = (CharacterProfile)((MenuItem)sender).Tag;
+            BMTask currentTask = profile.TaskManager.Tasks.FirstOrDefault(t => !t.IsDone);
+            if (currentTask != null)
+            {
+                currentTask.Stop();
+            }
+        }
     }
 }

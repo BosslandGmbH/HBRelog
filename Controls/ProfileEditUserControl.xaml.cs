@@ -12,6 +12,8 @@ using System.Windows.Data;
 using HighVoltz.HBRelog.Tasks;
 using HighVoltz.HBRelog.Settings;
 using System.Windows.Input;
+using HighVoltz.HBRelog.Converters;
+using System.Collections;
 
 
 namespace HighVoltz.HBRelog.Controls
@@ -22,7 +24,6 @@ namespace HighVoltz.HBRelog.Controls
     public partial class AccountConfigUserControl
     {
         public bool IsEditing { get; set; }
-
         public AccountConfigUserControl()
         {
             InitializeComponent();
@@ -33,23 +34,21 @@ namespace HighVoltz.HBRelog.Controls
             {
                 ListBoxItem item = new ListBoxItem();
                 BMTask task = (BMTask)Activator.CreateInstance(type);
-                item.Content = task.Name;
+                item.Content = SpacifierConverter.GetSpaciousString(task.Name);
                 item.Tag = type;
+                item.ToolTip = task.Help;
                 TaskList.Items.Add(item);
             }
-            //Add 'Delete' context menu to ProfileTaskList
+        
             ProfileTaskList.ContextMenuOpening += (sender, e) => { if (ProfileTaskList.SelectedItem == null) e.Handled = true; };
-            var contextMenu = new System.Windows.Controls.ContextMenu();
-            var menuItem = new MenuItem() { Header = "Delete" };
-            menuItem.Click += new RoutedEventHandler((sender, e) =>
-            {
-                CharacterProfile profile = (CharacterProfile)MainWindow.Instance.AccountGrid.SelectedItem;
-                profile.Tasks.Remove((BMTask)ProfileTaskList.SelectedItem);
-            });
-            contextMenu.Items.Add(menuItem);
-            ProfileTaskList.ContextMenu = contextMenu;
         }
 
+        private void DeleteMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            CharacterProfile profile = (CharacterProfile)MainWindow.Instance.AccountGrid.SelectedItem;
+            profile.Tasks.Remove((BMTask)ProfileTaskList.SelectedItem);
+
+        }
         void ProfileTaskList_ContextMenuOpening(object sender, ContextMenuEventArgs e)
         {
             throw new NotImplementedException();
@@ -272,6 +271,5 @@ namespace HighVoltz.HBRelog.Controls
         public static readonly DependencyProperty CharacterSettingProperty =
             DependencyProperty.Register("CharacterSettings", typeof(ProfileSettings),
                                         typeof(AccountConfigUserControl));
-
     }
 }

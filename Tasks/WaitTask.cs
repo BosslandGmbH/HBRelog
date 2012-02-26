@@ -33,6 +33,26 @@ namespace HighVoltz.HBRelog.Tasks
             get { return "Wait"; }
         }
 
+        [XmlIgnore]
+        override public string Help { get { return "Waits for duration before next task is executed"; } }
+
+        string _toolTip;
+        [XmlIgnore]
+        public override string ToolTip
+        {
+            get
+            {
+                return _toolTip ?? (ToolTip = string.Format("Wait: {0} minutes", Minutes));
+            }
+            set
+            {
+                if (value != _toolTip)
+                {
+                    _toolTip = value;
+                    OnPropertyChanged("ToolTip");
+                }
+            }
+        }
         TimeSpan _waitTime = new TimeSpan(0);
         DateTime _timeStamp;
         public override void Pulse()
@@ -43,20 +63,33 @@ namespace HighVoltz.HBRelog.Tasks
                 Profile.Log("Waiting for {0} minutes before executing next task", _waitTime.TotalMinutes);
                 _timeStamp = DateTime.Now;
             }
-            //int index = Profile.Tasks.IndexOf(this);
-            //if (index >= 0)
-            //{
-            //    BMTask nextTask = index + 1 >= Profile.Tasks.Count ? Profile.Tasks[0] : Profile.Tasks[index + 1];
-            //    Profile.Status = string.Format("Running {0} task in {1} minutes",
-            //        nextTask, (int)((_waitTime - (DateTime.Now - _timeStamp)).TotalMinutes));
-            //}
+
+            BMTask nextTask = NextTask;
+            if (nextTask != null)
+                ToolTip = string.Format("Running {0} task in {1} minutes",
+                     nextTask, (int)((_waitTime - (DateTime.Now - _timeStamp)).TotalMinutes));
+
+
             if (DateTime.Now - _timeStamp >= _waitTime)
             {
                 IsDone = true;
                 Profile.Log("Wait complete");
+                ToolTip = string.Format("Wait: {0} minutes", Minutes);
             }
         }
 
+        BMTask NextTask
+        {
+            get
+            {
+                int index = Profile.Tasks.IndexOf(this);
+                if (index >= 0)
+                {
+                    return index + 1 >= Profile.Tasks.Count ? Profile.Tasks[0] : Profile.Tasks[index + 1];
+                }
+                return null;
+            }
+        }
         public override void Reset()
         {
             base.Reset();
