@@ -254,5 +254,18 @@ namespace HighVoltz.HBRelog
                 currentTask.Stop();
             }
         }
+
+        private void DataGridRowContextMenuOpening(object sender, ContextMenuEventArgs e)
+        {
+            DataGridRow row = (DataGridRow)sender;
+            CharacterProfile profile = (CharacterProfile)row.Item;
+            // only show the skip task menu item if profile has > 1 task and startup sequence is complete
+            MenuItem skipTaskMenuItem = (MenuItem)row.ContextMenu.Items[0];
+            BMTask task = profile.TaskManager.Tasks.FirstOrDefault(t => t.IsRunning);
+            if (profile.TaskManager.Tasks.Count > 1 && profile.TaskManager.StartupSequenceIsComplete && task != null)
+                skipTaskMenuItem.Visibility = Visibility.Visible;
+            else
+                skipTaskMenuItem.Visibility = Visibility.Collapsed;
+        }
     }
 }

@@ -79,7 +79,6 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="HBPlugin\HBRelogHelper.cs" />
-    <Compile Include="Converters\SkipTaskMenuVisibilityConverter.cs" />
     <Compile Include="Converters\SpacifierConverter.cs" />
     <Compile Include="Converters\TaskIsRunningConverter.cs" />
     <Compile Include="Controls\OptionsUserControl.xaml.cs">
