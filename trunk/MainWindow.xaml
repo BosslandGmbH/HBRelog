@@ -107,19 +107,19 @@
             </Grid>
         </Border>
         <DataGrid x:Name="AccountGrid" IsSynchronizedWithCurrentItem="True"
-                  GridLinesVisibility="Vertical"
+                  GridLinesVisibility="Vertical" 
     		ItemsSource="{Binding}" Grid.Row="1" CanUserAddRows="False"
     	    CanUserReorderColumns="False" CanUserResizeColumns="False" CanUserSortColumns="False" 
     		AutoGenerateColumns="False" CanUserResizeRows="False" 
     		HorizontalContentAlignment="Left" SelectionChanged="AccountGridSelectionChanged"
-                  MouseDoubleClick="AccountGridMouseDoubleClick" 
+                  MouseDoubleClick="AccountGridMouseDoubleClick"
                   ScrollViewer.HorizontalScrollBarVisibility="Disabled" 
                   >
             <DataGrid.Columns>
                 <DataGridTemplateColumn  Header="*">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate >
-                            <!-- Bindings get destroyed once user changes the value of the checkbox so I'll have to use callbacks to -->
+                            <!-- Bindings get destroyed once user changes the value of the checkbox so I'll have to use callbacks -->
                             <CheckBox  x:Name="ProfileEnabledCheckBox" IsChecked="{Binding Settings.IsEnabled}" 
                                        Tag="{Binding Settings}" Checked="ProfileEnabledCheckBoxChecked" Unchecked="ProfileEnabledCheckBoxUnchecked"/>
                         </DataTemplate>
@@ -138,11 +138,12 @@
                     <Setter Property="ToolTipService.ToolTip" Value="{Binding Tooltip}"/>
                     <Setter Property="ToolTipService.InitialShowDelay" Value="0"/>
                     <Setter Property="ToolTipService.ShowDuration" Value="10000"/>
+                    <EventSetter Event="ContextMenuOpening"  Handler="DataGridRowContextMenuOpening"/>
                     <Setter Property="ContextMenu">
                         <Setter.Value>
                             <ContextMenu x:Name="RowContextMenu">
-                                <MenuItem  x:Name="SkipMenu" Header="Skip Current Task"  Tag="{Binding}" 
-                                           Visibility="{Binding Converter={StaticResource SkipTaskMenuVisibityConverter}}">
+                                <MenuItem  x:Name="SkipMenu" Header="Skip Current Task"  Tag="{Binding}">
+                                    <!-- Visibility="{Binding Converter={StaticResource SkipTaskMenuVisibityConverter}}"> -->
                                     <!-- Workaround for a bug. -->
                                     <MenuItem.Style>
                                         <Style TargetType="{x:Type MenuItem}" BasedOn="{StaticResource  {x:Type MenuItem}}">
