@@ -132,9 +132,6 @@
             </DataGrid.Columns>
             <DataGrid.RowStyle>
                 <Style TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource  {x:Type DataGridRow}}">
-                    <Style.Resources>
-                        <Converters:SkipTaskMenuVisibilityConverter x:Key="SkipTaskMenuVisibityConverter" />
-                    </Style.Resources>
                     <Setter Property="ToolTipService.ToolTip" Value="{Binding Tooltip}"/>
                     <Setter Property="ToolTipService.InitialShowDelay" Value="0"/>
                     <Setter Property="ToolTipService.ShowDuration" Value="10000"/>
