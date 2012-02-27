@@ -97,11 +97,15 @@ namespace HighVoltz.HBRelog
 
         public void Start()
         {
-            if (!WowManager.IsRunning)
+            // check if idle is 1st task.
+            bool idleIs1stTask = Profile.Tasks.Count > 0 && Profile.Tasks[0] is IdleTask;
+            if (!WowManager.IsRunning && !idleIs1stTask)
             {
                 WowManager.SetSettings(Profile.Settings.WowSettings);
                 WowManager.Start();
             }
+            else if (idleIs1stTask)
+                StartupSequenceIsComplete = true;
             IsRunning = true;
         }
 
