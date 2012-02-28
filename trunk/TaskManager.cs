@@ -115,6 +115,8 @@ namespace HighVoltz.HBRelog
             StartupSequenceIsComplete = false;
             HonorbuddyManager.Stop();
             WowManager.Stop();
+            foreach (var task in Tasks)
+                task.Reset();
             IsRunning = false;
         }
     }
