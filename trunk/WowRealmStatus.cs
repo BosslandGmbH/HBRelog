@@ -100,7 +100,7 @@ namespace HighVoltz.HBRelog
             string ret = "";
             for (int i = 0; i < serverList.Count; i++)
             {// don't append a comma (,) if at the end of the list.
-                ret += i != serverList.Count - 1 ? serverList[0] + "," : serverList[0];
+                ret += i != serverList.Count - 1 ? serverList[i] + "," : serverList[i];
             }
             return WowStatusApiBaseUrl + ret;
         }
