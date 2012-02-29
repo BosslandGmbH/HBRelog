@@ -157,7 +157,7 @@ namespace HighVoltz.HBRelog.Settings
                 settings.HBDelay = GetElementValue<int>(root.Element("HBDelay"),10);
                 settings.LoginDelay = GetElementValue<int>(root.Element("LoginDelay"),3);
                 settings.UseDarkStyle = GetElementValue<bool>(root.Element("UseDarkStyle"),true);
-                settings.CheckRealmStatus = GetElementValue<bool>(root.Element("CheckRealmStatus"), true); 
+                settings.CheckRealmStatus = GetElementValue<bool>(root.Element("CheckRealmStatus"), false); 
                 
                 settings.DxDeviceOffset = uint.Parse(root.Element("DxDeviceOffset").Value);
                 settings.DxDeviceIndex = uint.Parse(root.Element("DxDeviceIndex").Value);
