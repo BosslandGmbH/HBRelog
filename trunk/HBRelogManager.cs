@@ -40,8 +40,9 @@ namespace HighVoltz.HBRelog
         static public Thread WorkerThread { get; private set; }
         public static bool IsInitialized { get; private set; }
         private static DateTime _killWowErrsTimeStamp = DateTime.Now;
-        static ServiceHost host;
-        //static IpcChannel _ipcChannel;
+        static ServiceHost _host;
+        public static WowRealmStatus WowRealmStatus { get; private set; }
+
         static HBRelogManager()
         {
             try
@@ -50,13 +51,17 @@ namespace HighVoltz.HBRelog
                 WorkerThread = new Thread(DoWork) { IsBackground = true };
                 WorkerThread.Start();
 
-                host = new ServiceHost(typeof(RemotingApi), new Uri("net.pipe://localhost/HBRelog"));
+                _host = new ServiceHost(typeof(RemotingApi), new Uri("net.pipe://localhost/HBRelog"));
                 var np = new NetNamedPipeBinding();
-                host.AddServiceEndpoint(typeof(IRemotingApi),
+                _host.AddServiceEndpoint(typeof(IRemotingApi),
                     new NetNamedPipeBinding() { ReceiveTimeout = TimeSpan.MaxValue },
                     "Server");
-                host.Open();
+                _host.Open();
 
+                WowRealmStatus = new WowRealmStatus();
+                // update Wow Realm status
+                if (Settings.CheckRealmStatus)
+                    WowRealmStatus.Update();
                 IsInitialized = true;
             }
             catch (Exception ex)
@@ -84,6 +89,9 @@ namespace HighVoltz.HBRelog
 
                         if (DateTime.Now - _killWowErrsTimeStamp >= TimeSpan.FromMinutes(1))
                         {
+                            // update Wow Realm status
+                            if (Settings.CheckRealmStatus)
+                                WowRealmStatus.Update();
                             // check for wow error windows
                             foreach (var process in Process.GetProcessesByName("WowError"))
                             {
@@ -129,10 +137,10 @@ namespace HighVoltz.HBRelog
 
         public static void Shutdown()
         {
-            if (host.State == CommunicationState.Opened || host.State == CommunicationState.Opening)
+            if (_host.State == CommunicationState.Opened || _host.State == CommunicationState.Opening)
             {
-                host.Close();
-                host.Abort();
+                _host.Close();
+                _host.Abort();
             }
         }
 

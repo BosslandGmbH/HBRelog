@@ -1,0 +1,75 @@
+﻿<UserControl x:Class="HighVoltz.HBRelog.Controls.OptionsUserControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalAlignment="Stretch">
+        <StackPanel Grid.IsSharedSizeScope="True" Orientation="Horizontal">
+            <StackPanel.Resources>
+                <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                    <Setter Property="TextBlock.Margin" Value="5,2" />
+                    <Setter Property="Grid.Column" Value="0" />
+                </Style>
+            </StackPanel.Resources>
+            <GroupBox Header="Relogger">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="OptionsSizeGroup" />
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <!-- AutoStart -->
+                    <TextBlock Text="AutoStart"  />
+                    <CheckBox x:Name="AutostartCheck" Grid.Column="1"
+                              ToolTip="Automatically start all enabled profiles on start"
+                              IsChecked="{Binding AutoStart}"/>
+                    <!-- CheckRealmStatus -->
+                    <TextBlock Text="Check Realm Status" Grid.Row="1" />
+                    <CheckBox x:Name="RealmStatusCheck" Grid.Column="1" Grid.Row="1"
+                              ToolTip="Check if Wow servers are up"
+                              IsChecked="{Binding CheckRealmStatus}"/>
+                    <!-- WowDelay -->
+                    <TextBlock Text="Wow Start Delay" Grid.Row="2" />
+                    <TextBox x:Name="WowDelayText" Width="40" Height="18" FontSize="10"
+                            ToolTip="Delay in seconds between starting multiple Wow instance" Grid.Column="1"
+                             Text="{Binding WowDelay}" Grid.Row="2"/>
+                    <!-- HBDelay -->
+                    <TextBlock Text="Honorbuddy Start Delay" Grid.Row="3" />
+                    <TextBox x:Name="HBDelayText" Width="40" Height="18" FontSize="10"
+                             ToolTip="Delay in seconds between starting multiple Honorbuddy instances"
+                             Grid.Row="3" Grid.Column="1"  Text="{Binding HBDelay}"/>
+                    <!-- LoginDelay -->
+                    <TextBlock Text="Login Delay" Grid.Row="4" />
+                    <TextBox x:Name="LoginDelayText" Width="40" Height="18" FontSize="10"
+                             ToolTip="Delay in seconds between executing login actions. Increasing this will cause login to take longer"
+                             Grid.Row="4" Grid.Column="1" Text="{Binding LoginDelay}"/>
+                </Grid>
+            </GroupBox>
+            <GroupBox Header="User Interface">
+                <Grid>
+                    <Grid.ColumnDefinitions >
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="OptionsSizeGroup"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="Use Dark UI style" />
+                    <CheckBox x:Name="DarkStyleCheck" Grid.Column="1"
+                              ToolTip="Switches to a darker UI style. Try it!. Might need to restart HBRelog"
+                              IsChecked="{Binding UseDarkStyle}" 
+                              Checked="DarkStyleCheckCheckedChanged" 
+                              Unchecked="DarkStyleCheckCheckedChanged"/>
+                </Grid>
+            </GroupBox>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
