@@ -56,6 +56,7 @@ namespace HighVoltz.HBRelog.Settings
         // delay in seconds between executing login actions.
         public int LoginDelay { get; set; }
         public bool UseDarkStyle { get; set; }
+        public bool CheckRealmStatus { get; set; }
 
         public string WowVersion { get; set; }
         // offsets
@@ -76,6 +77,7 @@ namespace HighVoltz.HBRelog.Settings
                 root.Add(new XElement("HBDelay", HBDelay));
                 root.Add(new XElement("LoginDelay", LoginDelay));
                 root.Add(new XElement("UseDarkStyle", UseDarkStyle));
+                root.Add(new XElement("CheckRealmStatus", CheckRealmStatus));
                 root.Add(new XElement("WowVersion", WowVersion));
 
                 root.Add(new XElement("DxDeviceOffset", DxDeviceOffset));
@@ -154,8 +156,9 @@ namespace HighVoltz.HBRelog.Settings
                 settings.WowDelay = GetElementValue<int>(root.Element("WowDelay"));
                 settings.HBDelay = GetElementValue<int>(root.Element("HBDelay"),10);
                 settings.LoginDelay = GetElementValue<int>(root.Element("LoginDelay"),3);
-                settings.UseDarkStyle = GetElementValue<bool>(root.Element("UseDarkStyle"),true); 
-
+                settings.UseDarkStyle = GetElementValue<bool>(root.Element("UseDarkStyle"),true);
+                settings.CheckRealmStatus = GetElementValue<bool>(root.Element("CheckRealmStatus"), true); 
+                
                 settings.DxDeviceOffset = uint.Parse(root.Element("DxDeviceOffset").Value);
                 settings.DxDeviceIndex = uint.Parse(root.Element("DxDeviceIndex").Value);
                 settings.GameStateOffset = uint.Parse(root.Element("GameStateOffset").Value);

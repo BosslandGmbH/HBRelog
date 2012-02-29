@@ -115,6 +115,7 @@
     <Compile Include="Tasks\ITask.cs" />
     <Compile Include="Tasks\LogonTask.cs" />
     <Compile Include="Tasks\WaitTask.cs" />
+    <Compile Include="WowRealmStatus.cs" />
     <Compile Include="WoW\Hook.cs" />
     <Compile Include="WoW\Lua.cs" />
     <Compile Include="WoW\WoWManager.cs" />

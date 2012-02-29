@@ -197,7 +197,7 @@ namespace HighVoltz.HBRelog.WoW
                     if (!GameProcess.WaitForInputIdle(0))
                         return;
                     if (WowHook == null)
-                    { 
+                    {
                         WowHook = new Hook(GameProcess);
                     }
                     if (!StartupSequenceIsComplete && !InGame && !IsConnectiongOrLoading)
@@ -257,54 +257,67 @@ namespace HighVoltz.HBRelog.WoW
             // throttle lua calls.
             if (DateTime.Now - _luaThrottleTimeStamp >= TimeSpan.FromSeconds(HBRelogManager.Settings.LoginDelay))
             {
-                GlueState glueStatus = GlueStatus;
-                // check if at server selection for tooo long.
-                if (glueStatus == _lastGlueStatus)
+                bool serverIsOnline = !HBRelogManager.Settings.CheckRealmStatus ||
+                    (HBRelogManager.Settings.CheckRealmStatus &&
+                    HBRelogManager.WowRealmStatus.RealmIsOnline(Profile.Settings.WowSettings.ServerName));
+                // if we are checking for wow server status and the wow server is offline then return
+                if (serverIsOnline)
                 {
-                    if (!_serverSelectionSW.IsRunning)
-                        _serverSelectionSW.Start();
-                    // check once every 20 seconds
-                    if (_serverSelectionSW.ElapsedMilliseconds > 20000)
+                    GlueState glueStatus = GlueStatus;
+                    // check if at server selection for tooo long.
+                    if (glueStatus == _lastGlueStatus)
                     {
-                        Profile.Log("Failed to login wow, lets restart");
-                        GameProcess.Kill();
-                        StartWoW();
-                        // set to 'None' to prevent an infinite loop if set to 'Disconnected'
-                        _lastGlueStatus = GlueState.None;
-                        return;
+                        if (!_serverSelectionSW.IsRunning)
+                            _serverSelectionSW.Start();
+                        var status = HBRelogManager.WowRealmStatus[Profile.Settings.WowSettings.ServerName];
+                        bool serverHasQueue = !HBRelogManager.Settings.CheckRealmStatus ||
+                               (HBRelogManager.Settings.CheckRealmStatus && status != null && status.InQueue);
+                        // check once every 20 seconds
+                        if (_serverSelectionSW.ElapsedMilliseconds > 20000 && !serverHasQueue)
+                        {
+                            Profile.Log("Failed to login wow, lets restart");
+                            GameProcess.Kill();
+                            StartWoW();
+                            // set to 'None' to prevent an infinite loop if set to 'Disconnected'
+                            _lastGlueStatus = GlueState.None;
+                            return;
+                        }
                     }
-                }
-                else if (_serverSelectionSW.IsRunning)
-                    _serverSelectionSW.Reset();
+                    else if (_serverSelectionSW.IsRunning)
+                        _serverSelectionSW.Reset();
 
-                AntiAfk();
-                switch (glueStatus)
-                {
-                    case GlueState.Disconnected:
-                        Profile.Status = "Logging in";
-                        Lua.DoString(_loginLua);
-                        break;
-                    case GlueState.CharacterSelection:
-                        Profile.Status = "At Character Selection";
-                        Lua.DoString(_charSelectLua);
-                        break;
-                    case GlueState.ServerSelection:
-                        Profile.Status = "At Server Selection";
-                        Lua.DoString(_realmSelectLua);
-                        break;
-                    case GlueState.CharacterCreation:
-                        Lua.DoString("if (CharCreateRandomizeButton and CharCreateRandomizeButton:IsVisible()) then CharacterCreate_Back() end ");
-                        break;
-                    case GlueState.Updater:
-                        Profile.Pause();
-                        Profile.Log("Wow is updating. pausing.");
-                        break;
+                    AntiAfk();
+                    switch (glueStatus)
+                    {
+                        case GlueState.Disconnected:
+                            Profile.Status = "Logging in";
+                            Lua.DoString(_loginLua);
+                            break;
+                        case GlueState.CharacterSelection:
+                            Profile.Status = "At Character Selection";
+                            Lua.DoString(_charSelectLua);
+                            break;
+                        case GlueState.ServerSelection:
+                            Profile.Status = "At Server Selection";
+                            Lua.DoString(_realmSelectLua);
+                            break;
+                        case GlueState.CharacterCreation:
+                            Lua.DoString("if (CharCreateRandomizeButton and CharCreateRandomizeButton:IsVisible()) then CharacterCreate_Back() end ");
+                            break;
+                        case GlueState.Updater:
+                            Profile.Pause();
+                            Profile.Log("Wow is updating. pausing.");
+                            break;
+                    }
+                    Profile.Log("GlueStatus: {0}", GlueStatus);
+                    _lastGlueStatus = glueStatus;
                 }
-                Profile.Log("GlueStatus: {0}", GlueStatus);
+                else
+                    Profile.Status = "Waiting for server to come back online";
                 _luaThrottleTimeStamp = DateTime.Now;
-                _lastGlueStatus = glueStatus;
             }
         }
+
         Stopwatch _wowRespondingSW = new Stopwatch();
         /// <summary>
         /// returns false if the WoW user interface is not responsive for 10+ seconds.
