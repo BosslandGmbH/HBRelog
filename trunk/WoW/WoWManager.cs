@@ -106,13 +106,35 @@ namespace HighVoltz.HBRelog.WoW
                 {
                     Profile.Log("WoW has disconnected or crashed.. So lets restart WoW");
                     Profile.Status = "WoW has DCed or crashed. restarting";
-                    KillGameProcess();
+                    CloseGameProcess();
                     _wowLoginTimer.Dispose();
                 }
             }
             catch (Exception ex)
             {
                 Log.Err(ex.ToString());
+            }
+        }
+
+        void CloseGameProcess()
+        {
+            try
+            {
+                if (GameProcess != null && !GameProcess.HasExited)
+                    GameProcess.CloseMainWindow();
+            }
+            // handle the "No process is associated with this object' exception while wow process is still 'active'
+            catch (InvalidOperationException ex)
+            {
+                Log.Err(ex.ToString());
+                if (WowHook != null)
+                {
+                    Process proc = Process.GetProcessById(WowHook.ProcessID);
+                    if (proc != null)
+                    {
+                        proc.CloseMainWindow();
+                    }
+                }
             }
         }
 
@@ -137,7 +159,6 @@ namespace HighVoltz.HBRelog.WoW
                 }
             }
         }
-
         public void Start()
         {
             lock (_lockObject)
@@ -163,7 +184,7 @@ namespace HighVoltz.HBRelog.WoW
                 if (_wowLoginTimer != null)
                     _wowLoginTimer.Dispose();
                 WowHook = null;
-                KillGameProcess();
+                CloseGameProcess();
                 GameProcess = null;
                 IsRunning = false;
                 StartupSequenceIsComplete = false;
@@ -238,10 +259,17 @@ namespace HighVoltz.HBRelog.WoW
                             OnStartupSequenceIsComplete(this, new ProfileEventArgs(Profile));
                     }
                     // if WoW has disconnected or crashed close wow and start the login sequence again.
-                    if ((StartupSequenceIsComplete && GlueStatus == GlueState.Disconnected) || !WoWIsResponding || WowHasCrashed)
+                    if ((StartupSequenceIsComplete && GlueStatus == GlueState.Disconnected) || WowHasCrashed)
                     {
                         Profile.Log("WoW has disconnected or crashed.. So lets restart WoW");
                         Profile.Status = "WoW has DCed or crashed. restarting";
+                        CloseGameProcess();
+                        StartWoW();
+                    }
+                    else if ( !WoWIsResponding)
+                    {
+                        Profile.Status = "WoW is not responding. restarting";
+                        Profile.Log("WoW is not responding.. So lets restart WoW");
                         KillGameProcess();
                         StartWoW();
                     }
