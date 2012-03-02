@@ -116,12 +116,17 @@ namespace HighVoltz.HBRelog.WoW
             }
         }
 
-        void CloseGameProcess()
+        void CloseGameProcess(bool kill = false)
         {
             try
             {
                 if (GameProcess != null && !GameProcess.HasExited)
-                    GameProcess.CloseMainWindow();
+                {
+                    if (kill)
+                        GameProcess.Kill();
+                    else
+                        GameProcess.CloseMainWindow();
+                }
             }
             // handle the "No process is associated with this object' exception while wow process is still 'active'
             catch (InvalidOperationException ex)
@@ -132,33 +137,15 @@ namespace HighVoltz.HBRelog.WoW
                     Process proc = Process.GetProcessById(WowHook.ProcessID);
                     if (proc != null)
                     {
-                        proc.CloseMainWindow();
+                        if (kill)
+                            GameProcess.Kill();
+                        else
+                            GameProcess.CloseMainWindow();
                     }
                 }
             }
         }
 
-        void KillGameProcess()
-        {
-            try
-            {
-                if (GameProcess != null && !GameProcess.HasExited)
-                    GameProcess.Kill();
-            }
-            // handle the "No process is associated with this object' exception while wow process is still 'active'
-            catch (InvalidOperationException ex)
-            {
-                Log.Err(ex.ToString());
-                if (WowHook != null)
-                {
-                    Process proc = Process.GetProcessById(WowHook.ProcessID);
-                    if (proc != null)
-                    {
-                        proc.Kill();
-                    }
-                }
-            }
-        }
         public void Start()
         {
             lock (_lockObject)
@@ -266,11 +253,11 @@ namespace HighVoltz.HBRelog.WoW
                         CloseGameProcess();
                         StartWoW();
                     }
-                    else if ( !WoWIsResponding)
+                    else if (!WoWIsResponding)
                     {
                         Profile.Status = "WoW is not responding. restarting";
                         Profile.Log("WoW is not responding.. So lets restart WoW");
-                        KillGameProcess();
+                        CloseGameProcess(true);
                         StartWoW();
                     }
                 }
@@ -392,6 +379,7 @@ namespace HighVoltz.HBRelog.WoW
                         foreach (IntPtr hnd in childWinHandles)
                         {
                             string caption = NativeMethods.GetWindowText(hnd);
+                            Log.Write(caption);
                             if (caption == "Wow")
                             {
                                 return true;

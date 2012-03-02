@@ -113,14 +113,19 @@ namespace HighVoltz.HBRelog.Honorbuddy
                             !string.IsNullOrEmpty(Settings.HonorbuddyPath) ? string.Format("/loadprofile=\"{0}\" ", Settings.HonorbuddyProfile) : string.Empty,
                             !string.IsNullOrEmpty(Settings.BotBase) ? string.Format("/botname=\"{0}\" ", Settings.BotBase) : string.Empty
                             );
-                        BotProcess = Process.Start(Settings.HonorbuddyPath, hbArgs);
+                        var hbWorkingDirectory = Path.GetDirectoryName(Settings.HonorbuddyPath);
+                        var procStartI = new ProcessStartInfo(Settings.HonorbuddyPath, hbArgs)
+                        {
+                            WorkingDirectory = hbWorkingDirectory
+                        };
+                        BotProcess = Process.Start(procStartI);
                         _hbStartupTimeStamp = DateTime.Now;
                         _waitingToStart = false;
                     }
                     else
                         return;
                 }
-                 // restart wow hb if it has exited
+                // restart wow hb if it has exited
                 if (BotProcess.HasExited)
                 {
                     Profile.Log("Honorbuddy process was terminated. Restarting");
@@ -131,9 +136,9 @@ namespace HighVoltz.HBRelog.Honorbuddy
                     return;
                 }
                 // return if hb isn't ready for input.
-                if ( !BotProcess.WaitForInputIdle(0))
+                if (!BotProcess.WaitForInputIdle(0))
                     return;
-               
+
                 // check if it's taking Honorbuddy too long to connect.
                 if (!StartupSequenceIsComplete && DateTime.Now - _hbStartupTimeStamp > TimeSpan.FromMinutes(3))
                     BotProcess.CloseMainWindow();
