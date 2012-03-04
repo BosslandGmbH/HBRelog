@@ -106,7 +106,7 @@ namespace HighVoltz.HBRelog.WoW
                 {
                     Profile.Log("WoW has disconnected or crashed.. So lets restart WoW");
                     Profile.Status = "WoW has DCed or crashed. restarting";
-                    CloseGameProcess();
+                    CloseGameProcess(true);
                     _wowLoginTimer.Dispose();
                 }
             }
@@ -246,17 +246,17 @@ namespace HighVoltz.HBRelog.WoW
                             OnStartupSequenceIsComplete(this, new ProfileEventArgs(Profile));
                     }
                     // if WoW has disconnected or crashed close wow and start the login sequence again.
-                    if ((StartupSequenceIsComplete && GlueStatus == GlueState.Disconnected) || WowHasCrashed)
+                    if (StartupSequenceIsComplete && GlueStatus == GlueState.Disconnected)
                     {
-                        Profile.Log("WoW has disconnected or crashed.. So lets restart WoW");
-                        Profile.Status = "WoW has DCed or crashed. restarting";
+                        Profile.Log("WoW has disconnected.. So lets restart WoW");
+                        Profile.Status = "WoW has DCed. restarting";
                         CloseGameProcess();
                         StartWoW();
                     }
-                    else if (!WoWIsResponding)
+                    else if (!WoWIsResponding || WowHasCrashed)
                     {
-                        Profile.Status = "WoW is not responding. restarting";
-                        Profile.Log("WoW is not responding.. So lets restart WoW");
+                        Profile.Status = "WoW has crashed. restarting";
+                        Profile.Log("WoW has crashed.. So lets restart WoW");
                         CloseGameProcess(true);
                         StartWoW();
                     }
@@ -379,7 +379,7 @@ namespace HighVoltz.HBRelog.WoW
                         foreach (IntPtr hnd in childWinHandles)
                         {
                             string caption = NativeMethods.GetWindowText(hnd);
-                            Log.Write(caption);
+                            //Log.Write(caption);
                             if (caption == "Wow")
                             {
                                 return true;
