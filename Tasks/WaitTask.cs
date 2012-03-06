@@ -78,18 +78,6 @@ namespace HighVoltz.HBRelog.Tasks
             }
         }
 
-        BMTask NextTask
-        {
-            get
-            {
-                int index = Profile.Tasks.IndexOf(this);
-                if (index >= 0)
-                {
-                    return index + 1 >= Profile.Tasks.Count ? Profile.Tasks[0] : Profile.Tasks[index + 1];
-                }
-                return null;
-            }
-        }
         public override void Reset()
         {
             base.Reset();

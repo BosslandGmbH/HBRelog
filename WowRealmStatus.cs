@@ -17,74 +17,127 @@ namespace HighVoltz.HBRelog
         object _lockObject = new object();
         public WowRealmStatus()
         {
-            Realms = new Dictionary<string, WowReamStatusEntry>();
+            Realms = new List<WowRealmStatusEntry>();
         }
 
-        public WowReamStatusEntry this[string realm]
+        public WowRealmStatusEntry this[string realm, WowSettings.WowRegion region]
         {
             get
             {
                 lock (_lockObject)
                 {
-                    string key = realm.ToUpper();
-                    return Realms.ContainsKey(key) ? Realms[key] : null;
+                    return Realms.FirstOrDefault(r =>
+                        r.Name.Equals(realm, StringComparison.InvariantCultureIgnoreCase) &&
+                        r.Region == region);
                 }
             }
         }
 
-        public Dictionary<string, WowReamStatusEntry> Realms { get; private set; }
+        string GetKey(string realm, WowSettings.WowRegion region)
+        {
+            return string.Format("{0}-{1}", realm.ToUpper(), region);
+        }
 
         [DataMember(Name = "realms")]
-        List<WowReamStatusEntry> realmStatusList { get; set; }
+        public List<WowRealmStatusEntry> Realms { get; private set; }
 
         Task _updateTask;
         const string WowStatusApiBaseUrl = "http://www.battle.net/api/wow/realm/status?realms=";
-        string _wowStatusApiUrl;
+        const string USWowStatusApiBaseUrl = "http://us.battle.net/api/wow/realm/status?realms=";
+        const string EUWowStatusApiBaseUrl = "http://eu.battle.net/api/wow/realm/status?realms=";
+        const string KoreaWowStatusApiBaseUrl = "http://kr.battle.net/api/wow/realm/status?realms=";
+        const string TaiwanWowStatusApiBaseUrl = "http://tw.battle.net/api/wow/realm/status?realms=";
+        const string ChinaWowStatusApiBaseUrl = "http://www.battlenet.com.cn/api/wow/realm/status?realms=";
+
+        private string GetUrlForRegion(WowSettings.WowRegion region)
+        {
+            switch (region)
+            {
+                case WowSettings.WowRegion.China:
+                    return ChinaWowStatusApiBaseUrl;
+                case WowSettings.WowRegion.EU:
+                    return EUWowStatusApiBaseUrl;
+                case WowSettings.WowRegion.Korea:
+                    return KoreaWowStatusApiBaseUrl;
+                case WowSettings.WowRegion.Taiwan:
+                    return TaiwanWowStatusApiBaseUrl;
+                case WowSettings.WowRegion.US:
+                    return USWowStatusApiBaseUrl;
+                default:
+                    return WowStatusApiBaseUrl;
+            }
+        }
+
         public void Update()
         {
             if (_updateTask == null || _updateTask.Status == TaskStatus.RanToCompletion)
-            {  // update url in main thread to prevent concurrency issues.
-                _wowStatusApiUrl = GetWowRealmStatusApiUrl();
+            {
                 _updateTask = new Task(UpdateWowRealmStatus);
                 _updateTask.Start();
             }
         }
 
-        public bool RealmIsOnline(string realm)
+        public bool RealmIsOnline(string realm, WowSettings.WowRegion region)
         {
-            var status = this[realm];
+            var status = this[realm, region];
             return status != null && status.IsOnline;
         }
 
         void UpdateWowRealmStatus()
         {
-            try
+            IEnumerable<IGrouping<WowSettings.WowRegion, CharacterProfile>> regionGroups = HBRelogManager.Settings.CharacterProfiles.GroupBy(k => k.Settings.WowSettings.Region);
+            List<Task<List<WowRealmStatusEntry>>> taskList = new List<Task<List<WowRealmStatusEntry>>>();
+            foreach (var group in regionGroups)
             {
-                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(_wowStatusApiUrl);
-                request.GetResponse();
-                using (WebResponse response = request.GetResponse())
+                taskList.Add(CreateRealmUpdateTask(group.Key,group));
+            };
+            // wait for the tasks to complete
+            Task.WaitAll(taskList.ToArray());
+            lock (_lockObject)
+            {
+                Realms.Clear();
+                foreach (var task in taskList)
                 {
-                    using (Stream stream = response.GetResponseStream())
-                    {
-                        var serialiser = new DataContractJsonSerializer(typeof(WowRealmStatus));
-                        WowRealmStatus result = (WowRealmStatus)serialiser.ReadObject(stream);
-                        lock (_lockObject)
-                        {
-                            Realms = result.realmStatusList.ToDictionary(s => s.Name.ToUpper());
-                        }
-                    }
+                    if (task.Result != null)
+                        Realms.AddRange(task.Result);
                 }
-            }
-            catch (Exception ex)
-            {
-                Log.Err(ex.ToString());
             }
         }
 
-        string GetWowRealmStatusApiUrl()
+        Task<List<WowRealmStatusEntry>> CreateRealmUpdateTask(WowSettings.WowRegion region, IEnumerable<CharacterProfile> profiles)
+        {
+            return Task.Factory.StartNew<List<WowRealmStatusEntry>>(() =>
+            {
+                try
+                {
+                    string url = BuildWowRealmStatusApiUrl(GetUrlForRegion(region), profiles);
+                    HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+                    request.GetResponse();
+                    using (WebResponse response = request.GetResponse())
+                    {
+                        using (Stream stream = response.GetResponseStream())
+                        {
+                            var serialiser = new DataContractJsonSerializer(typeof(WowRealmStatus));
+                            WowRealmStatus result = (WowRealmStatus)serialiser.ReadObject(stream);
+
+                            foreach (var realm in result.Realms)
+                                realm.Region = region; 
+                            return result.Realms;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Err(ex.ToString());
+                    return null;
+                }
+            });
+        }
+
+        string BuildWowRealmStatusApiUrl(string regionalUrl, IEnumerable<CharacterProfile> profiles)
         {
             List<string> serverList = new List<string>();
-            foreach (var profile in HBRelogManager.Settings.CharacterProfiles)
+            foreach (var profile in profiles)
             {
                 string server = profile.Settings.WowSettings.ServerName;
                 if (!serverList.Contains(server))
@@ -102,12 +155,13 @@ namespace HighVoltz.HBRelog
             {// don't append a comma (,) if at the end of the list.
                 ret += i != serverList.Count - 1 ? serverList[i] + "," : serverList[i];
             }
-            return WowStatusApiBaseUrl + ret;
+            return regionalUrl + ret;
         }
 
         [DataContract]
-        public class WowReamStatusEntry
+        public class WowRealmStatusEntry
         {
+            public WowSettings.WowRegion Region { get; internal set; }
             [DataMember(Name = "type")]
             public string Type { get; private set; }
             [DataMember(Name = "population")]
