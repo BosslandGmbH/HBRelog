@@ -50,13 +50,20 @@ namespace HighVoltz.HBRelog
                 Settings = GlobalSettings.Load();
                 WorkerThread = new Thread(DoWork) { IsBackground = true };
                 WorkerThread.Start();
-
-                _host = new ServiceHost(typeof(RemotingApi), new Uri("net.pipe://localhost/HBRelog"));
-                var np = new NetNamedPipeBinding();
-                _host.AddServiceEndpoint(typeof(IRemotingApi),
-                    new NetNamedPipeBinding() { ReceiveTimeout = TimeSpan.MaxValue },
-                    "Server");
-                _host.Open();
+                try
+                {
+                    _host = new ServiceHost(typeof(RemotingApi), new Uri("net.pipe://localhost/HBRelog"));
+                    var np = new NetNamedPipeBinding();
+                    _host.AddServiceEndpoint(typeof(IRemotingApi),
+                        new NetNamedPipeBinding() { ReceiveTimeout = TimeSpan.MaxValue },
+                        "Server");
+                    _host.Open();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.ToString());
+                    Log.Err(ex.ToString());
+                }
 
                 WowRealmStatus = new WowRealmStatus();
                 // update Wow Realm status

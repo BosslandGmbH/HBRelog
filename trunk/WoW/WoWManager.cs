@@ -274,7 +274,7 @@ namespace HighVoltz.HBRelog.WoW
             {
                 bool serverIsOnline = !HBRelogManager.Settings.CheckRealmStatus ||
                     (HBRelogManager.Settings.CheckRealmStatus &&
-                    HBRelogManager.WowRealmStatus.RealmIsOnline(Profile.Settings.WowSettings.ServerName));
+                    HBRelogManager.WowRealmStatus.RealmIsOnline(Settings.ServerName, Settings.Region));
                 // if we are checking for wow server status and the wow server is offline then return
                 if (serverIsOnline)
                 {
@@ -284,7 +284,7 @@ namespace HighVoltz.HBRelog.WoW
                     {
                         if (!_serverSelectionSW.IsRunning)
                             _serverSelectionSW.Start();
-                        var status = HBRelogManager.WowRealmStatus[Profile.Settings.WowSettings.ServerName];
+                        var status = HBRelogManager.WowRealmStatus[Settings.ServerName, Settings.Region];
                         bool serverHasQueue = !HBRelogManager.Settings.CheckRealmStatus ||
                                (HBRelogManager.Settings.CheckRealmStatus && status != null && status.InQueue);
                         // check once every 20 seconds

@@ -34,6 +34,7 @@ namespace HighVoltz.HBRelog
             ServerName = string.Empty;
             WowPath = string.Empty;
             AcountName = "WoW1";
+            Region = WowRegion.Auto;
         }
         public string LoginData { get; set; }
         /// <summary>
@@ -157,6 +158,13 @@ namespace HighVoltz.HBRelog
             set { _wowWindowY = value; NotifyPropertyChanged("WowWindowY"); }
         }
 
+        private WowRegion _region;
+        public WowRegion Region
+        {
+            get { return _region; }
+            set { _region = value; NotifyPropertyChanged("Region"); }
+        }
+
         public WowSettings ShadowCopy()
         {
             return (WowSettings)MemberwiseClone();
@@ -170,5 +178,18 @@ namespace HighVoltz.HBRelog
                 PropertyChanged(this, new PropertyChangedEventArgs(name));
             }
         }
+        
+        #region Embeded type - WowRegion
+        public enum WowRegion
+        {
+            Auto,
+            US,
+            EU,
+            Korea,
+            China,
+            Taiwan
+        } 
+        #endregion
+
     }
 }

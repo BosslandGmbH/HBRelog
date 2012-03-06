@@ -21,6 +21,7 @@ using System.Text;
 using System.Xml.Serialization;
 using HighVoltz.HBRelog.Controls;
 using HighVoltz.HBRelog;
+using System.Diagnostics;
 
 namespace HighVoltz.HBRelog.Tasks
 {
@@ -90,9 +91,13 @@ namespace HighVoltz.HBRelog.Tasks
                     hbSettings.HonorbuddyPath = HonorbuddyPath;
                 Profile.Log("Logging on different character.");
                 Profile.Status = "Logging on a different character";
-                // exit wow and honorbuddy
-                Profile.TaskManager.HonorbuddyManager.Stop();
-                Profile.TaskManager.WowManager.Stop();
+                bool prevTaskIsIdle = PrevTask is IdleTask;
+                // exit wow and honorbuddy if needed.
+                if (!prevTaskIsIdle)
+                {
+                    Profile.TaskManager.HonorbuddyManager.Stop();
+                    Profile.TaskManager.WowManager.Stop();
+                }
                 // assign new settings
                 Profile.TaskManager.HonorbuddyManager.SetSettings(hbSettings);
                 Profile.TaskManager.WowManager.SetSettings(wowSettings);

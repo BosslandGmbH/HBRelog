@@ -41,14 +41,15 @@ namespace HighVoltz.HBRelog.Controls
             }
         
             ProfileTaskList.ContextMenuOpening += (sender, e) => { if (ProfileTaskList.SelectedItem == null) e.Handled = true; };
+            RegionCombo.ItemsSource = Enum.GetValues(typeof(WowSettings.WowRegion));
         }
 
         private void DeleteMenuItem_Click(object sender, RoutedEventArgs e)
         {
             CharacterProfile profile = (CharacterProfile)MainWindow.Instance.AccountGrid.SelectedItem;
             profile.Tasks.Remove((BMTask)ProfileTaskList.SelectedItem);
-
         }
+
         void ProfileTaskList_ContextMenuOpening(object sender, ContextMenuEventArgs e)
         {
             throw new NotImplementedException();
@@ -60,6 +61,7 @@ namespace HighVoltz.HBRelog.Controls
             WoWFileInput.FileName = settings.WowSettings.WowPath;
             HBProfileInput.FileName = settings.HonorbuddySettings.HonorbuddyProfile;
             HBPathInput.FileName = settings.HonorbuddySettings.HonorbuddyPath;
+            RegionCombo.SelectedItem = settings.WowSettings.Region;
             IsEditing = true;
         }
 
@@ -234,6 +236,15 @@ namespace HighVoltz.HBRelog.Controls
                         DragDrop.DoDragDrop(TaskList, ProfileTaskList.SelectedItem, DragDropEffects.Move);
                     }
                 }
+            }
+        }
+
+        private void RegionCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (MainWindow.Instance.AccountGrid.SelectedItem != null)
+            {
+                ((CharacterProfile)MainWindow.Instance.AccountGrid.SelectedItem).Settings.WowSettings.Region =
+                    (WowSettings.WowRegion)RegionCombo.SelectedItem;
             }
         }
 

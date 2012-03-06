@@ -39,12 +39,13 @@ namespace HighVoltz.HBRelog.Settings
             if (!Directory.Exists(settingsFolder))
                 Directory.CreateDirectory(settingsFolder);
         }
-        public string SettingsPath { 
-            get 
-            { 
-                return Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + 
-                    "\\HighVoltz\\HBRelog\\Setting.xml"; 
-            } 
+        public string SettingsPath
+        {
+            get
+            {
+                return Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) +
+                    "\\HighVoltz\\HBRelog\\Setting.xml";
+            }
         }
         public ObservableCollection<CharacterProfile> CharacterProfiles { get; set; }
         // Automatically start all enabled profiles on start
@@ -57,8 +58,8 @@ namespace HighVoltz.HBRelog.Settings
         public int LoginDelay { get; set; }
         public bool UseDarkStyle { get; set; }
         public bool CheckRealmStatus { get; set; }
-
         public string WowVersion { get; set; }
+
         // offsets
         public uint DxDeviceOffset { get; set; }
         public uint DxDeviceIndex { get; set; }
@@ -101,6 +102,7 @@ namespace HighVoltz.HBRelog.Settings
                     wowSettingsElement.Add(new XElement("AcountName", profile.Settings.WowSettings.AcountName));
                     wowSettingsElement.Add(new XElement("CharacterName", profile.Settings.WowSettings.CharacterName));
                     wowSettingsElement.Add(new XElement("ServerName", profile.Settings.WowSettings.ServerName));
+                    wowSettingsElement.Add(new XElement("Region", profile.Settings.WowSettings.Region));
                     wowSettingsElement.Add(new XElement("WowPath", profile.Settings.WowSettings.WowPath));
                     wowSettingsElement.Add(new XElement("WowWindowWidth", profile.Settings.WowSettings.WowWindowWidth));
                     wowSettingsElement.Add(new XElement("WowWindowHeight", profile.Settings.WowSettings.WowWindowHeight));
@@ -146,7 +148,7 @@ namespace HighVoltz.HBRelog.Settings
         /// <param name="file"></param>
         /// <returns>A GlocalSettings</returns>
         public static GlobalSettings Load()
-        { 
+        {
             GlobalSettings settings = new GlobalSettings();
             if (File.Exists(settings.SettingsPath))
             {
@@ -154,11 +156,11 @@ namespace HighVoltz.HBRelog.Settings
                 settings.WowVersion = root.Element("WowVersion").Value;
                 settings.AutoStart = GetElementValue<bool>(root.Element("AutoStart"));
                 settings.WowDelay = GetElementValue<int>(root.Element("WowDelay"));
-                settings.HBDelay = GetElementValue<int>(root.Element("HBDelay"),10);
-                settings.LoginDelay = GetElementValue<int>(root.Element("LoginDelay"),3);
-                settings.UseDarkStyle = GetElementValue<bool>(root.Element("UseDarkStyle"),true);
-                settings.CheckRealmStatus = GetElementValue<bool>(root.Element("CheckRealmStatus"), false); 
-                
+                settings.HBDelay = GetElementValue<int>(root.Element("HBDelay"), 10);
+                settings.LoginDelay = GetElementValue<int>(root.Element("LoginDelay"), 3);
+                settings.UseDarkStyle = GetElementValue<bool>(root.Element("UseDarkStyle"), true);
+                settings.CheckRealmStatus = GetElementValue<bool>(root.Element("CheckRealmStatus"), false);
+
                 settings.DxDeviceOffset = uint.Parse(root.Element("DxDeviceOffset").Value);
                 settings.DxDeviceIndex = uint.Parse(root.Element("DxDeviceIndex").Value);
                 settings.GameStateOffset = uint.Parse(root.Element("GameStateOffset").Value);
@@ -182,6 +184,7 @@ namespace HighVoltz.HBRelog.Settings
                         profile.Settings.WowSettings.AcountName = GetElementValue<string>(wowSettingsElement.Element("AcountName"));
                         profile.Settings.WowSettings.CharacterName = GetElementValue<string>(wowSettingsElement.Element("CharacterName"));
                         profile.Settings.WowSettings.ServerName = GetElementValue<string>(wowSettingsElement.Element("ServerName"));
+                        profile.Settings.WowSettings.Region = GetElementValue<WowSettings.WowRegion>(wowSettingsElement.Element("Region"));
                         profile.Settings.WowSettings.WowPath = GetElementValue<string>(wowSettingsElement.Element("WowPath"));
                         profile.Settings.WowSettings.WowWindowWidth = GetElementValue<int>(wowSettingsElement.Element("WowWindowWidth"));
                         profile.Settings.WowSettings.WowWindowHeight = GetElementValue<int>(wowSettingsElement.Element("WowWindowHeight"));
@@ -244,7 +247,14 @@ namespace HighVoltz.HBRelog.Settings
         static T GetElementValue<T>(XElement element, T defaultValue = default(T))
         {
             if (element != null)
-                return (T)Convert.ChangeType(element.Value, typeof(T));
+            {
+                if (defaultValue is Enum)
+                {
+                    return (T)Enum.Parse(typeof(T), element.Value);
+                }
+                else
+                    return (T)Convert.ChangeType(element.Value, typeof(T));
+            }
             else
                 return defaultValue;
         }

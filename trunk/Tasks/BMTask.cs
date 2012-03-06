@@ -16,6 +16,7 @@ Copyright 2012 HighVoltz
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
@@ -53,9 +54,40 @@ namespace HighVoltz.HBRelog.Tasks
         }
         [XmlIgnore]
         public CharacterProfile Profile { get; private set; }
-        
+
         [XmlIgnore]
         abstract public string Name { get; }
+
+        protected BMTask NextTask
+        {
+            get
+            {
+                int index = Profile.Tasks.IndexOf(this);
+                if (index >= 0)
+                {
+                    return index + 1 >= Profile.Tasks.Count ? Profile.Tasks[0] : Profile.Tasks[index + 1];
+                }
+                return null;
+            }
+        }
+
+        protected BMTask PrevTask
+        {
+            get
+            {
+                int index = Profile.Tasks.IndexOf(this);
+                if (index >= 0)
+                {
+                    return index == 0 ? Profile.Tasks[Profile.Tasks.Count - 1] : Profile.Tasks[index - 1];
+                }
+                return null;
+            }
+        }
+
+        protected Process BotProcess { get { return Profile.TaskManager.HonorbuddyManager.BotProcess; } }
+
+        protected Process GameProcess { get { return Profile.TaskManager.WowManager.GameProcess; } }
+
         public void SetProfile(CharacterProfile profile)
         {
             Profile = profile;
