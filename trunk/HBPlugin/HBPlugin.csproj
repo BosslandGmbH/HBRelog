@@ -30,10 +30,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="honorbuddy">
-      <HintPath>C:\Users\highvoltz\Desktop\Buddy\Honorbuddy\honorbuddy.exe</HintPath>
-      <Private>False</Private>
+    <Reference Include="Honorbuddy">
+      <HintPath>..\bin\Honorbuddy.exe</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Synchronization.Data, Version=1.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />

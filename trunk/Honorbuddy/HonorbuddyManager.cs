@@ -20,6 +20,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using HighVoltz.HBRelog;
 
 namespace HighVoltz.HBRelog.Honorbuddy
@@ -46,6 +47,25 @@ namespace HighVoltz.HBRelog.Honorbuddy
         public void SetSettings(HonorbuddySettings settings)
         {
             Settings = settings;
+        }
+
+        Timer _hbCloseTimer;
+        void CloseBotProcess()
+        {
+            if (BotProcess != null && !BotProcess.HasExited)
+            {
+                Profile.Log("Attempting to close Honorbuddy");
+                BotProcess.CloseMainWindow();
+                _hbCloseTimer = new Timer(state =>
+                {
+                    if (!((Process)state).HasExited)
+                    {
+                        Profile.Log("Killing Honorbuddy");
+                        ((Process)state).Kill();
+                    }
+                }, BotProcess, 10000, Timeout.Infinite);
+            }
+            BotProcess = null;
         }
 
         bool _pluginIsUptodate = false;
@@ -141,15 +161,20 @@ namespace HighVoltz.HBRelog.Honorbuddy
 
                 // check if it's taking Honorbuddy too long to connect.
                 if (!StartupSequenceIsComplete && DateTime.Now - _hbStartupTimeStamp > TimeSpan.FromMinutes(3))
-                    BotProcess.CloseMainWindow();
+                    CloseBotProcess();
                 if (!HBIsResponding || HBHasCrashed)
                 {
                     if (!HBIsResponding) // we need to kill the process if it's not responding. 
-                        BotProcess.Kill();
+                    {
+                        Profile.Log("Honorbuddy is not responding.. So lets restart it");
+                        Profile.Status = "Honorbuddy isn't responding. restarting";
+                    }
                     else// otherwise nicely close the window instead so it can logout serverside.
-                        BotProcess.CloseMainWindow();
-                    Profile.Log("Honorbuddy has crashed.. So lets restart it");
-                    Profile.Status = "Honorbuddy has crashed. restarting";
+                    {
+                        Profile.Log("Honorbuddy has crashed.. So lets restart it");
+                        Profile.Status = "Honorbuddy has crashed. restarting";
+                    }
+                    CloseBotProcess();
                     StartupSequenceIsComplete = false;
                     IsRunning = false;
                 }
@@ -161,7 +186,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
             if (IsRunning)
             {
                 if (BotProcess != null && !BotProcess.HasExited)
-                    BotProcess.CloseMainWindow();
+                    CloseBotProcess();
                 BotProcess = null;
                 IsRunning = false;
                 StartupSequenceIsComplete = false;
