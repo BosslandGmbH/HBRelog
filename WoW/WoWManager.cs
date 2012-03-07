@@ -106,7 +106,7 @@ namespace HighVoltz.HBRelog.WoW
                 {
                     Profile.Log("WoW has disconnected or crashed.. So lets restart WoW");
                     Profile.Status = "WoW has DCed or crashed. restarting";
-                    CloseGameProcess(true);
+                    CloseGameProcess();
                     _wowLoginTimer.Dispose();
                 }
             }
@@ -116,33 +116,37 @@ namespace HighVoltz.HBRelog.WoW
             }
         }
 
-        void CloseGameProcess(bool kill = false)
+        Timer _wowCloseTimer;
+        void CloseGameProcess()
         {
             try
             {
-                if (GameProcess != null && !GameProcess.HasExited)
-                {
-                    if (kill)
-                        GameProcess.Kill();
-                    else
-                        GameProcess.CloseMainWindow();
-                }
+                CloseGameProcess(GameProcess);
             }
             // handle the "No process is associated with this object' exception while wow process is still 'active'
             catch (InvalidOperationException ex)
             {
                 Log.Err(ex.ToString());
                 if (WowHook != null)
+                    CloseGameProcess(Process.GetProcessById(WowHook.ProcessID));
+            }
+            GameProcess = null;
+        }
+
+        void CloseGameProcess(Process proc)
+        {
+            if (proc != null && !proc.HasExited)
+            {
+                Profile.Log("Attempting to close Wow");
+                proc.CloseMainWindow();
+                _wowCloseTimer = new Timer(state =>
                 {
-                    Process proc = Process.GetProcessById(WowHook.ProcessID);
-                    if (proc != null)
+                    if (!((Process)state).HasExited)
                     {
-                        if (kill)
-                            GameProcess.Kill();
-                        else
-                            GameProcess.CloseMainWindow();
+                        Profile.Log("Killing Wow");
+                        ((Process)state).Kill();
                     }
-                }
+                }, proc, 6000, Timeout.Infinite);
             }
         }
 
@@ -236,7 +240,7 @@ namespace HighVoltz.HBRelog.WoW
                         LoginWoW();
                     }
                     // remove hook since its nolonger needed.
-                    if (WowHook.Installed && (InGame || IsConnectiongOrLoading))
+                    if (WowHook.Installed && (InGame || IsConnectiongOrLoading) && WowHook != null)
                     {
                         Profile.Log("Login sequence complete. Removing hook");
                         Profile.Status = "Logged into WoW";
@@ -246,18 +250,24 @@ namespace HighVoltz.HBRelog.WoW
                             OnStartupSequenceIsComplete(this, new ProfileEventArgs(Profile));
                     }
                     // if WoW has disconnected or crashed close wow and start the login sequence again.
-                    if (StartupSequenceIsComplete && GlueStatus == GlueState.Disconnected)
+                    if ((StartupSequenceIsComplete && GlueStatus == GlueState.Disconnected) || !WoWIsResponding || WowHasCrashed)
                     {
-                        Profile.Log("WoW has disconnected.. So lets restart WoW");
-                        Profile.Status = "WoW has DCed. restarting";
+                        if (!WoWIsResponding)
+                        {
+                            Profile.Status = "WoW is not responding. restarting";
+                            Profile.Log("WoW is not responding.. So lets restart WoW");
+                        }
+                        else if (WowHasCrashed)
+                        {
+                            Profile.Status = "WoW has crashed. restarting";
+                            Profile.Log("WoW has crashed.. So lets restart WoW");
+                        }
+                        else
+                        {
+                            Profile.Log("WoW has disconnected.. So lets restart WoW");
+                            Profile.Status = "WoW has DCed. restarting";
+                        }
                         CloseGameProcess();
-                        StartWoW();
-                    }
-                    else if (!WoWIsResponding || WowHasCrashed)
-                    {
-                        Profile.Status = "WoW has crashed. restarting";
-                        Profile.Log("WoW has crashed.. So lets restart WoW");
-                        CloseGameProcess(true);
                         StartWoW();
                     }
                 }
@@ -285,8 +295,7 @@ namespace HighVoltz.HBRelog.WoW
                         if (!_serverSelectionSW.IsRunning)
                             _serverSelectionSW.Start();
                         var status = HBRelogManager.WowRealmStatus[Settings.ServerName, Settings.Region];
-                        bool serverHasQueue = !HBRelogManager.Settings.CheckRealmStatus ||
-                               (HBRelogManager.Settings.CheckRealmStatus && status != null && status.InQueue);
+                        bool serverHasQueue = HBRelogManager.Settings.CheckRealmStatus && status != null && status.InQueue;
                         // check once every 20 seconds
                         if (_serverSelectionSW.ElapsedMilliseconds > 20000 && !serverHasQueue)
                         {
