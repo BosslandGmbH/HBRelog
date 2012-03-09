@@ -105,26 +105,25 @@ namespace HighVoltz.HBRelog
                                 process.Kill();
                                 Log.Write("Killing WowError process");
                             }
-                            // check for stray HB instances that are not attached to a valid WOW process
-                            foreach (var process in Process.GetProcessesByName("Honorbuddy"))
-                            {
-                                string title = NativeMethods.GetWindowText(process.MainWindowHandle);
-                                var match = _hbTitleRegex.Match(title);
-                                if (match.Success)
-                                {
-                                    int wowProcId = int.Parse(match.Groups["id"].Value);
-                                    Process[] wowProcessIds = Process.GetProcessesByName("Wow");
-                                    bool hbIsStray = !wowProcessIds.Any(proc => proc != null && !proc.HasExited && proc.Id == wowProcId);
-                                    if (hbIsStray)
-                                    {
-                                        process.CloseMainWindow();
-                                        Log.Write("Closing stray honorbuddy process.");
-                                    }
-                                }
-                            }
+                            //// check for stray HB instances that are not attached to a valid WOW process
+                            //foreach (var process in Process.GetProcessesByName("Honorbuddy"))
+                            //{
+                            //    string title = NativeMethods.GetWindowText(process.MainWindowHandle);
+                            //    var match = _hbTitleRegex.Match(title);
+                            //    if (match.Success)
+                            //    {
+                            //        int wowProcId = int.Parse(match.Groups["id"].Value);
+                            //        Process[] wowProcessIds = Process.GetProcessesByName("Wow");
+                            //        bool hbIsStray = !wowProcessIds.Any(proc => proc != null && !proc.HasExited && proc.Id == wowProcId);
+                            //        if (hbIsStray)
+                            //        {
+                            //            process.CloseMainWindow();
+                            //            Log.Write("Closing stray honorbuddy process.");
+                            //        }
+                            //    }
+                            //}
                             _killWowErrsTimeStamp = DateTime.Now;
                         }
-
                     }
                 }
                 catch (Exception ex)

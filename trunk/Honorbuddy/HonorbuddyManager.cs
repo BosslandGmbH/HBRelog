@@ -160,8 +160,11 @@ namespace HighVoltz.HBRelog.Honorbuddy
                     return;
 
                 // check if it's taking Honorbuddy too long to connect.
-                if (!StartupSequenceIsComplete && DateTime.Now - _hbStartupTimeStamp > TimeSpan.FromMinutes(3))
+                if (!StartupSequenceIsComplete && DateTime.Now - _hbStartupTimeStamp > TimeSpan.FromMinutes(1))
+                {
+                    Profile.Log("Closing Honorbuddy because it took too long to attach");
                     CloseBotProcess();
+                }
                 if (!HBIsResponding || HBHasCrashed)
                 {
                     if (!HBIsResponding) // we need to kill the process if it's not responding. 
@@ -187,7 +190,6 @@ namespace HighVoltz.HBRelog.Honorbuddy
             {
                 if (BotProcess != null && !BotProcess.HasExited)
                     CloseBotProcess();
-                BotProcess = null;
                 IsRunning = false;
                 StartupSequenceIsComplete = false;
             }
