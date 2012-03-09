@@ -50,7 +50,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
         }
 
         Timer _hbCloseTimer;
-        void CloseBotProcess()
+        public void CloseBotProcess()
         {
             if (BotProcess != null && !BotProcess.HasExited)
             {
