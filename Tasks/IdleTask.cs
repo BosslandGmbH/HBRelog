@@ -63,10 +63,8 @@ namespace HighVoltz.HBRelog.Tasks
                 _waitTime = TimeSpan.FromMinutes(Minutes + Utility.Rand.Next(-RandomMinutes, RandomMinutes));
                 Profile.Log("Idling for {0} minutes before executing next task", _waitTime.TotalMinutes);
                 _timeStamp = DateTime.Now;
-                if (Profile.TaskManager.WowManager.IsRunning)
-                    Profile.TaskManager.WowManager.Stop();
-                if (Profile.TaskManager.HonorbuddyManager.IsRunning)
-                    Profile.TaskManager.HonorbuddyManager.Stop();
+                Profile.TaskManager.WowManager.Stop();
+                Profile.TaskManager.HonorbuddyManager.Stop();
             }
             Profile.Status = string.Format("Idling for {0} minutes", (int)((_waitTime - (DateTime.Now - _timeStamp)).TotalMinutes));
             ToolTip = Profile.Status;

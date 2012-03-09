@@ -102,10 +102,18 @@ namespace HighVoltz.HBRelog.WoW
                 // once hook to endscene is removed then we can dispose this timer and check for crashes from the main thread.
                 if (!IsRunning || StartupSequenceIsComplete)
                     _wowLoginTimer.Dispose();
-                else if (!Profile.IsPaused && !WoWIsResponding || WowHasCrashed)
+                else if (!Profile.IsPaused && (!WoWIsResponding || WowHasCrashed))
                 {
-                    Profile.Log("WoW has disconnected or crashed.. So lets restart WoW");
-                    Profile.Status = "WoW has DCed or crashed. restarting";
+                    if (!WoWIsResponding)
+                    {
+                        Profile.Status = "WoW is not responding. restarting";
+                        Profile.Log("WoW is not responding.. So lets restart WoW");
+                    }
+                    else if (WowHasCrashed)
+                    {
+                        Profile.Status = "WoW has crashed. restarting";
+                        Profile.Log("WoW has crashed.. So lets restart WoW");
+                    }
                     CloseGameProcess();
                     _wowLoginTimer.Dispose();
                 }
@@ -117,7 +125,7 @@ namespace HighVoltz.HBRelog.WoW
         }
 
         Timer _wowCloseTimer;
-        void CloseGameProcess()
+        public void CloseGameProcess()
         {
             try
             {
@@ -176,7 +184,6 @@ namespace HighVoltz.HBRelog.WoW
                     _wowLoginTimer.Dispose();
                 WowHook = null;
                 CloseGameProcess();
-                GameProcess = null;
                 IsRunning = false;
                 StartupSequenceIsComplete = false;
             }
