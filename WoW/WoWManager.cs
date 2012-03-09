@@ -129,6 +129,7 @@ namespace HighVoltz.HBRelog.WoW
         {
             try
             {
+                Profile.TaskManager.HonorbuddyManager.CloseBotProcess();
                 CloseGameProcess(GameProcess);
             }
             // handle the "No process is associated with this object' exception while wow process is still 'active'
@@ -257,7 +258,9 @@ namespace HighVoltz.HBRelog.WoW
                             OnStartupSequenceIsComplete(this, new ProfileEventArgs(Profile));
                     }
                     // if WoW has disconnected or crashed close wow and start the login sequence again.
-                    if ((StartupSequenceIsComplete && GlueStatus == GlueState.Disconnected) || !WoWIsResponding || WowHasCrashed)
+
+                    if ((StartupSequenceIsComplete && (GlueStatus == GlueState.Disconnected || WowIsLoggedOutForTooLong))
+                        || !WoWIsResponding || WowHasCrashed)
                     {
                         if (!WoWIsResponding)
                         {
@@ -268,6 +271,11 @@ namespace HighVoltz.HBRelog.WoW
                         {
                             Profile.Status = "WoW has crashed. restarting";
                             Profile.Log("WoW has crashed.. So lets restart WoW");
+                        }
+                        else if (WowIsLoggedOutForTooLong)
+                        {
+                            Profile.Log("Restarting wow because it was logged out for more than 40 seconds");
+                            Profile.Status = "WoW was logged out for too long. restarting";
                         }
                         else
                         {
@@ -409,6 +417,30 @@ namespace HighVoltz.HBRelog.WoW
                     }
                 }
                 return false;
+            }
+        }
+
+        DateTime _loggedoutTimeStamp = DateTime.Now;
+        bool _wowIsLoggedOutForTooLong = false;
+        Stopwatch _loggedOutSW = new Stopwatch();
+
+        public bool WowIsLoggedOutForTooLong
+        {  
+            get
+            {
+                // check for crash every 10 seconds and cache the result
+                if (DateTime.Now - _loggedoutTimeStamp >= TimeSpan.FromSeconds(10))
+                {
+                    if (!InGame)
+                    {
+                        if (!_loggedOutSW.IsRunning)
+                            _loggedOutSW.Start();
+                    }
+                    else if (_loggedOutSW.IsRunning)
+                        _loggedOutSW.Reset();
+                    _loggedoutTimeStamp = DateTime.Now;
+                }
+                return _loggedOutSW.ElapsedMilliseconds >= 40000;
             }
         }
 
