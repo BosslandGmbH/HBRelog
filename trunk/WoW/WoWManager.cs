@@ -486,14 +486,24 @@ namespace HighVoltz.HBRelog.WoW
                 "if GetServerName():upper() ~= server:upper() and (not RealmList or not RealmList:IsVisible()) then " +
                     "RequestRealmList(1) " +
                 "else " +
-                    "for i = 1,GetNumCharacters() do " +
-            //"local name = GetCharacterInfo(i) " +
-            //"GlueDialog_Show('ACCOUNT_MSG',name:upper()..':'..'" + character + "') " + 
-                        "if (GetCharacterInfo(i):upper() == name:upper()) then " +
-                            "CharacterSelect_SelectCharacter(i) " +
-                            "CharSelectEnterWorldButton:Click() " +
+                    "if (GetCharacterInfo(CharacterSelect.selectedIndex):upper() == name:upper()) then " +
+                        "CharSelectEnterWorldButton:Click() " +
+                    "else " +
+                        "for i = 1,GetNumCharacters() do " +
+                            "if (GetCharacterInfo(i):upper() == name:upper()) then " +
+                                "CharacterSelect_SelectCharacter(i) " +
+                                "return "+
+                            "end " +
                         "end " +
                     "end " +
+            //        "for i = 1,GetNumCharacters() do " +
+            ////"local name = GetCharacterInfo(i) " +
+            ////"GlueDialog_Show('ACCOUNT_MSG',name:upper()..':'..CharacterSelect.selectedIndex) " + 
+            //            "if (GetCharacterInfo(i):upper() == name:upper()) then " +
+            //               // "CharacterSelect_SelectCharacter(i) " +
+            //               // "CharSelectEnterWorldButton:Click() " +
+            //            "end " +
+            //        "end " +
                 "end " +
             "elseif (CharCreateRandomizeButton and CharCreateRandomizeButton:IsVisible()) then " +
                 "CharacterCreate_Back() " +
