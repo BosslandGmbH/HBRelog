@@ -27,6 +27,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
 {
     public class HonorbuddyManager : IBotManager
     {
+        object _lockObject = new object();
         public bool IsRunning { get; private set; }
         public bool StartupSequenceIsComplete { get; private set; }
         public event EventHandler<ProfileEventArgs> OnStartupSequenceIsComplete;
@@ -55,7 +56,6 @@ namespace HighVoltz.HBRelog.Honorbuddy
             if (BotProcess != null && !BotProcess.HasExited)
             {
                 Profile.Log("Attempting to close Honorbuddy");
-                BotProcess.CloseMainWindow();
                 _hbCloseTimer = new Timer(state =>
                 {
                     if (!((Process)state).HasExited)
@@ -63,7 +63,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
                         Profile.Log("Killing Honorbuddy");
                         ((Process)state).Kill();
                     }
-                }, BotProcess, 10000, Timeout.Infinite);
+                }, BotProcess, 15000, Timeout.Infinite);
             }
             BotProcess = null;
         }
@@ -112,80 +112,84 @@ namespace HighVoltz.HBRelog.Honorbuddy
         DateTime _hbStartupTimeStamp;
         public void Pulse()
         {
-            if (IsRunning)
+            lock (_lockObject)
             {
-                var gameProc = Profile.TaskManager.WowManager.GameProcess;
-                if (gameProc == null || gameProc.HasExited)
+                if (IsRunning)
                 {
-                    Stop();
-                    return;
-                }
-                if (_waitingToStart)
-                {  // we need to delay starting honorbuddy for a few seconds if another instance from same path was started a few seconds ago
-                    if (HBStartupManager.CanStart(Settings.HonorbuddyPath))
+                    var gameProc = Profile.TaskManager.WowManager.GameProcess;
+                    if (gameProc == null || gameProc.HasExited)
                     {
-                        Profile.Log("starting {0}", Profile.Settings.HonorbuddySettings.HonorbuddyPath);
-                        Profile.Status = "Starting Honorbuddy";
-                        StartupSequenceIsComplete = false;
-                        string hbArgs = string.Format("/pid={0} /autostart {1}{2}{3}",
-                            Profile.TaskManager.WowManager.GameProcess.Id,
-                            !string.IsNullOrEmpty(Settings.CustomClass) ? string.Format("/customclass=\"{0}\" ", Settings.CustomClass) : string.Empty,
-                            !string.IsNullOrEmpty(Settings.HonorbuddyPath) ? string.Format("/loadprofile=\"{0}\" ", Settings.HonorbuddyProfile) : string.Empty,
-                            !string.IsNullOrEmpty(Settings.BotBase) ? string.Format("/botname=\"{0}\" ", Settings.BotBase) : string.Empty
-                            );
-                        var hbWorkingDirectory = Path.GetDirectoryName(Settings.HonorbuddyPath);
-                        var procStartI = new ProcessStartInfo(Settings.HonorbuddyPath, hbArgs)
-                        {
-                            WorkingDirectory = hbWorkingDirectory
-                        };
-                        BotProcess = Process.Start(procStartI);
-                        _hbStartupTimeStamp = DateTime.Now;
-                        _waitingToStart = false;
-                    }
-                    else
+                        Stop();
                         return;
-                }
-                // restart wow hb if it has exited
-                if (BotProcess.HasExited)
-                {
-                    Profile.Log("Honorbuddy process was terminated. Restarting");
-
-                    Profile.Status = "Honorbuddy has exited.";
-                    StartupSequenceIsComplete = false;
-                    IsRunning = false;
-                    return;
-                }
-                // return if hb isn't ready for input.
-                if (!BotProcess.WaitForInputIdle(0))
-                    return;
-
-                // check if it's taking Honorbuddy too long to connect.
-                if (!StartupSequenceIsComplete && DateTime.Now - _hbStartupTimeStamp > TimeSpan.FromMinutes(1))
-                {
-                    Profile.Log("Closing Honorbuddy because it took too long to attach");
-                    CloseBotProcess();
-                }
-                if (!HBIsResponding || HBHasCrashed)
-                {
-                    if (!HBIsResponding) // we need to kill the process if it's not responding. 
-                    {
-                        Profile.Log("Honorbuddy is not responding.. So lets restart it");
-                        Profile.Status = "Honorbuddy isn't responding. restarting";
                     }
-                    else// otherwise nicely close the window instead so it can logout serverside.
-                    {
-                        Profile.Log("Honorbuddy has crashed.. So lets restart it");
-                        Profile.Status = "Honorbuddy has crashed. restarting";
+                    if (_waitingToStart)
+                    {  // we need to delay starting honorbuddy for a few seconds if another instance from same path was started a few seconds ago
+                        if (HBStartupManager.CanStart(Settings.HonorbuddyPath))
+                        {
+                            Profile.Log("starting {0}", Profile.Settings.HonorbuddySettings.HonorbuddyPath);
+                            Profile.Status = "Starting Honorbuddy";
+                            StartupSequenceIsComplete = false;
+                            string hbArgs = string.Format("/pid={0} /autostart {1}{2}{3}",
+                                Profile.TaskManager.WowManager.GameProcess.Id,
+                                !string.IsNullOrEmpty(Settings.CustomClass) ? string.Format("/customclass=\"{0}\" ", Settings.CustomClass) : string.Empty,
+                                !string.IsNullOrEmpty(Settings.HonorbuddyPath) ? string.Format("/loadprofile=\"{0}\" ", Settings.HonorbuddyProfile) : string.Empty,
+                                !string.IsNullOrEmpty(Settings.BotBase) ? string.Format("/botname=\"{0}\" ", Settings.BotBase) : string.Empty
+                                );
+                            var hbWorkingDirectory = Path.GetDirectoryName(Settings.HonorbuddyPath);
+                            var procStartI = new ProcessStartInfo(Settings.HonorbuddyPath, hbArgs)
+                            {
+                                WorkingDirectory = hbWorkingDirectory
+                            };
+                            BotProcess = Process.Start(procStartI);
+                            _hbStartupTimeStamp = DateTime.Now;
+                            _waitingToStart = false;
+                        }
+                        else
+                            return;
                     }
-                    CloseBotProcess();
-                    StartupSequenceIsComplete = false;
-                    IsRunning = false;
+                    // restart wow hb if it has exited
+                    if (BotProcess == null || BotProcess.HasExited)
+                    {
+                        Profile.Log("Honorbuddy process was terminated. Restarting");
+                        Profile.Status = "Honorbuddy has exited.";
+                        StartupSequenceIsComplete = false;
+                        IsRunning = false;
+                        return;
+                    }
+                    // return if hb isn't ready for input.
+                    if (!BotProcess.WaitForInputIdle(0))
+                        return;
+
+                    // check if it's taking Honorbuddy too long to connect.
+                    if (!StartupSequenceIsComplete && DateTime.Now - _hbStartupTimeStamp > TimeSpan.FromMinutes(1))
+                    {
+                        Profile.Log("Closing Honorbuddy because it took too long to attach");
+                        CloseBotProcess();
+                    }
+                    if (!HBIsResponding || HBHasCrashed)
+                    {
+                        if (!HBIsResponding) // we need to kill the process if it's not responding. 
+                        {
+                            Profile.Log("Honorbuddy is not responding.. So lets restart it");
+                            Profile.Status = "Honorbuddy isn't responding. restarting";
+                        }
+                        else// otherwise nicely close the window instead so it can logout serverside.
+                        {
+                            Profile.Log("Honorbuddy has crashed.. So lets restart it");
+                            Profile.Status = "Honorbuddy has crashed. restarting";
+                        }
+                        CloseBotProcess();
+                        StartupSequenceIsComplete = false;
+                        IsRunning = false;
+                    }
                 }
             }
         }
 
         public void Stop()
         {
+            // try to aquire lock, if fail then kill process anyways.
+            bool lockAquried = Monitor.TryEnter(_lockObject, 500);
             if (IsRunning)
             {
                 if (BotProcess != null && !BotProcess.HasExited)
@@ -193,6 +197,8 @@ namespace HighVoltz.HBRelog.Honorbuddy
                 IsRunning = false;
                 StartupSequenceIsComplete = false;
             }
+            if (lockAquried) // release lock if it was aquired
+                Monitor.Exit(_lockObject);
         }
 
         public void SetStartupSequenceToComplete()

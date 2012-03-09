@@ -113,8 +113,8 @@ namespace HighVoltz.HBRelog
         {
             Profile.Status = "Stopped";
             StartupSequenceIsComplete = false;
-            HonorbuddyManager.Stop();
             WowManager.Stop();
+            HonorbuddyManager.Stop();
             foreach (var task in Tasks)
                 task.Reset();
             IsRunning = false;

@@ -129,7 +129,6 @@ namespace HighVoltz.HBRelog.WoW
         {
             try
             {
-                Profile.TaskManager.HonorbuddyManager.CloseBotProcess();
                 CloseGameProcess(GameProcess);
             }
             // handle the "No process is associated with this object' exception while wow process is still 'active'
@@ -139,6 +138,7 @@ namespace HighVoltz.HBRelog.WoW
                 if (WowHook != null)
                     CloseGameProcess(Process.GetProcessById(WowHook.ProcessID));
             }
+            Profile.TaskManager.HonorbuddyManager.CloseBotProcess();
             GameProcess = null;
         }
 
@@ -425,7 +425,7 @@ namespace HighVoltz.HBRelog.WoW
         Stopwatch _loggedOutSW = new Stopwatch();
 
         public bool WowIsLoggedOutForTooLong
-        {  
+        {
             get
             {
                 // check for crash every 10 seconds and cache the result
@@ -435,12 +435,16 @@ namespace HighVoltz.HBRelog.WoW
                     {
                         if (!_loggedOutSW.IsRunning)
                             _loggedOutSW.Start();
+                        _wowIsLoggedOutForTooLong = _loggedOutSW.ElapsedMilliseconds >= 40000;
+                        // reset the timer so it doesn't trigger until 40 more seconds has elapsed while not in game.
+                        if (_wowIsLoggedOutForTooLong)
+                            _loggedOutSW.Reset();
                     }
                     else if (_loggedOutSW.IsRunning)
                         _loggedOutSW.Reset();
                     _loggedoutTimeStamp = DateTime.Now;
                 }
-                return _loggedOutSW.ElapsedMilliseconds >= 40000;
+                return _wowIsLoggedOutForTooLong;
             }
         }
 
