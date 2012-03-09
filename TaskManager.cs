@@ -97,6 +97,20 @@ namespace HighVoltz.HBRelog
 
         public void Start()
         {
+            // display tasks in log for debugin purposes
+            if (!StartupSequenceIsComplete)
+            {
+                Profile.Log("********* Tasks ***********");
+                foreach (var task in Profile.Tasks)
+                {
+                    // the tooltip for Logon Task can contain character name so lets just print the name of task to log instead.
+                    if (task is LogonTask)
+                        Profile.Log(task.Name);
+                    else
+                        Profile.Log(task.ToolTip);
+                }
+                Profile.Log("********* End of Task list ***********");
+            }
             // check if idle is 1st task.
             bool idleIs1stTask = Profile.Tasks.Count > 0 && Profile.Tasks[0] is IdleTask;
             if (!WowManager.IsRunning && !idleIs1stTask)
