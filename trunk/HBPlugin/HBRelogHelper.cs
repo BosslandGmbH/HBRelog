@@ -107,11 +107,16 @@ namespace HighVoltz.HBRelogHelper
 
         void Shutdown()
         {
-            if (pipeFactory.State == CommunicationState.Opened || pipeFactory.State == CommunicationState.Opening)
+            try
             {
-                pipeFactory.Close();
-                pipeFactory.Abort();
+                if (pipeFactory.State == CommunicationState.Opened || pipeFactory.State == CommunicationState.Opening)
+                {
+                    pipeFactory.Close();
+                    pipeFactory.Abort();
+                }
             }
+            catch
+            { }
         }
         void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
@@ -128,25 +133,32 @@ namespace HighVoltz.HBRelogHelper
         static DateTime RunningTimeStamp = DateTime.Now;
         public static void MonitorTimerCB(object sender, EventArgs args)
         {
-            if (!IsConnected)
-                return;
-            if (!TreeRoot.IsRunning)
+            try
             {
-                int profileStatus = HBRelogRemoteApi.GetProfileStatus(CurrentProfileName);
-                // if HB isn't running after 30 seconds 
-                // and the HBRelog profile isn't paused then restart hb
-                if (profileStatus != 1 && DateTime.Now - RunningTimeStamp >= TimeSpan.FromSeconds(50))
-                    HBRelogRemoteApi.RestartHB(HbProcId);
+                if (!IsConnected)
+                    return;
+                if (!TreeRoot.IsRunning)
+                {
+                    int profileStatus = HBRelogRemoteApi.GetProfileStatus(CurrentProfileName);
+                    // if HB isn't running after 30 seconds 
+                    // and the HBRelog profile isn't paused then restart hb
+                    if (profileStatus != 1 && DateTime.Now - RunningTimeStamp >= TimeSpan.FromSeconds(50))
+                        HBRelogRemoteApi.RestartHB(HbProcId);
+                }
+                else
+                    RunningTimeStamp = DateTime.Now;
+                if (TreeRoot.StatusText != _lastStatus && !string.IsNullOrEmpty(TreeRoot.StatusText))
+                {
+                    HBRelogRemoteApi.SetProfileStatusText(HbProcId, TreeRoot.StatusText);
+                    _lastStatus = TreeRoot.StatusText;
+                }
+                if (InfoPanel.IsMeasuring)
+                    UpdateTooltip();
             }
-            else
-                RunningTimeStamp = DateTime.Now;
-            if (TreeRoot.StatusText != _lastStatus && !string.IsNullOrEmpty(TreeRoot.StatusText))
+            catch (Exception ex)
             {
-                HBRelogRemoteApi.SetProfileStatusText(HbProcId, TreeRoot.StatusText);
-                _lastStatus = TreeRoot.StatusText;
+                Logging.WriteException(ex);
             }
-            if (InfoPanel.IsMeasuring)
-                UpdateTooltip();
         }
 
         private static void UpdateTooltip()
