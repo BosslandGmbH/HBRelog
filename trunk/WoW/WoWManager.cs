@@ -125,6 +125,8 @@ namespace HighVoltz.HBRelog.WoW
         }
 
         Timer _wowCloseTimer;
+        int _windowCloseAttempt = 0;
+
         public void CloseGameProcess()
         {
             try
@@ -147,15 +149,30 @@ namespace HighVoltz.HBRelog.WoW
             if (proc != null && !proc.HasExited)
             {
                 Profile.Log("Attempting to close Wow");
-                proc.CloseMainWindow();
-                _wowCloseTimer = new Timer(state =>
+                if (!proc.CloseMainWindow())
                 {
-                    if (!((Process)state).HasExited)
+                    _windowCloseAttempt++;
+                    _wowCloseTimer = new Timer(state =>
                     {
-                        Profile.Log("Killing Wow");
-                        ((Process)state).Kill();
-                    }
-                }, proc, 6000, Timeout.Infinite);
+                        if (!((Process)state).HasExited)
+                        {
+                            if (!proc.CloseMainWindow() && _windowCloseAttempt++ >= 6)
+                            {
+                                Profile.Log("Killing Wow");
+                                ((Process)state).Kill();
+                                _windowCloseAttempt = 0;
+                                _wowCloseTimer.Dispose();
+                            }
+                            else
+                            {
+                                _wowCloseTimer.Dispose();
+                                _windowCloseAttempt = 0;
+                            }
+                        }
+                    }, proc, 1000, 1000);
+                }
+                else
+                    _windowCloseAttempt = 0;
             }
         }
 
@@ -492,7 +509,7 @@ namespace HighVoltz.HBRelog.WoW
                         "for i = 1,GetNumCharacters() do " +
                             "if (GetCharacterInfo(i):upper() == name:upper()) then " +
                                 "CharacterSelect_SelectCharacter(i) " +
-                                "return "+
+                                "return " +
                             "end " +
                         "end " +
                     "end " +
