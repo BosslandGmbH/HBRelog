@@ -51,21 +51,42 @@ namespace HighVoltz.HBRelog.Honorbuddy
         }
 
         Timer _hbCloseTimer;
+        int _windowCloseAttempt = 0;
         public void CloseBotProcess()
         {
             if (BotProcess != null && !BotProcess.HasExited)
             {
                 Profile.Log("Attempting to close Honorbuddy");
-                _hbCloseTimer = new Timer(state =>
+                if (BotProcess.CloseMainWindow())
                 {
-                    if (!((Process)state).HasExited)
+                    BotProcess = null;
+                    _windowCloseAttempt = 0;
+                }
+                else
+                {
+                    _windowCloseAttempt++;
+                    _hbCloseTimer = new Timer(state =>
                     {
-                        Profile.Log("Killing Honorbuddy");
-                        ((Process)state).Kill();
-                    }
-                }, BotProcess, 15000, Timeout.Infinite);
+                        if (!((Process)state).HasExited)
+                        {
+                            if (((Process)state).CloseMainWindow() && _windowCloseAttempt++ < 15)
+                            {
+                                BotProcess = null;
+                                _windowCloseAttempt = 0;
+                                _hbCloseTimer.Dispose();
+                            }
+                            else if (_windowCloseAttempt >= 15)
+                            {
+                                Profile.Log("Killing Honorbuddy");
+                                ((Process)state).Kill();
+                                BotProcess = null;
+                                _windowCloseAttempt = 0;
+                                _hbCloseTimer.Dispose();
+                            }
+                        }
+                    }, BotProcess, 1000, 1000);
+                }
             }
-            BotProcess = null;
         }
 
         bool _pluginIsUptodate = false;
@@ -122,7 +143,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
                         Stop();
                         return;
                     }
-                    if (_waitingToStart)
+                    if (_waitingToStart && BotProcess == null)
                     {  // we need to delay starting honorbuddy for a few seconds if another instance from same path was started a few seconds ago
                         if (HBStartupManager.CanStart(Settings.HonorbuddyPath))
                         {
