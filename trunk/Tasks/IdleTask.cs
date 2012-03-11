@@ -71,7 +71,9 @@ namespace HighVoltz.HBRelog.Tasks
             if (DateTime.Now - _timeStamp >= _waitTime)
             {
                 IsDone = true;
-                Profile.Start();
+                // if next task is not a LogonTask then we log back in game on same character.
+                if (!(NextTask is LogonTask))
+                    Profile.Start();
                 Profile.Log("Idle complete");
             }
         }
