@@ -1,4 +1,5 @@
-﻿//!CompilerOption:AddRef:Remoting.dll
+﻿//!CompilerOption:Optimize:On
+//!CompilerOption:AddRef:Remoting.dll
 using System;
 using System.Collections;
 using System.Collections.Generic;
