@@ -173,6 +173,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
                     {
                         Profile.Log("Honorbuddy process was terminated. Restarting");
                         Profile.Status = "Honorbuddy has exited.";
+                        BotProcess = null;
                         StartupSequenceIsComplete = false;
                         IsRunning = false;
                         return;
