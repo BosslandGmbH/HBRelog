@@ -239,12 +239,15 @@ namespace HighVoltz.HBRelog.Honorbuddy
             get
             {
                 bool isResponding = BotProcess.Responding;
-                if (!isResponding && !_hbRespondingSW.IsRunning)
+                if (!isResponding && StartupSequenceIsComplete)
+                {
+                    if (!_hbRespondingSW.IsRunning)
+                        _hbRespondingSW.Start();
+                    if (_hbRespondingSW.ElapsedMilliseconds >= 10000)
+                        return false;
+                }
+                else if (_hbRespondingSW.IsRunning)
                     _hbRespondingSW.Start();
-                if (_hbRespondingSW.ElapsedMilliseconds >= 10000 && !isResponding)
-                    return false;
-                else if (isResponding && _hbRespondingSW.IsRunning)
-                    _hbRespondingSW.Reset();
                 return true;
             }
         }
