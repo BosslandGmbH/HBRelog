@@ -8,6 +8,7 @@ using System.Threading;
 using HighVoltz.HBRelog;
 using System.Linq;
 using Magic;
+using System.Windows;
 
 namespace HighVoltz.HBRelog.WoW
 {
@@ -41,6 +42,11 @@ namespace HighVoltz.HBRelog.WoW
         {
             try
             {
+                // check if target is 64 bit
+                if (Utility.Is64BitProcess(_wowProcess))
+                {
+                    throw new InvalidOperationException("Only 32bit Wow is supported");
+                }
                 // check if we need to scan for offsets
                 if (string.IsNullOrEmpty(HBRelogManager.Settings.WowVersion) || !HBRelogManager.Settings.WowVersion.Equals(WoWVersion))
                     ScanForOffset();
@@ -52,9 +58,7 @@ namespace HighVoltz.HBRelog.WoW
                     throw new InvalidOperationException("Wow needs to be using DirectX 9");
                 }
                 uint pScene = Memory.ReadUInt(pEnd);
-                Log.WriteToLog("pScene: {0}", pScene);
                 uint pEndScene = Memory.ReadUInt(pScene + 0xA8);
-                Log.WriteToLog("pEndScene: {0}", pEndScene);
                 if (Memory.IsProcessOpen)
                 {
                     // check if game is already hooked and dispose Hook
