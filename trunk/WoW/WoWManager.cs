@@ -165,6 +165,7 @@ namespace HighVoltz.HBRelog.WoW
                             }
                             else
                             {
+                                Profile.Log("Successfully closed Wow");
                                 _wowCloseTimer.Dispose();
                                 _windowCloseAttempt = 0;
                             }
@@ -172,7 +173,10 @@ namespace HighVoltz.HBRelog.WoW
                     }, proc, 1000, 1000);
                 }
                 else
+                {
+                    Profile.Log("Successfully closed Wow");
                     _windowCloseAttempt = 0;
+                }
             }
         }
 
@@ -384,13 +388,14 @@ namespace HighVoltz.HBRelog.WoW
             {
                 try
                 {
-                    if (GameProcess.HasExited)
-                        return false;
                     bool isResponding = GameProcess.Responding;
-                    if (!isResponding && !_wowRespondingSW.IsRunning)
-                        _wowRespondingSW.Start();
-                    if (_wowRespondingSW.ElapsedMilliseconds >= 10000 && !isResponding)
-                        return false;
+                    if (GameProcess != null && !GameProcess.HasExited && !GameProcess.Responding)
+                    {
+                        if (!_wowRespondingSW.IsRunning)
+                            _wowRespondingSW.Start();
+                        if (_wowRespondingSW.ElapsedMilliseconds >= 10000 )
+                            return false;
+                    }
                     else if (isResponding && _wowRespondingSW.IsRunning)
                         _wowRespondingSW.Reset();
                 }

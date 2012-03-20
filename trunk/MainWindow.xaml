@@ -7,7 +7,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d"
         x:Class="HighVoltz.HBRelog.MainWindow"
-        Title="HBRelog" Height="400" Width="650" MinWidth="650" MinHeight="400" Loaded="Window_Loaded"
+        Title="HBRelog" Height="400" Width="750" MinWidth="750" MinHeight="400" Loaded="Window_Loaded"
         DataContext="{Binding CharacterProfiles, Source={x:Static local:HBRelogManager.Settings}}"
         Icon="Images/Logo.ico"
     >
@@ -40,7 +40,7 @@
         <Border BorderThickness="2">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
@@ -50,58 +50,86 @@
                 </Grid.ColumnDefinitions>
                 <Button x:Name="SelectAllButton" Click="SelectAllButtonClick">
                     <Button.Content>
-                        <StackPanel Orientation="Horizontal">
+                        <Grid >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="24" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
                             <Image Source="Images/edit_select_all.png"  Height="24" />
-                            <TextBlock Text="Select All" Margin="4,0" VerticalAlignment="Center"/>
-                        </StackPanel>
+                            <TextBlock Text="Select All" Margin="4,0" VerticalAlignment="Center" TextWrapping="Wrap" Width="Auto" Grid.Column="1"/>
+                        </Grid> 
                     </Button.Content>
                 </Button>
                 <Button x:Name="StartButton" Click="StartSelButtonClick" Grid.Column="1">
                     <Button.Content>
-                        <StackPanel Orientation="Horizontal">
+                        <Grid >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="24" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
                             <Image Source="Images/play1pressed.png"  Height="24" />
-                            <TextBlock Text="Start" Margin="4,0" VerticalAlignment="Center"/>
-                        </StackPanel>
+                            <TextBlock Text="Start" Margin="4,0" VerticalAlignment="Center" Grid.Column="1" TextWrapping="Wrap" Width="Auto"/>
+                        </Grid>
                     </Button.Content>
                 </Button>
                 <Button x:Name="PauseButton" Click="PauseButtonClick" Grid.Column="2">
                     <Button.Content>
-                        <StackPanel Orientation="Horizontal">
+                        <Grid >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="24" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
                             <Image Source="Images/pausehot.png" Height="24" />
-                            <TextBlock Text="Pause" Margin="4,0" VerticalAlignment="Center"/>
-                        </StackPanel>
+                            <TextBlock Text="Pause" Margin="4,0" VerticalAlignment="Center" Grid.Column="1" TextWrapping="Wrap" Width="Auto"/>
+                        </Grid>
                     </Button.Content>
                 </Button>
                 <Button x:Name="StopButton" Click="StopSelButtonClick" Grid.Column="3">
                     <Button.Content>
-                        <StackPanel Orientation="Horizontal">
+                        <Grid >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="24" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
                             <Image Source="Images/stop1normalred.png" Height="24" />
-                            <TextBlock Text="Stop" Margin="4,0" VerticalAlignment="Center"/>
-                        </StackPanel>
+                            <TextBlock Text="Stop" Margin="4,0" VerticalAlignment="Center" Grid.Column="1" TextWrapping="Wrap" Width="Auto"/>
+                        </Grid>
                     </Button.Content>
                 </Button>
                 <Button x:Name="AddButton" Click="AddAccountButton_Click" Grid.Column="4">
                     <Button.Content>
-                        <StackPanel Orientation="Horizontal">
+                        <Grid >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="24" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
                             <Image Source="Images/112_Plus_Blue_32x32_72.png" Height="24" />
-                            <TextBlock Text="Add" Margin="4,0" VerticalAlignment="Center"/>
-                        </StackPanel>
+                            <TextBlock Text="Add" Margin="4,0" VerticalAlignment="Center" Grid.Column="1" TextWrapping="Wrap" Width="Auto"/>
+                        </Grid>
                     </Button.Content>
                 </Button>
                 <Button x:Name="EditButton" Click="EditAccountButtonClick" Grid.Column="5">
                     <Button.Content>
-                        <StackPanel Orientation="Horizontal">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="24" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
                             <Image Source="Images/Settings.png" Height="24" />
-                            <TextBlock Text="Edit" Margin="4,0" VerticalAlignment="Center"/>
-                        </StackPanel>
+                            <TextBlock Text="Edit" Margin="4,0" VerticalAlignment="Center" Grid.Column="1" TextWrapping="Wrap" Width="Auto"/>
+                        </Grid>
                     </Button.Content>
                 </Button>
                 <Button x:Name="DelButton" Click="DeleteAccountButtonClick" Grid.Column="6">
                     <Button.Content>
-                        <StackPanel Orientation="Horizontal">
+                        <Grid >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="24" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
                             <Image Source="Images/delete.png" Height="24" />
-                            <TextBlock Text="Delete" Margin="4,0" VerticalAlignment="Center"/>
-                        </StackPanel>
+                            <TextBlock Text="Delete" Margin="4,0" VerticalAlignment="Center" Grid.Column="1" TextWrapping="Wrap" Width="Auto"/>
+                        </Grid>
                     </Button.Content>
                 </Button>
             </Grid>
@@ -113,7 +141,7 @@
     		AutoGenerateColumns="False" CanUserResizeRows="False" 
     		HorizontalContentAlignment="Left" SelectionChanged="AccountGridSelectionChanged"
                   MouseDoubleClick="AccountGridMouseDoubleClick"
-                  ScrollViewer.HorizontalScrollBarVisibility="Disabled" 
+                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"  
                   >
             <DataGrid.Columns>
                 <DataGridTemplateColumn  Header="*">

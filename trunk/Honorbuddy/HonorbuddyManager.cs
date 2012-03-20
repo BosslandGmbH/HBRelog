@@ -59,6 +59,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
                 Profile.Log("Attempting to close Honorbuddy");
                 if (BotProcess.CloseMainWindow())
                 {
+                    Profile.Log("Successfully closed Honorbuddy");
                     BotProcess = null;
                     _windowCloseAttempt = 0;
                 }
@@ -71,6 +72,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
                         {
                             if (((Process)state).CloseMainWindow() && _windowCloseAttempt++ < 15)
                             {
+                                Profile.Log("Successfully closed Honorbuddy");
                                 BotProcess = null;
                                 _windowCloseAttempt = 0;
                                 _hbCloseTimer.Dispose();
@@ -238,8 +240,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
         {
             get
             {
-                bool isResponding = BotProcess.Responding;
-                if (!isResponding && StartupSequenceIsComplete)
+                if (BotProcess != null && !BotProcess.HasExited && !BotProcess.Responding && StartupSequenceIsComplete)
                 {
                     if (!_hbRespondingSW.IsRunning)
                         _hbRespondingSW.Start();
