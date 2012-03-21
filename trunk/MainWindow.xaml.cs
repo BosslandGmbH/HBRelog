@@ -137,7 +137,10 @@ namespace HighVoltz.HBRelog
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             OptionsTab.IsSelected = false;
-            Log.Write("HBRelog Version {0}", Assembly.GetExecutingAssembly().GetName().Version);
+            var version = Assembly.GetExecutingAssembly().GetName().Version;
+            // add one to Revision because it uses current revision and we want this to use the next revision number.
+            version = new Version(version.Major, version.Minor, version.Build, version.Revision+1);
+            Log.Write("HBRelog Version {0}", version);
             if (HBRelogManager.Settings.AutoStart)
             {
                 foreach (CharacterProfile character in AccountGrid.Items)
@@ -180,7 +183,7 @@ namespace HighVoltz.HBRelog
             // my debug button :)
             if (Environment.UserName == "highvoltz")
             {
-                LoadStyle();
+
             }
             AccountGrid.SelectAll();
         }
