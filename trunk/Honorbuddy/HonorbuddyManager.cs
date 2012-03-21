@@ -57,37 +57,28 @@ namespace HighVoltz.HBRelog.Honorbuddy
             if (BotProcess != null && !BotProcess.HasExited)
             {
                 Profile.Log("Attempting to close Honorbuddy");
-                if (BotProcess.CloseMainWindow())
+                BotProcess.CloseMainWindow();
+                _windowCloseAttempt++;
+                _hbCloseTimer = new Timer(state =>
                 {
-                    Profile.Log("Successfully closed Honorbuddy");
-                    BotProcess = null;
-                    _windowCloseAttempt = 0;
-                }
-                else
-                {
-                    _windowCloseAttempt++;
-                    _hbCloseTimer = new Timer(state =>
+                    if (!((Process)state).HasExited)
                     {
-                        if (!((Process)state).HasExited)
+                        if (_windowCloseAttempt++ < 15)
+                            ((Process)state).CloseMainWindow();
+                        else if (_windowCloseAttempt >= 15)
                         {
-                            if (((Process)state).CloseMainWindow() && _windowCloseAttempt++ < 15)
-                            {
-                                Profile.Log("Successfully closed Honorbuddy");
-                                BotProcess = null;
-                                _windowCloseAttempt = 0;
-                                _hbCloseTimer.Dispose();
-                            }
-                            else if (_windowCloseAttempt >= 15)
-                            {
-                                Profile.Log("Killing Honorbuddy");
-                                ((Process)state).Kill();
-                                BotProcess = null;
-                                _windowCloseAttempt = 0;
-                                _hbCloseTimer.Dispose();
-                            }
+                            Profile.Log("Killing Honorbuddy");
+                            ((Process)state).Kill();
                         }
-                    }, BotProcess, 1000, 1000);
-                }
+                    }
+                    else
+                    {
+                        Profile.Log("Successfully closed Honorbuddy");
+                        BotProcess = null;
+                        _windowCloseAttempt = 0;
+                        _hbCloseTimer.Dispose();
+                    }
+                }, BotProcess, 1000, 1000);
             }
         }
 

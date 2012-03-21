@@ -140,7 +140,7 @@ namespace HighVoltz.HBRelog.WoW
                 if (WowHook != null)
                     CloseGameProcess(Process.GetProcessById(WowHook.ProcessID));
             }
-            Profile.TaskManager.HonorbuddyManager.CloseBotProcess();
+            //Profile.TaskManager.HonorbuddyManager.CloseBotProcess();
             GameProcess = null;
         }
 
@@ -149,34 +149,28 @@ namespace HighVoltz.HBRelog.WoW
             if (proc != null && !proc.HasExited)
             {
                 Profile.Log("Attempting to close Wow");
-                if (!proc.CloseMainWindow())
+                proc.CloseMainWindow();
+                _windowCloseAttempt++;
+                _wowCloseTimer = new Timer(state =>
                 {
-                    _windowCloseAttempt++;
-                    _wowCloseTimer = new Timer(state =>
+                    if (!((Process)state).HasExited)
                     {
-                        if (!((Process)state).HasExited)
+                        if (_windowCloseAttempt < 6)
+                            proc.CloseMainWindow();
+                        else
                         {
-                            if (!proc.CloseMainWindow() && _windowCloseAttempt++ >= 6)
-                            {
-                                Profile.Log("Killing Wow");
-                                ((Process)state).Kill();
-                                _windowCloseAttempt = 0;
-                                _wowCloseTimer.Dispose();
-                            }
-                            else
-                            {
-                                Profile.Log("Successfully closed Wow");
-                                _wowCloseTimer.Dispose();
-                                _windowCloseAttempt = 0;
-                            }
+                            Profile.Log("Killing Wow");
+                            ((Process)state).Kill();
                         }
-                    }, proc, 1000, 1000);
-                }
-                else
-                {
-                    Profile.Log("Successfully closed Wow");
-                    _windowCloseAttempt = 0;
-                }
+                    }
+                    else
+                    {
+                        Profile.Log("Successfully closed Wow");
+                        GameProcess = null;
+                        _wowCloseTimer.Dispose();
+                        _windowCloseAttempt = 0;
+                    }
+                }, proc, 1000, 1000);
             }
         }
 
@@ -393,7 +387,7 @@ namespace HighVoltz.HBRelog.WoW
                     {
                         if (!_wowRespondingSW.IsRunning)
                             _wowRespondingSW.Start();
-                        if (_wowRespondingSW.ElapsedMilliseconds >= 10000 )
+                        if (_wowRespondingSW.ElapsedMilliseconds >= 10000)
                             return false;
                     }
                     else if (isResponding && _wowRespondingSW.IsRunning)
