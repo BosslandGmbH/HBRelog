@@ -551,9 +551,9 @@ namespace HighVoltz.HBRelog.WoW
 
         private void UpdateLoginString()
         {
-            string bnetLogin = Settings.Login;
+            string bnetLogin = Settings.Login.EncodeToUTF8();
             string accountName = Settings.AcountName;
-            string password = Settings.Password;
+            string password = Settings.Password.EncodeToUTF8();
             string server = Settings.ServerName;
             string character = Settings.CharacterName;
             // indexes are 0=BnetEmail, 1=password, 2=accountName, 3=character, 4=server
