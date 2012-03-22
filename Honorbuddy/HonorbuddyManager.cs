@@ -52,10 +52,12 @@ namespace HighVoltz.HBRelog.Honorbuddy
 
         Timer _hbCloseTimer;
         int _windowCloseAttempt = 0;
+        bool _isExiting;
         public void CloseBotProcess()
         {
-            if (BotProcess != null && !BotProcess.HasExited)
+            if (!_isExiting && BotProcess != null && !BotProcess.HasExited)
             {
+                _isExiting = true;
                 Profile.Log("Attempting to close Honorbuddy");
                 BotProcess.CloseMainWindow();
                 _windowCloseAttempt++;
@@ -73,6 +75,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
                     }
                     else
                     {
+                        _isExiting = false;
                         Profile.Log("Successfully closed Honorbuddy");
                         BotProcess = null;
                         _windowCloseAttempt = 0;
@@ -136,7 +139,9 @@ namespace HighVoltz.HBRelog.Honorbuddy
                         Stop();
                         return;
                     }
-                    if (_waitingToStart && BotProcess == null)
+                    if (_isExiting)
+                        return;
+                    if (_waitingToStart)
                     {  // we need to delay starting honorbuddy for a few seconds if another instance from same path was started a few seconds ago
                         if (HBStartupManager.CanStart(Settings.HonorbuddyPath))
                         {
@@ -179,7 +184,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
                     if (!StartupSequenceIsComplete && DateTime.Now - _hbStartupTimeStamp > TimeSpan.FromMinutes(1))
                     {
                         Profile.Log("Closing Honorbuddy because it took too long to attach");
-                        CloseBotProcess();
+                        Stop();
                     }
                     if (!HBIsResponding || HBHasCrashed)
                     {
@@ -193,9 +198,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
                             Profile.Log("Honorbuddy has crashed.. So lets restart it");
                             Profile.Status = "Honorbuddy has crashed. restarting";
                         }
-                        CloseBotProcess();
-                        StartupSequenceIsComplete = false;
-                        IsRunning = false;
+                        Stop();
                     }
                 }
             }
