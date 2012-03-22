@@ -144,10 +144,12 @@ namespace HighVoltz.HBRelog.WoW
             GameProcess = null;
         }
 
+        bool _isExiting;
         void CloseGameProcess(Process proc)
         {
-            if (proc != null && !proc.HasExited)
+            if (!_isExiting && proc != null && !proc.HasExited)
             {
+                _isExiting = true;
                 Profile.Log("Attempting to close Wow");
                 proc.CloseMainWindow();
                 _windowCloseAttempt++;
@@ -155,7 +157,7 @@ namespace HighVoltz.HBRelog.WoW
                 {
                     if (!((Process)state).HasExited)
                     {
-                        if (_windowCloseAttempt < 6)
+                        if (_windowCloseAttempt++ < 6)
                             proc.CloseMainWindow();
                         else
                         {
@@ -165,8 +167,8 @@ namespace HighVoltz.HBRelog.WoW
                     }
                     else
                     {
+                        _isExiting = false;
                         Profile.Log("Successfully closed Wow");
-                        GameProcess = null;
                         _wowCloseTimer.Dispose();
                         _windowCloseAttempt = 0;
                     }
@@ -298,7 +300,6 @@ namespace HighVoltz.HBRelog.WoW
                             Profile.Status = "WoW has DCed. restarting";
                         }
                         CloseGameProcess();
-                        StartWoW();
                     }
                 }
             }
@@ -451,8 +452,8 @@ namespace HighVoltz.HBRelog.WoW
                     {
                         if (!_loggedOutSW.IsRunning)
                             _loggedOutSW.Start();
-                        _wowIsLoggedOutForTooLong = _loggedOutSW.ElapsedMilliseconds >= 40000;
-                        // reset the timer so it doesn't trigger until 40 more seconds has elapsed while not in game.
+                        _wowIsLoggedOutForTooLong = _loggedOutSW.ElapsedMilliseconds >= 120000;
+                        // reset the timer so it doesn't trigger until 120 more seconds has elapsed while not in game.
                         if (_wowIsLoggedOutForTooLong)
                             _loggedOutSW.Reset();
                     }
