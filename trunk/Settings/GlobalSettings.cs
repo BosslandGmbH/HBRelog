@@ -135,7 +135,16 @@ namespace HighVoltz.HBRelog.Settings
                     characterProfilesElement.Add(profileElement);
                 }
                 root.Add(characterProfilesElement);
-                root.Save(SettingsPath);
+                var xmlSettings = new XmlWriterSettings()
+                {
+                    OmitXmlDeclaration = true,
+                    Indent = true,
+                };
+
+                using (XmlWriter xmlOutFile = XmlWriter.Create(SettingsPath, xmlSettings))
+                {
+                    root.Save(xmlOutFile);
+                }
             }
             catch (Exception ex)
             {
