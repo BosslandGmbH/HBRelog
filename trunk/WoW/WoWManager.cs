@@ -388,7 +388,7 @@ namespace HighVoltz.HBRelog.WoW
                     {
                         if (!_wowRespondingSW.IsRunning)
                             _wowRespondingSW.Start();
-                        if (_wowRespondingSW.ElapsedMilliseconds >= 10000)
+                        if (_wowRespondingSW.ElapsedMilliseconds >= 20000)
                             return false;
                     }
                     else if (isResponding && _wowRespondingSW.IsRunning)
