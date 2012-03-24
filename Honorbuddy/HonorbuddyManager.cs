@@ -238,7 +238,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
                 {
                     if (!_hbRespondingSW.IsRunning)
                         _hbRespondingSW.Start();
-                    if (_hbRespondingSW.ElapsedMilliseconds >= 10000)
+                    if (_hbRespondingSW.ElapsedMilliseconds >= 20000)
                         return false;
                 }
                 else if (_hbRespondingSW.IsRunning)
