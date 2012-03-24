@@ -327,8 +327,8 @@ namespace HighVoltz.HBRelog.WoW
                             _serverSelectionSW.Start();
                         var status = HBRelogManager.WowRealmStatus[Settings.ServerName, Settings.Region];
                         bool serverHasQueue = HBRelogManager.Settings.CheckRealmStatus && status != null && status.InQueue;
-                        // check once every 20 seconds
-                        if (_serverSelectionSW.ElapsedMilliseconds > 20000 && !serverHasQueue)
+                        // check once every 40 seconds
+                        if (_serverSelectionSW.ElapsedMilliseconds > 40000 && !serverHasQueue)
                         {
                             Profile.Log("Failed to login wow, lets restart");
                             GameProcess.Kill();
