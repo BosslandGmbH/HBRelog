@@ -164,35 +164,42 @@ namespace HighVoltz.HBRelogHelper
 
         private static void UpdateTooltip()
         {
-            string tooltip = string.Empty;
-            if (StyxWoW.Me.Level < 85)
-                tooltip += string.Format("XP/hr: {0}\n", InfoPanel.XPPerHour);
-            if (TreeRoot.Current.Name == "BGBuddy")
+            try
             {
-                tooltip += string.Format("BGs: {0} ({1}/hr)\n",
-                    InfoPanel.BGsCompleted, InfoPanel.BGsPerHour);
-                tooltip += string.Format("BGs won: {0} ({1}/hr)\n",
-                    InfoPanel.BGsWon, InfoPanel.BGsWonPerHour);
-                tooltip += string.Format("BGs lost: {0} ({1}/hr)\n",
-                    InfoPanel.BGsLost, InfoPanel.BGsLostPerHour);
-                tooltip += string.Format("Honor/hr: {0}\n", InfoPanel.HonorPerHour);
-            }
-            else
-            {
-                tooltip += string.Format("Loots: {0} ({1}/hr)\n",
-                    InfoPanel.Loots, InfoPanel.LootsPerHour);
-                tooltip += string.Format("Deaths: {0} - ({1}/hr)\n",
-                    InfoPanel.Deaths, InfoPanel.DeathsPerHour);
-                if (TreeRoot.Current.Name != "Gatherbuddy2")
+                string tooltip = string.Empty;
+                if (StyxWoW.Me.Level < 85)
+                    tooltip += string.Format("XP/hr: {0}\n", InfoPanel.XPPerHour);
+                if (TreeRoot.Current.Name == "BGBuddy")
                 {
-                    tooltip += string.Format("Mobs killed: {0} - ({1}/hr)\n",
-                    InfoPanel.MobsKilled, InfoPanel.MobsPerHour);
+                    tooltip += string.Format("BGs: {0} ({1}/hr)\n",
+                        InfoPanel.BGsCompleted, InfoPanel.BGsPerHour);
+                    tooltip += string.Format("BGs won: {0} ({1}/hr)\n",
+                        InfoPanel.BGsWon, InfoPanel.BGsWonPerHour);
+                    tooltip += string.Format("BGs lost: {0} ({1}/hr)\n",
+                        InfoPanel.BGsLost, InfoPanel.BGsLostPerHour);
+                    tooltip += string.Format("Honor/hr: {0}\n", InfoPanel.HonorPerHour);
+                }
+                else
+                {
+                    tooltip += string.Format("Loots: {0} ({1}/hr)\n",
+                        InfoPanel.Loots, InfoPanel.LootsPerHour);
+                    tooltip += string.Format("Deaths: {0} - ({1}/hr)\n",
+                        InfoPanel.Deaths, InfoPanel.DeathsPerHour);
+                    if (TreeRoot.Current.Name != "Gatherbuddy2")
+                    {
+                        tooltip += string.Format("Mobs killed: {0} - ({1}/hr)\n",
+                        InfoPanel.MobsKilled, InfoPanel.MobsPerHour);
+                    }
+                }
+                if (tooltip != _lastTooltip)
+                {
+                    HBRelogRemoteApi.SetBotInfoToolTip(HbProcId, tooltip);
+                    _lastTooltip = tooltip;
                 }
             }
-            if (tooltip != _lastTooltip)
+            catch ( Exception ex)
             {
-                HBRelogRemoteApi.SetBotInfoToolTip(HbProcId, tooltip);
-                _lastTooltip = tooltip;
+                Logging.WriteException(ex);
             }
         }
 

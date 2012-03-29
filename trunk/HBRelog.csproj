@@ -114,6 +114,8 @@
     <Compile Include="Tasks\IdleTask.cs" />
     <Compile Include="Tasks\ITask.cs" />
     <Compile Include="Tasks\LogonTask.cs" />
+    <Compile Include="Tasks\StartProfileTask.cs" />
+    <Compile Include="Tasks\StopProfileTask.cs" />
     <Compile Include="Tasks\WaitTask.cs" />
     <Compile Include="WowRealmStatus.cs" />
     <Compile Include="WoW\Hook.cs" />

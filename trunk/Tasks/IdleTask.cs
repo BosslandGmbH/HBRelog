@@ -28,10 +28,7 @@ namespace HighVoltz.HBRelog.Tasks
         public int Minutes { get; set; }
         public int RandomMinutes { get; set; }
         [XmlIgnore]
-        public override string Name
-        {
-            get { return "Idle"; }
-        }
+        public override string Name { get { return "Idle"; } }
 
         [XmlIgnore]
         override public string Help { get { return "Logs out of Wow for a duration then logs back in"; } }
