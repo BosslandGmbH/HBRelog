@@ -21,6 +21,8 @@ namespace HighVoltz.HBRelog.WoW
         private uint _injectedCode;
         private uint _retnInjectionAsm;
 
+        private byte[] _endSceneOriginalBytes;
+
         public Hook(Process wowProc)
         {
             ProcessID = wowProc.Id;
@@ -112,24 +114,24 @@ namespace HighVoltz.HBRelog.WoW
                     Memory.Asm.Inject(_injectedCode);
 
                     // Size asm jumpback
-                    const int sizeJumpBack = 5;
+                    const int sizeJumpBack = 2;
 
+                    // store original bytes
+                    _endSceneOriginalBytes = Memory.ReadBytes(pEndScene - 5, 7);
                     // copy and save original instructions
+                    Memory.WriteBytes(_injectedCode + sizeAsm, new byte[] { _endSceneOriginalBytes[5], _endSceneOriginalBytes[6] }, 2);
                     Memory.Asm.Clear();
-                    Memory.Asm.AddLine("mov edi, edi");
-                    Memory.Asm.AddLine("push ebp");
-                    Memory.Asm.AddLine("mov ebp, esp");
-                    Memory.Asm.Inject(_injectedCode + sizeAsm);
-
+                    Memory.Asm.AddLine("jmp " + (pEndScene + sizeJumpBack)); // short jump takes 2 bytes.
                     // create jump back stub
-                    Memory.Asm.Clear();
-                    Memory.Asm.AddLine("jmp " + (pEndScene + sizeJumpBack));
                     Memory.Asm.Inject(_injectedCode + sizeAsm + sizeJumpBack);
 
                     // create hook jump
-                    Memory.Asm.Clear(); // $jmpto
+                    Memory.Asm.Clear();
+                    Memory.Asm.AddLine("@top:");
                     Memory.Asm.AddLine("jmp " + (_injectedCode));
-                    Memory.Asm.Inject(pEndScene);
+                    Memory.Asm.AddLine("jmp @top");
+
+                    Memory.Asm.Inject(pEndScene - 5);
                     //}
                     Installed = true;
                 }
@@ -151,15 +153,11 @@ namespace HighVoltz.HBRelog.WoW
                 uint pEnd = Memory.ReadUInt(pDevice + HBRelogManager.Settings.DxDeviceIndex);
                 uint pScene = Memory.ReadUInt(pEnd);
                 uint pEndScene = Memory.ReadUInt(pScene + 0xA8);
-
-                if (Memory.ReadByte(pEndScene) == 0xE9) // check if wow is already hooked and dispose Hook
+                byte ho = Memory.ReadByte(pEndScene);
+                if (Memory.ReadByte(pEndScene) == 0xEB) // check if wow is already hooked and dispose Hook
                 {
-                    // Restore origine endscene:
-                    Memory.Asm.Clear();
-                    Memory.Asm.AddLine("mov edi, edi");
-                    Memory.Asm.AddLine("push ebp");
-                    Memory.Asm.AddLine("mov ebp, esp");
-                    Memory.Asm.Inject(pEndScene);
+                    // Restore original endscene:
+                    Memory.WriteBytes(pEndScene - 5, _endSceneOriginalBytes);
                 }
 
                 // free memory:
