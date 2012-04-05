@@ -68,13 +68,11 @@ namespace HighVoltz.HBRelog
 
         static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            HBRelogManager.Settings.Save();
             HBRelogManager.Shutdown();           
         }
 
         static void CurrentDomainProcessExit(object sender, EventArgs e)
         {
-            HBRelogManager.Settings.Save();
             HBRelogManager.Shutdown();
         }
 

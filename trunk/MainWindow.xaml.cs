@@ -38,6 +38,7 @@ namespace HighVoltz.HBRelog
     public partial class MainWindow : Window
     {
         public static MainWindow Instance { get; private set; }
+
         public MainWindow()
         {
             //InitializeComponent();
@@ -269,6 +270,11 @@ namespace HighVoltz.HBRelog
                 skipTaskMenuItem.Visibility = Visibility.Visible;
             else
                 skipTaskMenuItem.Visibility = Visibility.Collapsed;
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            HBRelogManager.Settings.Save();
         }
     }
 }
