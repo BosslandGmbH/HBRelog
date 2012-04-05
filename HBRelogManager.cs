@@ -31,6 +31,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.ServiceModel;
 using System.Windows;
+using System.ComponentModel;
 
 namespace HighVoltz.HBRelog
 {
@@ -47,7 +48,9 @@ namespace HighVoltz.HBRelog
         {
             try
             {
-                Settings = GlobalSettings.Load();
+                // if in designer mode then return
+                if (MainWindow.Instance == null || DesignerProperties.GetIsInDesignMode(MainWindow.Instance))
+                    return; Settings = GlobalSettings.Load();
                 WorkerThread = new Thread(DoWork) { IsBackground = true };
                 WorkerThread.Start();
                 try
