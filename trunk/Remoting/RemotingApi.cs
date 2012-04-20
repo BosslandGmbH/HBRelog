@@ -5,6 +5,7 @@ using System.ServiceModel;
 using System.Text;
 using System.Threading;
 using System.Windows.Threading;
+using HighVoltz.HBRelog.Tasks;
 
 namespace HighVoltz.HBRelog.Remoting
 {
@@ -169,6 +170,19 @@ namespace HighVoltz.HBRelog.Remoting
             CharacterProfile profile = GetProfileByHbProcID(hbProcID);
             if (profile != null)
                 profile.BotInfoTooltip = tooltip;
+        }
+
+
+
+        public void SkipCurrentTask(string profileName)
+        {
+            CharacterProfile profile = GetProfileByName(profileName);
+            if (profile != null)
+            {
+                BMTask currentTask = profile.Tasks.FirstOrDefault(t => !t.IsDone);
+                if (currentTask != null)
+                    currentTask.Stop();
+            }
         }
     }
 }
