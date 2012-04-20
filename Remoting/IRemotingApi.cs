@@ -35,5 +35,7 @@ namespace HighVoltz.HBRelog.Remoting
         void SetProfileStatusText(int hbProcID, string status);
         [OperationContract(IsOneWay = true)]
         void SetBotInfoToolTip(int hbProcID, string tooltip);
+        [OperationContract(IsOneWay = true)]
+        void SkipCurrentTask(string profileName);
     }
 }
