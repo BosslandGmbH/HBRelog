@@ -81,5 +81,15 @@ namespace HighVoltz.HBRelog
             return Environment.Is64BitOperatingSystem &&
                 !(NativeMethods.IsWow64Process(proc.Handle, out retVal) && retVal);
         }
+        // returns base offset for main module
+        static public uint BaseOffset(this Process proc)
+        {
+            return (uint)proc.MainModule.BaseAddress.ToInt32();
+        }
+
+        static public string VersionString(this Process proc)
+        {
+            return proc.MainModule.FileVersionInfo.FileVersion;
+        }
     }
 }

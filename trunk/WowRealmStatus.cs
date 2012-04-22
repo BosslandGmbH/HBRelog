@@ -5,8 +5,8 @@ using System.Linq;
 using System.Net;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
-using System.Text;
 using System.Threading.Tasks;
+using HighVoltz.HBRelog.Settings;
 using HighVoltz.HBRelog.Tasks;
 
 namespace HighVoltz.HBRelog
@@ -14,7 +14,7 @@ namespace HighVoltz.HBRelog
     [DataContract]
     public class WowRealmStatus
     {
-        object _lockObject = new object();
+        readonly object _lockObject = new object();
         public WowRealmStatus()
         {
             Realms = new List<WowRealmStatusEntry>();
@@ -44,7 +44,7 @@ namespace HighVoltz.HBRelog
         Task _updateTask;
         const string WowStatusApiBaseUrl = "http://www.battle.net/api/wow/realm/status?realms=";
         const string USWowStatusApiBaseUrl = "http://us.battle.net/api/wow/realm/status?realms=";
-        const string EUWowStatusApiBaseUrl = "http://eu.battle.net/api/wow/realm/status?realms=";
+        const string EuWowStatusApiBaseUrl = "http://eu.battle.net/api/wow/realm/status?realms=";
         const string KoreaWowStatusApiBaseUrl = "http://kr.battle.net/api/wow/realm/status?realms=";
         const string TaiwanWowStatusApiBaseUrl = "http://tw.battle.net/api/wow/realm/status?realms=";
         const string ChinaWowStatusApiBaseUrl = "http://www.battlenet.com.cn/api/wow/realm/status?realms=";
@@ -56,7 +56,7 @@ namespace HighVoltz.HBRelog
                 case WowSettings.WowRegion.China:
                     return ChinaWowStatusApiBaseUrl;
                 case WowSettings.WowRegion.EU:
-                    return EUWowStatusApiBaseUrl;
+                    return EuWowStatusApiBaseUrl;
                 case WowSettings.WowRegion.Korea:
                     return KoreaWowStatusApiBaseUrl;
                 case WowSettings.WowRegion.Taiwan:
@@ -85,12 +85,8 @@ namespace HighVoltz.HBRelog
 
         void UpdateWowRealmStatus()
         {
-            IEnumerable<IGrouping<WowSettings.WowRegion, CharacterProfile>> regionGroups = HBRelogManager.Settings.CharacterProfiles.GroupBy(k => k.Settings.WowSettings.Region);
-            List<Task<List<WowRealmStatusEntry>>> taskList = new List<Task<List<WowRealmStatusEntry>>>();
-            foreach (var group in regionGroups)
-            {
-                taskList.Add(CreateRealmUpdateTask(group.Key,group));
-            };
+            IEnumerable<IGrouping<WowSettings.WowRegion, CharacterProfile>> regionGroups = HbRelogManager.Settings.CharacterProfiles.GroupBy(k => k.Settings.WowSettings.Region);
+            var taskList = (from @group in regionGroups select CreateRealmUpdateTask(@group.Key, @group)).ToList();
             // wait for the tasks to complete
             Task.WaitAll(taskList.ToArray());
             lock (_lockObject)
@@ -106,19 +102,19 @@ namespace HighVoltz.HBRelog
 
         Task<List<WowRealmStatusEntry>> CreateRealmUpdateTask(WowSettings.WowRegion region, IEnumerable<CharacterProfile> profiles)
         {
-            return Task.Factory.StartNew<List<WowRealmStatusEntry>>(() =>
+            return Task.Factory.StartNew(() =>
             {
                 try
                 {
                     string url = BuildWowRealmStatusApiUrl(GetUrlForRegion(region), profiles);
-                    HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+                    var request = (HttpWebRequest)WebRequest.Create(url);
                     request.GetResponse();
                     using (WebResponse response = request.GetResponse())
                     {
                         using (Stream stream = response.GetResponseStream())
                         {
                             var serialiser = new DataContractJsonSerializer(typeof(WowRealmStatus));
-                            WowRealmStatus result = (WowRealmStatus)serialiser.ReadObject(stream);
+                            var result = (WowRealmStatus)serialiser.ReadObject(stream);
 
                             foreach (var realm in result.Realms)
                                 realm.Region = region; 
@@ -136,7 +132,7 @@ namespace HighVoltz.HBRelog
 
         string BuildWowRealmStatusApiUrl(string regionalUrl, IEnumerable<CharacterProfile> profiles)
         {
-            List<string> serverList = new List<string>();
+            var serverList = new List<string>();
             foreach (var profile in profiles)
             {
                 string server = profile.Settings.WowSettings.ServerName;

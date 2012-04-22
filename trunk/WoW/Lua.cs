@@ -26,7 +26,7 @@ namespace HighVoltz.HBRelog.WoW
                     "push 0",
                     "push eax",
                     "push eax",
-                    "mov eax, " + ( HBRelogManager.Settings.FrameScriptExecuteOffset + _wowHook.BaseOffset) , // Lua_DoString
+                    "mov eax, " + ( HbRelogManager.Settings.FrameScriptExecuteOffset + _wowHook.Process.BaseOffset()) , // Lua_DoString
                     "call eax",
                     "add esp, 0xC",
                     "retn"

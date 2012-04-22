@@ -43,11 +43,11 @@ namespace HighVoltz.HBRelog
                     
                     CmdLineArgs = ProcessCmdLineArgs(args);
                     if (CmdLineArgs.ContainsKey("AUTOSTART"))
-                        HBRelogManager.Settings.AutoStart = true;
+                        HbRelogManager.Settings.AutoStart = true;
                     if (CmdLineArgs.ContainsKey("WOWDELAY"))
-                        HBRelogManager.Settings.WowDelay = GetCmdLineArgVal<int>(CmdLineArgs["WOWDELAY"]);
+                        HbRelogManager.Settings.WowDelay = GetCmdLineArgVal<int>(CmdLineArgs["WOWDELAY"]);
                     if (CmdLineArgs.ContainsKey("HBDELAY"))
-                        HBRelogManager.Settings.HBDelay = GetCmdLineArgVal<int>(CmdLineArgs["HBDELAY"]);
+                        HbRelogManager.Settings.HBDelay = GetCmdLineArgVal<int>(CmdLineArgs["HBDELAY"]);
 
                     var app = new Application();
                     Window window = new MainWindow();
@@ -68,12 +68,12 @@ namespace HighVoltz.HBRelog
 
         static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            HBRelogManager.Shutdown();           
+            HbRelogManager.Shutdown();           
         }
 
         static void CurrentDomainProcessExit(object sender, EventArgs e)
         {
-            HBRelogManager.Shutdown();
+            HbRelogManager.Shutdown();
         }
 
         static Dictionary<string, string> ProcessCmdLineArgs(string[] args)

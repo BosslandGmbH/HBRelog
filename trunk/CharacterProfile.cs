@@ -14,15 +14,9 @@ Copyright 2012 HighVoltz
    limitations under the License.
 */
 
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Text;
 using System.Windows.Media;
-using System.Xml.Serialization;
 using HighVoltz.HBRelog.Tasks;
 using HighVoltz.HBRelog.Settings;
 
@@ -142,19 +136,18 @@ namespace HighVoltz.HBRelog
 
         public void Log(string format, params object[] args)
         {
-            if (HBRelogManager.Settings.UseDarkStyle)
-                HighVoltz.HBRelog.Log.Write(Colors.LightBlue, Settings.ProfileName + ": ", Colors.LightGreen, format, args);
+            if (HbRelogManager.Settings.UseDarkStyle)
+                HBRelog.Log.Write(Colors.LightBlue, Settings.ProfileName + ": ", Colors.LightGreen, format, args);
             else
-                HighVoltz.HBRelog.Log.Write(Colors.DarkSlateBlue, Settings.ProfileName + ": ", Colors.DarkGreen, format, args);
+                HBRelog.Log.Write(Colors.DarkSlateBlue, Settings.ProfileName + ": ", Colors.DarkGreen, format, args);
         }
 
         public void Err(string format, params object[] args)
         {
-            if (HBRelogManager.Settings.UseDarkStyle)
-                HighVoltz.HBRelog.Log.Write(Colors.LightBlue, Settings.ProfileName + ": ", Colors.Red, format, args);
-            else
-                HighVoltz.HBRelog.Log.Write(Colors.DarkSlateBlue, Settings.ProfileName + ": ", Colors.Red, format, args);
+            HBRelog.Log.Write(HbRelogManager.Settings.UseDarkStyle ? Colors.LightBlue : Colors.DarkSlateBlue,
+                                        Settings.ProfileName + ": ", Colors.Red, format, args);
         }
+
         public event PropertyChangedEventHandler PropertyChanged;
         private void NotifyPropertyChanged(string name)
         {

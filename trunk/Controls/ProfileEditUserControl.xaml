@@ -191,7 +191,7 @@
                                      Drop="ProfileTaskList_Drop" PreviewMouseMove="ProfileTaskList_PreviewMouseMove" 
                                      PreviewMouseLeftButtonDown="ProfileTaskList_PreviewMouseLeftButtonDown"
                                      ItemsSource="{Binding CharacterProfiles/Tasks, 
-                                     Source={x:Static HighVoltz:HBRelogManager.Settings}}" KeyDown="ProfileTaskList_KeyDown"
+                                     Source={x:Static HighVoltz:HbRelogManager.Settings}}" KeyDown="ProfileTaskList_KeyDown"
                                      SelectionChanged="ProfileTaskListSelectionChanged" >
                                 <!-- Insert spaces into the listbox item text.-->
                                 <ListBox.ItemTemplate>

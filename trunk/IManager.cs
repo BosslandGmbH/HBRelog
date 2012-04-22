@@ -14,9 +14,6 @@ Copyright 2012 HighVoltz
    limitations under the License.
 */
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Xml.Serialization;
 
 namespace HighVoltz.HBRelog
@@ -39,19 +36,19 @@ namespace HighVoltz.HBRelog
         [XmlIgnore]
         bool StartupSequenceIsComplete { get; }
         event EventHandler<ProfileEventArgs> OnStartupSequenceIsComplete;
+
         /// <summary>
         /// Starts the Manager
         /// </summary>
-        /// <param name="settings"></param>
         void Start();
         /// <summary>
         /// Pulses the Manager
         /// </summary>
         void Pulse();
+
         /// <summary>
         /// Stops the Manager
         /// </summary>
-        /// <param name="settings"></param>
         void Stop();
     }
 }

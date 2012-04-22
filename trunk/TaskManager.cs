@@ -14,11 +14,8 @@ Copyright 2012 HighVoltz
    limitations under the License.
 */
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using HighVoltz.HBRelog;
 using HighVoltz.HBRelog.Honorbuddy;
 using HighVoltz.HBRelog.Tasks;
 using HighVoltz.HBRelog.WoW;
@@ -75,7 +72,7 @@ namespace HighVoltz.HBRelog
             if (StartupSequenceIsComplete)
             {
                 // reset tasks if they're all complete
-                if (Tasks.Count > 0 && !Tasks.Any(t => !t.IsDone))
+                if (Tasks.Count > 0 && Tasks.All(t => t.IsDone))
                 {
                     foreach (var task in Tasks)
                         task.Reset();

@@ -52,7 +52,7 @@ namespace HighVoltz.HBRelog.Tasks
 
         public override void Pulse()
         {
-            var profile = HBRelogManager.Settings.CharacterProfiles
+            var profile = HbRelogManager.Settings.CharacterProfiles
                 .FirstOrDefault(p => p.Settings.ProfileName.Equals(ProfileName, StringComparison.InvariantCultureIgnoreCase));
             if (profile != null)
             {

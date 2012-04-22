@@ -13,14 +13,8 @@ Copyright 2012 HighVoltz
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-using System;
-using System.Text;
-using System.Security.Cryptography;
+
 using System.ComponentModel;
-using System.Windows;
-using System.Xml.Serialization;
-using System.Runtime.Serialization;
-using System.Threading;
 
 namespace HighVoltz.HBRelog.Settings
 {
@@ -62,7 +56,7 @@ namespace HighVoltz.HBRelog.Settings
 
         public ProfileSettings ShadowCopy()
         {
-            ProfileSettings settings = (ProfileSettings)MemberwiseClone();
+            var settings = (ProfileSettings)MemberwiseClone();
             settings.WowSettings = WowSettings.ShadowCopy();
             settings.HonorbuddySettings = HonorbuddySettings.ShadowCopy();
             return settings;

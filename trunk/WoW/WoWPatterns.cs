@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using HighVoltz.CleanPattern;
+﻿using HighVoltz.HBRelog.CleanPattern;
 
 namespace HighVoltz.HBRelog.WoW
 {
