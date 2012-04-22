@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
-using System.Text;
 using System.Threading;
-using System.Windows.Threading;
 using HighVoltz.HBRelog.Tasks;
 
 namespace HighVoltz.HBRelog.Remoting
@@ -14,14 +11,14 @@ namespace HighVoltz.HBRelog.Remoting
     {
         CharacterProfile GetProfileByHbProcID(int hbProcID)
         {
-            return HBRelogManager.Settings.CharacterProfiles.
+            return HbRelogManager.Settings.CharacterProfiles.
                     FirstOrDefault(p => p.TaskManager.HonorbuddyManager.BotProcess != null &&
                     p.TaskManager.HonorbuddyManager.BotProcess.Id == hbProcID);
         }
 
         CharacterProfile GetProfileByName(string name)
         {
-            return HBRelogManager.Settings.CharacterProfiles.
+            return HbRelogManager.Settings.CharacterProfiles.
                     FirstOrDefault(p => p.Settings.ProfileName.
                         Equals(name, StringComparison.InvariantCultureIgnoreCase));
         }
@@ -63,7 +60,7 @@ namespace HighVoltz.HBRelog.Remoting
 
         public string[] GetProfileNames()
         {
-            return (from profile in HBRelogManager.Settings.CharacterProfiles
+            return (from profile in HbRelogManager.Settings.CharacterProfiles
                     select profile.Settings.ProfileName).ToArray();
         }
 
@@ -101,10 +98,13 @@ namespace HighVoltz.HBRelog.Remoting
             {
                 profile.Status = "Idle";
                 profile.Stop();
-                Timer timer = new Timer(IdleTimerCallback, profile, time, TimeSpan.Zero);
+                _idleTime = new Timer(IdleTimerCallback, profile, time, TimeSpan.Zero);
             }
         }
 
+// ReSharper disable NotAccessedField.Local
+        private Timer _idleTime;
+// ReSharper restore NotAccessedField.Local
         void IdleTimerCallback(object profile)
         {
             ((CharacterProfile)profile).Start();

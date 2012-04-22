@@ -13,20 +13,15 @@ Copyright 2012 HighVoltz
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Input;
-using System.Windows.Markup;
 using System.Windows.Media.Animation;
-using System.Windows.Resources;
-using HighVoltz.HBRelog;
 using HighVoltz.HBRelog.Settings;
 using HighVoltz.HBRelog.Tasks;
 
@@ -37,8 +32,6 @@ namespace HighVoltz.HBRelog
     /// </summary>
     public partial class MainWindow : Window
     {
-        public static MainWindow Instance { get; private set; }
-
         public MainWindow()
         {
             //InitializeComponent();
@@ -48,28 +41,25 @@ namespace HighVoltz.HBRelog
             Application.LoadComponent(this, resourceLocater);
         }
 
+        public static MainWindow Instance { get; private set; }
+
         public void LoadStyle()
         {
-            Uri resourceLocater;
-            if (HBRelogManager.Settings.UseDarkStyle)
-                resourceLocater = new Uri("/styles/ExpressionDark.xaml", UriKind.Relative);
-            else
-                resourceLocater = new Uri("/styles/BureauBlue.xaml", UriKind.Relative);
-            ResourceDictionary rDict = new ResourceDictionary();
-            rDict.Source = resourceLocater;
-            this.Resources.MergedDictionaries.Clear();
-            this.Resources.MergedDictionaries.Add(rDict);
+            Uri resourceLocater = HbRelogManager.Settings.UseDarkStyle ? new Uri("/styles/ExpressionDark.xaml", UriKind.Relative) : new Uri("/styles/BureauBlue.xaml", UriKind.Relative);
+            var rDict = new ResourceDictionary {Source = resourceLocater};
+            Resources.MergedDictionaries.Clear();
+            Resources.MergedDictionaries.Add(rDict);
         }
 
         private void AddAccountButton_Click(object sender, RoutedEventArgs e)
         {
             var character = new CharacterProfile();
             if (AccountGrid.SelectedItem != null)
-                character.Settings = ((CharacterProfile)AccountGrid.SelectedItem).Settings.ShadowCopy();
+                character.Settings = ((CharacterProfile) AccountGrid.SelectedItem).Settings.ShadowCopy();
 
             if (character.Settings != null)
             {
-                HBRelogManager.Settings.CharacterProfiles.Add(character);
+                HbRelogManager.Settings.CharacterProfiles.Add(character);
                 AccountGrid.SelectedItem = character;
                 EditAccount(character.Settings);
             }
@@ -78,25 +68,23 @@ namespace HighVoltz.HBRelog
         private void EditAccountButtonClick(object sender, RoutedEventArgs e)
         {
             if (AccountGrid.SelectedItem != null)
-                EditAccount(((CharacterProfile)AccountGrid.SelectedItem).Settings);
+                EditAccount(((CharacterProfile) AccountGrid.SelectedItem).Settings);
         }
 
         private void AcountConfigCloseButtonClick(object sender, RoutedEventArgs e)
         {
-            DoubleAnimation ani = new DoubleAnimation(0, new Duration(TimeSpan.Parse("0:0:0.4")));
-            ani.AccelerationRatio = 0.7;
-            AccountConfigGrid.BeginAnimation(Grid.WidthProperty, ani);
+            var ani = new DoubleAnimation(0, new Duration(TimeSpan.Parse("0:0:0.4"))) {AccelerationRatio = 0.7};
+            AccountConfigGrid.BeginAnimation(WidthProperty, ani);
             AccountConfig.IsEditing = false;
-            HBRelogManager.Settings.Save();
+            HbRelogManager.Settings.Save();
         }
 
         private void EditAccount(ProfileSettings charSettings)
         {
             if (charSettings != null)
             {
-                DoubleAnimation ani = new DoubleAnimation(255, new Duration(TimeSpan.Parse("0:0:0.4")));
-                ani.DecelerationRatio = 0.7;
-                AccountConfigGrid.BeginAnimation(Grid.WidthProperty, ani);
+                var ani = new DoubleAnimation(255, new Duration(TimeSpan.Parse("0:0:0.4"))) {DecelerationRatio = 0.7};
+                AccountConfigGrid.BeginAnimation(WidthProperty, ani);
                 AccountConfig.EditAccount(charSettings);
             }
         }
@@ -110,10 +98,10 @@ namespace HighVoltz.HBRelog
                 // delete all the selected profiles from the data source. 
                 for (int i = AccountGrid.SelectedItems.Count - 1; i >= 0; i--)
                 {
-                    var character = (CharacterProfile)AccountGrid.SelectedItems[i];
-                    HBRelogManager.Settings.CharacterProfiles.Remove(character);
+                    var character = (CharacterProfile) AccountGrid.SelectedItems[i];
+                    HbRelogManager.Settings.CharacterProfiles.Remove(character);
                 }
-                HBRelogManager.Settings.Save();
+                HbRelogManager.Settings.Save();
             }
         }
 
@@ -138,11 +126,11 @@ namespace HighVoltz.HBRelog
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             OptionsTab.IsSelected = false;
-            var version = Assembly.GetExecutingAssembly().GetName().Version;
+            Version version = Assembly.GetExecutingAssembly().GetName().Version;
             // add one to Revision because it uses current revision and we want this to use the next revision number.
-            version = new Version(version.Major, version.Minor, version.Build, version.Revision+1);
+            version = new Version(version.Major, version.Minor, version.Build, version.Revision + 1);
             Log.Write("HBRelog Version {0}", version);
-            if (HBRelogManager.Settings.AutoStart)
+            if (HbRelogManager.Settings.AutoStart)
             {
                 foreach (CharacterProfile character in AccountGrid.Items)
                 {
@@ -157,14 +145,14 @@ namespace HighVoltz.HBRelog
             if (AccountConfig != null && AccountGrid != null &&
                 AccountConfig.IsEditing && AccountGrid.SelectedItem != null)
             {
-                EditAccount(((CharacterProfile)AccountGrid.SelectedItem).Settings);
+                EditAccount(((CharacterProfile) AccountGrid.SelectedItem).Settings);
             }
         }
 
         private void AccountGridMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             if (AccountGrid.SelectedItem != null)
-                EditAccount(((CharacterProfile)AccountGrid.SelectedItem).Settings);
+                EditAccount(((CharacterProfile) AccountGrid.SelectedItem).Settings);
         }
 
         private void PauseButtonClick(object sender, RoutedEventArgs e)
@@ -184,14 +172,13 @@ namespace HighVoltz.HBRelog
             // my debug button :)
             if (Environment.UserName == "highvoltz")
             {
-
             }
             AccountGrid.SelectAll();
         }
 
         private void StartThumbButtonClick(object sender, EventArgs e)
         {
-            foreach (CharacterProfile character in HBRelogManager.Settings.CharacterProfiles)
+            foreach (CharacterProfile character in HbRelogManager.Settings.CharacterProfiles)
             {
                 if ((!character.IsRunning || character.IsPaused) && character.Settings.IsEnabled)
                     character.Start();
@@ -200,7 +187,7 @@ namespace HighVoltz.HBRelog
 
         private void PauseThumbButtonClick(object sender, EventArgs e)
         {
-            foreach (CharacterProfile character in HBRelogManager.Settings.CharacterProfiles)
+            foreach (CharacterProfile character in HbRelogManager.Settings.CharacterProfiles)
             {
                 if (character.Settings.IsEnabled)
                     character.Pause();
@@ -209,7 +196,7 @@ namespace HighVoltz.HBRelog
 
         private void StopThumbButtonClick(object sender, EventArgs e)
         {
-            foreach (CharacterProfile character in HBRelogManager.Settings.CharacterProfiles)
+            foreach (CharacterProfile character in HbRelogManager.Settings.CharacterProfiles)
             {
                 if (character.IsRunning && character.Settings.IsEnabled)
                     character.Stop();
@@ -218,19 +205,20 @@ namespace HighVoltz.HBRelog
 
         private void ProfileEnabledCheckBoxChecked(object sender, RoutedEventArgs e)
         {
-            ProfileSettings settings = (ProfileSettings)((CheckBox)sender).Tag;
+            var settings = (ProfileSettings) ((CheckBox) sender).Tag;
             settings.IsEnabled = true;
         }
 
         private void ProfileEnabledCheckBoxUnchecked(object sender, RoutedEventArgs e)
         {
-            ProfileSettings settings = (ProfileSettings)((CheckBox)sender).Tag;
+            var settings = (ProfileSettings) ((CheckBox) sender).Tag;
             settings.IsEnabled = false;
         }
+
         // Options And Log Tab Control
         private void TabItem_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            TabItem tabItem = (TabItem)sender;
+            var tabItem = (TabItem) sender;
             if (e.OriginalSource != tabItem.Header)
                 return;
             double destHeight = 200;
@@ -244,14 +232,14 @@ namespace HighVoltz.HBRelog
                 OptionsAndLogTabCtrl.SelectedItem = tabItem;
             }
             e.Handled = true;
-            DoubleAnimation ani = new DoubleAnimation(destHeight, new Duration(TimeSpan.Parse("0:0:0.300")));
-            ani.DecelerationRatio = 0.7;
-            OptionsAndLogGrid.BeginAnimation(Grid.HeightProperty, ani);
+            var ani = new DoubleAnimation(destHeight, new Duration(TimeSpan.Parse("0:0:0.300")))
+                          {DecelerationRatio = 0.7};
+            OptionsAndLogGrid.BeginAnimation(HeightProperty, ani);
         }
 
         private void SkipTaskMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            CharacterProfile profile = (CharacterProfile)((MenuItem)sender).Tag;
+            var profile = (CharacterProfile) ((MenuItem) sender).Tag;
             BMTask currentTask = profile.TaskManager.Tasks.FirstOrDefault(t => !t.IsDone);
             if (currentTask != null)
             {
@@ -261,10 +249,10 @@ namespace HighVoltz.HBRelog
 
         private void DataGridRowContextMenuOpening(object sender, ContextMenuEventArgs e)
         {
-            DataGridRow row = (DataGridRow)sender;
-            CharacterProfile profile = (CharacterProfile)row.Item;
+            var row = (DataGridRow) sender;
+            var profile = (CharacterProfile) row.Item;
             // only show the skip task menu item if profile has > 1 task and startup sequence is complete
-            MenuItem skipTaskMenuItem = (MenuItem)row.ContextMenu.Items[0];
+            var skipTaskMenuItem = (MenuItem) row.ContextMenu.Items[0];
             BMTask task = profile.TaskManager.Tasks.FirstOrDefault(t => t.IsRunning);
             if (profile.TaskManager.Tasks.Count > 1 && profile.TaskManager.StartupSequenceIsComplete && task != null)
                 skipTaskMenuItem.Visibility = Visibility.Visible;
@@ -272,9 +260,9 @@ namespace HighVoltz.HBRelog
                 skipTaskMenuItem.Visibility = Visibility.Collapsed;
         }
 
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private void Window_Closing(object sender, CancelEventArgs e)
         {
-            HBRelogManager.Settings.Save();
+            HbRelogManager.Settings.Save();
         }
     }
 }

@@ -13,15 +13,9 @@ Copyright 2012 HighVoltz
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Text;
+
 using System.Xml.Serialization;
 using HighVoltz.HBRelog.Controls;
-using HighVoltz.HBRelog;
-using System.Diagnostics;
 
 namespace HighVoltz.HBRelog.Tasks
 {
@@ -63,12 +57,12 @@ namespace HighVoltz.HBRelog.Tasks
         public string Server { get; set; }
         public string BotBase { get; set; }
         public string CustomClass { get; set; }
-        [HighVoltz.HBRelog.Controls.TaskEditor.CustomTaskEditControl(typeof(ProfilePathEditControl))]
+        [TaskEditor.CustomTaskEditControl(typeof(ProfilePathEditControl))]
         public string ProfilePath { get; set; }
-        [HighVoltz.HBRelog.Controls.TaskEditor.CustomTaskEditControl(typeof(HBPathEditControl))]
+        [TaskEditor.CustomTaskEditControl(typeof(HBPathEditControl))]
         public string HonorbuddyPath { get; set; }
 
-        bool _runOnce = false;
+        bool _runOnce;
         public override void Pulse()
         {
             if (!_runOnce)
@@ -109,7 +103,7 @@ namespace HighVoltz.HBRelog.Tasks
             _runOnce = false;
         }
 
-        public class ProfilePathEditControl : HighVoltz.HBRelog.Controls.FileInputBox, HighVoltz.HBRelog.Controls.TaskEditor.ICustomTaskEditControlDataBound
+        public class ProfilePathEditControl : FileInputBox, TaskEditor.ICustomTaskEditControlDataBound
         {
             LogonTask _task;
             public ProfilePathEditControl()
@@ -139,7 +133,7 @@ namespace HighVoltz.HBRelog.Tasks
             }
         }
 
-        public class HBPathEditControl : FileInputBox, HighVoltz.HBRelog.Controls.TaskEditor.ICustomTaskEditControlDataBound
+        public class HBPathEditControl : FileInputBox, TaskEditor.ICustomTaskEditControlDataBound
         {
             LogonTask _task;
             public HBPathEditControl()

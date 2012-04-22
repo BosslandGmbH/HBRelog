@@ -13,16 +13,11 @@ Copyright 2012 HighVoltz
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-using System;
-using System.Collections.Generic;
+
 using System.IO;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Text;
-using System.Windows.Data;
 using System.Xml.Serialization;
 using HighVoltz.HBRelog.Controls;
-using HighVoltz.HBRelog;
+
 namespace HighVoltz.HBRelog.Tasks
 {
     public class ChangeProfileTask : BMTask
@@ -60,7 +55,7 @@ namespace HighVoltz.HBRelog.Tasks
             }
         }
 
-        [HighVoltz.HBRelog.Controls.TaskEditor.CustomTaskEditControl(typeof(ProfilePathEditControl))]
+        [TaskEditor.CustomTaskEditControl(typeof(ProfilePathEditControl))]
         public string ProfilePath { get; set; }
         public string Bot { get; set; }
         public override void Pulse()
@@ -85,7 +80,7 @@ namespace HighVoltz.HBRelog.Tasks
             IsDone = true;
         }
 
-        public class ProfilePathEditControl : FileInputBox, HighVoltz.HBRelog.Controls.TaskEditor.ICustomTaskEditControlDataBound
+        public class ProfilePathEditControl : FileInputBox, TaskEditor.ICustomTaskEditControlDataBound
         {
             ChangeProfileTask _task;
             public ProfilePathEditControl()

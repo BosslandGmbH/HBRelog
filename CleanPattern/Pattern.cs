@@ -31,7 +31,7 @@ using System.Globalization;
 
 using Magic;
 
-namespace HighVoltz.CleanPattern
+namespace HighVoltz.HBRelog.CleanPattern
 {
     public class Pattern
     {

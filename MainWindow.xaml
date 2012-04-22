@@ -8,7 +8,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d"
         x:Class="HighVoltz.HBRelog.MainWindow"
         Title="HBRelog" Height="400" Width="750" MinWidth="750" MinHeight="400" Loaded="Window_Loaded"
-        DataContext="{Binding CharacterProfiles, Source={x:Static local:HBRelogManager.Settings}}"
+        DataContext="{Binding CharacterProfiles, Source={x:Static local:HbRelogManager.Settings}}"
         Icon="Images/Logo.ico" Closing="Window_Closing" 
     >
     <!--
@@ -200,7 +200,7 @@
                     <TabItem.Header>
                         <TextBlock Text="Options" Margin="-10" Padding="15,0"/>
                     </TabItem.Header>
-                    <Controls:OptionsUserControl DataContext="{x:Static local:HBRelogManager.Settings}"/>
+                    <Controls:OptionsUserControl DataContext="{x:Static local:HbRelogManager.Settings}"/>
                 </TabItem>
                 <TabItem PreviewMouseLeftButtonDown="TabItem_PreviewMouseLeftButtonDown"
                          VerticalContentAlignment="Stretch">

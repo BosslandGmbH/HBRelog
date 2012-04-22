@@ -19,15 +19,14 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading;
-using HighVoltz.HBRelog;
+using HighVoltz.HBRelog.Settings;
 
 namespace HighVoltz.HBRelog.Honorbuddy
 {
     public class HonorbuddyManager : IBotManager
     {
-        object _lockObject = new object();
+        readonly object _lockObject = new object();
         public bool IsRunning { get; private set; }
         public bool StartupSequenceIsComplete { get; private set; }
         public event EventHandler<ProfileEventArgs> OnStartupSequenceIsComplete;
@@ -51,7 +50,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
         }
 
         Timer _hbCloseTimer;
-        int _windowCloseAttempt = 0;
+        int _windowCloseAttempt;
         bool _isExiting;
         public void CloseBotProcess()
         {
@@ -85,7 +84,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
             }
         }
 
-        bool _pluginIsUptodate = false;
+        bool _pluginIsUptodate;
         public void Start()
         {
             if (File.Exists(Settings.HonorbuddyPath))
@@ -104,7 +103,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
                         // or length doesn't match with the version in resource.
                         string pluginPath = Path.Combine(Path.GetDirectoryName(Settings.HonorbuddyPath),
                                             "Plugins\\HBRelogHelper.cs");
-                        FileInfo fi = new FileInfo(pluginPath);
+                        var fi = new FileInfo(pluginPath);
                         if (!fi.Exists || fi.Length != pluginString.Length)
                         {
                             File.WriteAllText(pluginPath, pluginString);
@@ -119,7 +118,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
                 throw new InvalidOperationException(string.Format("path to honorbuddy.exe does not exist: {0}", Settings.HonorbuddyPath));
         }
 
-        bool _waitingToStart = false;
+        bool _waitingToStart;
 
         void StartHonorbuddy()
         {
@@ -219,6 +218,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
                 Monitor.Exit(_lockObject);
         }
 
+
         public void SetStartupSequenceToComplete()
         {
             StartupSequenceIsComplete = true;
@@ -226,7 +226,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
                 OnStartupSequenceIsComplete(this, new ProfileEventArgs(Profile));
         }
 
-        Stopwatch _hbRespondingSW = new Stopwatch();
+        readonly Stopwatch _hbRespondingSw = new Stopwatch();
         /// <summary>
         /// returns false if the WoW user interface is not responsive for 10+ seconds.
         /// </summary>
@@ -236,13 +236,13 @@ namespace HighVoltz.HBRelog.Honorbuddy
             {
                 if (BotProcess != null && !BotProcess.HasExited && !BotProcess.Responding && StartupSequenceIsComplete)
                 {
-                    if (!_hbRespondingSW.IsRunning)
-                        _hbRespondingSW.Start();
-                    if (_hbRespondingSW.ElapsedMilliseconds >= 20000)
+                    if (!_hbRespondingSw.IsRunning)
+                        _hbRespondingSw.Start();
+                    if (_hbRespondingSw.ElapsedMilliseconds >= 20000)
                         return false;
                 }
-                else if (_hbRespondingSW.IsRunning)
-                    _hbRespondingSW.Start();
+                else if (_hbRespondingSw.IsRunning)
+                    _hbRespondingSw.Start();
                 return true;
             }
         }
@@ -258,7 +258,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
                     _crashTimeStamp = DateTime.Now;
                     List<IntPtr> childWinHandles = NativeMethods.EnumerateProcessWindowHandles(BotProcess.Id);
                     string hbName = Path.GetFileNameWithoutExtension(Profile.Settings.HonorbuddySettings.HonorbuddyPath);
-                    return childWinHandles.Select(h => NativeMethods.GetWindowText(h)).
+                    return childWinHandles.Select(NativeMethods.GetWindowText).
                         Count(n => !string.IsNullOrEmpty(n) && n == "Honorbuddy" ||
                             (hbName != "Honorbuddy" && n.Contains(hbName))) > 1;
                 }
@@ -268,15 +268,15 @@ namespace HighVoltz.HBRelog.Honorbuddy
 
         static public class HBStartupManager
         {
-            static object _lockObject = new object();
-            static Dictionary<string, DateTime> TimeStamps = new Dictionary<string, DateTime>();
+            static readonly object LockObject = new object();
+            static readonly Dictionary<string, DateTime> TimeStamps = new Dictionary<string, DateTime>();
             static public bool CanStart(string path)
             {
                 string key = path.ToUpper();
-                lock (_lockObject)
+                lock (LockObject)
                 {
                     if (TimeStamps.ContainsKey(key) &&
-                        DateTime.Now - TimeStamps[key] < TimeSpan.FromSeconds(HBRelogManager.Settings.HBDelay))
+                        DateTime.Now - TimeStamps[key] < TimeSpan.FromSeconds(HbRelogManager.Settings.HBDelay))
                     {
                         return false;
                     }

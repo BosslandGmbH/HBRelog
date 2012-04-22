@@ -1,18 +1,8 @@
 ﻿//!CompilerOption:Optimize:On
 //!CompilerOption:AddRef:Remoting.dll
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
-using System.Linq;
-using System.Runtime.Remoting.Channels;
-using System.Runtime.Remoting.Channels.Ipc;
-using System.Runtime.Remoting.Lifetime;
-using System.Runtime.Serialization.Formatters;
 using System.ServiceModel;
-using System.Text;
-using System.Threading;
 using System.Windows;
 using System.Windows.Threading;
 using HighVoltz.HBRelog.Remoting;
@@ -68,7 +58,7 @@ namespace HighVoltz.HBRelogHelper
         static internal string CurrentProfileName { get; private set; }
         static DispatcherTimer _monitorTimer;
         //static IpcChannel _ipcChannel;
-        static ChannelFactory<IRemotingApi> pipeFactory;
+        static ChannelFactory<IRemotingApi> _pipeFactory;
         static internal HBRelogHelper Instance { get; private set; }
 
         public HBRelogHelper()
@@ -77,20 +67,20 @@ namespace HighVoltz.HBRelogHelper
             try
             {
                 AppDomain.CurrentDomain.ProcessExit += CurrentDomainProcessExit;
-                AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+                AppDomain.CurrentDomain.UnhandledException += CurrentDomainUnhandledException;
 
                 HbProcId = Process.GetCurrentProcess().Id;
-                pipeFactory = new ChannelFactory<IRemotingApi>(new NetNamedPipeBinding(),
+                _pipeFactory = new ChannelFactory<IRemotingApi>(new NetNamedPipeBinding(),
                         new EndpointAddress("net.pipe://localhost/HBRelog/Server"));
 
-                HBRelogRemoteApi = pipeFactory.CreateChannel();
+                HBRelogRemoteApi = _pipeFactory.CreateChannel();
 
                 //instead of spawning a new thread use the GUI one.
                 Application.Current.Dispatcher.Invoke(new Action(
                     delegate
                     {
                         _monitorTimer = new DispatcherTimer();
-                        _monitorTimer.Tick += MonitorTimerCB;
+                        _monitorTimer.Tick += MonitorTimerCb;
                         _monitorTimer.Interval = TimeSpan.FromSeconds(10);
                         _monitorTimer.Start();
                     }));
@@ -112,16 +102,16 @@ namespace HighVoltz.HBRelogHelper
         {
             try
             {
-                if (pipeFactory.State == CommunicationState.Opened || pipeFactory.State == CommunicationState.Opening)
+                if (_pipeFactory.State == CommunicationState.Opened || _pipeFactory.State == CommunicationState.Opening)
                 {
-                    pipeFactory.Close();
-                    pipeFactory.Abort();
+                    _pipeFactory.Close();
+                    _pipeFactory.Abort();
                 }
             }
             catch
             { }
         }
-        void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        void CurrentDomainUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             Shutdown();
         }
@@ -133,8 +123,8 @@ namespace HighVoltz.HBRelogHelper
 
         static string _lastStatus;
         static string _lastTooltip;
-        static DateTime RunningTimeStamp = DateTime.Now;
-        public static void MonitorTimerCB(object sender, EventArgs args)
+        static DateTime _runningTimeStamp = DateTime.Now;
+        public static void MonitorTimerCb(object sender, EventArgs args)
         {
             try
             {
@@ -145,11 +135,11 @@ namespace HighVoltz.HBRelogHelper
                     int profileStatus = HBRelogRemoteApi.GetProfileStatus(CurrentProfileName);
                     // if HB isn't running after 30 seconds 
                     // and the HBRelog profile isn't paused then restart hb
-                    if (profileStatus != 1 && DateTime.Now - RunningTimeStamp >= TimeSpan.FromSeconds(50))
+                    if (profileStatus != 1 && DateTime.Now - _runningTimeStamp >= TimeSpan.FromSeconds(50))
                         HBRelogRemoteApi.RestartHB(HbProcId);
                 }
                 else
-                    RunningTimeStamp = DateTime.Now;
+                    _runningTimeStamp = DateTime.Now;
                 if (TreeRoot.StatusText != _lastStatus && !string.IsNullOrEmpty(TreeRoot.StatusText))
                 {
                     HBRelogRemoteApi.SetProfileStatusText(HbProcId, TreeRoot.StatusText);

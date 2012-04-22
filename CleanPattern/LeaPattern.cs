@@ -26,7 +26,7 @@
 using System.IO;
 using Magic;
 
-namespace HighVoltz.CleanPattern
+namespace HighVoltz.HBRelog.CleanPattern
 {
     public enum LeaType
     {

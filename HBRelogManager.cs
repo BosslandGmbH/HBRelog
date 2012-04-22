@@ -14,20 +14,10 @@ Copyright 2012 HighVoltz
    limitations under the License.
 */
 using System;
-using System.IO;
-using System.Linq;
-using HighVoltz.HBRelog;
 using System.Diagnostics;
 using System.Threading;
-using System.Runtime.Remoting.Channels;
-using System.Runtime.Remoting.Channels.Tcp;
-using System.Runtime.Remoting.Channels.Ipc;
-using System.Runtime.Remoting;
 using HighVoltz.HBRelog.Remoting;
 using HighVoltz.HBRelog.Settings;
-using System.Runtime.Serialization.Formatters;
-using System.Collections;
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.ServiceModel;
 using System.Windows;
@@ -35,16 +25,16 @@ using System.ComponentModel;
 
 namespace HighVoltz.HBRelog
 {
-    class HBRelogManager
+    class HbRelogManager
     {
         public static GlobalSettings Settings { get; private set; }
         static public Thread WorkerThread { get; private set; }
         public static bool IsInitialized { get; private set; }
         private static DateTime _killWowErrsTimeStamp = DateTime.Now;
-        static ServiceHost _host;
+        static readonly ServiceHost _host;
         public static WowRealmStatus WowRealmStatus { get; private set; }
 
-        static HBRelogManager()
+        static HbRelogManager()
         {
             try
             {
@@ -56,7 +46,6 @@ namespace HighVoltz.HBRelog
                 try
                 {
                     _host = new ServiceHost(typeof(RemotingApi), new Uri("net.pipe://localhost/HBRelog"));
-                    var np = new NetNamedPipeBinding();
                     _host.AddServiceEndpoint(typeof(IRemotingApi),
                         new NetNamedPipeBinding() { ReceiveTimeout = TimeSpan.MaxValue },
                         "Server");

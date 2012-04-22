@@ -3,12 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Threading;
-using HighVoltz.HBRelog;
-using System.Linq;
 using Magic;
-using System.Windows;
 
 namespace HighVoltz.HBRelog.WoW
 {
@@ -25,8 +21,8 @@ namespace HighVoltz.HBRelog.WoW
 
         public Hook(Process wowProc)
         {
-            ProcessID = wowProc.Id;
-            Memory = new BlackMagic(ProcessID);
+            Process = wowProc;
+            Memory = new BlackMagic(ProcessId);
             _wowProcess = wowProc;
             Installed = false;
         }
@@ -34,11 +30,10 @@ namespace HighVoltz.HBRelog.WoW
         public BlackMagic Memory { get; set; }
 
         public bool Installed { get; private set; }
-        public int ProcessID { get; private set; }
-        public uint BaseOffset
-        {
-            get { return (uint)_wowProcess.MainModule.BaseAddress.ToInt32(); }
-        }
+
+        public Process Process { get; private set; }
+
+        public int ProcessId { get { return Process.Id; } }
 
         public bool InstallHook()
         {
@@ -49,12 +44,9 @@ namespace HighVoltz.HBRelog.WoW
                 {
                     throw new InvalidOperationException("Only 32bit Wow is supported");
                 }
-                // check if we need to scan for offsets
-                if (string.IsNullOrEmpty(HBRelogManager.Settings.WowVersion) || !HBRelogManager.Settings.WowVersion.Equals(WoWVersion))
-                    ScanForOffset();
                 // Get address of EndScene
-                uint pDevice = Memory.ReadUInt(HBRelogManager.Settings.DxDeviceOffset + BaseOffset);
-                uint pEnd = Memory.ReadUInt(pDevice + HBRelogManager.Settings.DxDeviceIndex);
+                uint pDevice = Memory.ReadUInt(HbRelogManager.Settings.DxDeviceOffset + _wowProcess.BaseOffset());
+                uint pEnd = Memory.ReadUInt(pDevice + HbRelogManager.Settings.DxDeviceIndex);
                 if (pEnd == 0)
                 {
                     throw new InvalidOperationException("Wow needs to be using DirectX 9");
@@ -119,7 +111,7 @@ namespace HighVoltz.HBRelog.WoW
                     // store original bytes
                     _endSceneOriginalBytes = Memory.ReadBytes(pEndScene - 5, 7);
                     // copy and save original instructions
-                    Memory.WriteBytes(_injectedCode + sizeAsm, new byte[] { _endSceneOriginalBytes[5], _endSceneOriginalBytes[6] }, 2);
+                    Memory.WriteBytes(_injectedCode + sizeAsm, new[] { _endSceneOriginalBytes[5], _endSceneOriginalBytes[6] }, 2);
                     Memory.Asm.Clear();
                     Memory.Asm.AddLine("jmp " + (pEndScene + sizeJumpBack)); // short jump takes 2 bytes.
                     // create jump back stub
@@ -149,11 +141,10 @@ namespace HighVoltz.HBRelog.WoW
             try
             {
                 // Get address of EndScene
-                uint pDevice = Memory.ReadUInt(HBRelogManager.Settings.DxDeviceOffset + BaseOffset);
-                uint pEnd = Memory.ReadUInt(pDevice + HBRelogManager.Settings.DxDeviceIndex);
+                uint pDevice = Memory.ReadUInt(HbRelogManager.Settings.DxDeviceOffset + _wowProcess.BaseOffset());
+                uint pEnd = Memory.ReadUInt(pDevice + HbRelogManager.Settings.DxDeviceIndex);
                 uint pScene = Memory.ReadUInt(pEnd);
                 uint pEndScene = Memory.ReadUInt(pScene + 0xA8);
-                byte ho = Memory.ReadByte(pEndScene);
                 if (Memory.ReadByte(pEndScene) == 0xEB) // check if wow is already hooked and dispose Hook
                 {
                     // Restore original endscene:
@@ -236,7 +227,7 @@ namespace HighVoltz.HBRelog.WoW
                         // Free memory allocated 
                         //Memory.FreeMemory(injectionAsmCodecave);
                         // schedule resources to be freed at a later date cause freeing it immediately was causing wow crashes
-                        new Timer((state) => { Memory.FreeMemory((uint)state); }, injectionAsmCodecave, 100, 0);
+                        new Timer(state => Memory.FreeMemory((uint)state), injectionAsmCodecave, 100, 0);
                     }
                 }
                 // return
@@ -244,15 +235,15 @@ namespace HighVoltz.HBRelog.WoW
             }
         }
 
-        static string[] _registerNames = new string[] { "AH", "AL", "BH", "BL", "CH", "CL", "DH", "DL", "EAX", "EBX", "ECX", "EDX" };
+        static readonly string[] RegisterNames = new[] { "AH", "AL", "BH", "BL", "CH", "CL", "DH", "DL", "EAX", "EBX", "ECX", "EDX" };
         // This should mess up any hash scans...
         void InsertRandomOpCodes()
         {
             if (Utility.Rand.Next(10) < 3)
                 return;
-            int ranNum = Utility.Rand.Next(0, _registerNames.Length + 1);
+            int ranNum = Utility.Rand.Next(0, RegisterNames.Length + 1);
             // insert a NOP or 2
-            if (ranNum == _registerNames.Length)
+            if (ranNum == RegisterNames.Length)
             {
                 Memory.Asm.AddLine("nop");
                 if (Utility.Rand.Next(2) == 0)
@@ -260,7 +251,7 @@ namespace HighVoltz.HBRelog.WoW
             }
             else
             {
-                Memory.Asm.AddLine("mov " + _registerNames[ranNum] + "," + _registerNames[ranNum]);
+                Memory.Asm.AddLine("mov " + RegisterNames[ranNum] + "," + RegisterNames[ranNum]);
             }
         }
         void AddAsmAndRandomOPs(string asm)
@@ -268,40 +259,6 @@ namespace HighVoltz.HBRelog.WoW
             InsertRandomOpCodes();
             Memory.Asm.AddLine(asm);
             InsertRandomOpCodes();
-        }
-        /// <summary>
-        /// Scans for new memory offsets and saves them in WoWSettings. 
-        /// </summary>
-        void ScanForOffset()
-        {
-            if (Memory != null)
-            {
-                HBRelogManager.Settings.DxDeviceOffset = WoWPatterns.Dx9DevicePattern.Find(Memory);
-                Log.Debug("DxDevice9 Offset found at 0x{0:X}", HBRelogManager.Settings.DxDeviceOffset);
-                HBRelogManager.Settings.DxDeviceIndex = Memory.ReadUInt(WoWPatterns.Dx9DeviceInxPattern.Find(Memory) + BaseOffset);
-                Log.Debug("DxDevice9 Index is 0x{0:X}", HBRelogManager.Settings.DxDeviceIndex);
-                HBRelogManager.Settings.GameStateOffset = WoWPatterns.GameStatePattern.Find(Memory);
-                Log.Debug("GameState Offset found at 0x{0:X}", HBRelogManager.Settings.GameStateOffset);
-                HBRelogManager.Settings.FrameScriptExecuteOffset = WoWPatterns.FrameScriptExecutePattern.Find(Memory);
-                Log.Debug("FrameScriptExecute Offset found at 0x{0:X}", HBRelogManager.Settings.FrameScriptExecuteOffset);
-                HBRelogManager.Settings.LastHardwareEventOffset = WoWPatterns.LastHardwareEventPattern.Find(Memory);
-                Log.Debug("LastHardwareEvent Offset found at 0x{0:X}", HBRelogManager.Settings.LastHardwareEventOffset);
-                HBRelogManager.Settings.GlueStateOffset = WoWPatterns.GlueStatePattern.Find(Memory);
-                Log.Debug("GlueStateOffset Offset found at 0x{0:X}", HBRelogManager.Settings.GlueStateOffset);
-                HBRelogManager.Settings.WowVersion = WoWVersion;
-                HBRelogManager.Settings.Save();
-            }
-            else
-                throw new InvalidOperationException("Can not scan for offsets before attaching to process");
-        }
-
-
-        /// <summary>
-        /// Returns the time that WoW.exe was modified last in a DateTime
-        /// </summary>
-        private string WoWVersion
-        {
-            get { return _wowProcess.MainModule.FileVersionInfo.FileVersion; }
         }
     }
 }

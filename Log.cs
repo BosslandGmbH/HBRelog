@@ -13,53 +13,51 @@ Copyright 2012 HighVoltz
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows.Media;
-using System.Threading;
-using System.IO;
 using System.Diagnostics;
+using System.Globalization;
+using System.IO;
+using System.Threading;
+using System.Windows.Controls;
 using System.Windows.Documents;
+using System.Windows.Media;
 
 namespace HighVoltz.HBRelog
 {
     public class Log
     {
-        public static string ApplicationPath { get { return Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName); } }
-        static string _logPath;
+        private static readonly string LogPath;
 
         static Log()
         {
             string logFolder = Path.Combine(ApplicationPath, "Logs");
             if (!Directory.Exists(logFolder))
                 Directory.CreateDirectory(logFolder);
-            _logPath = Path.Combine(logFolder, string.Format("Log[{0:yyyy-MM-dd_hh-mm-ss}].txt", DateTime.Now));
+            LogPath = Path.Combine(logFolder, string.Format("Log[{0:yyyy-MM-dd_hh-mm-ss}].txt", DateTime.Now));
         }
 
-        static public void Write(string format, params object[] args)
+        public static string ApplicationPath
         {
-            if (HBRelogManager.Settings.UseDarkStyle)
-                Write(Colors.White, format, args);
-            else
-                Write(Colors.Black, format, args);
+            get { return Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName); }
         }
 
-        static public void Err(string format, params object[] args)
+        public static void Write(string format, params object[] args)
+        {
+            Write(HbRelogManager.Settings.UseDarkStyle ? Colors.White : Colors.Black, format, args);
+        }
+
+        public static void Err(string format, params object[] args)
         {
             Write(Colors.Red, format, args);
         }
 
-        static public void Debug(string format, params object[] args)
+        public static void Debug(string format, params object[] args)
         {
-            if (HBRelogManager.Settings.UseDarkStyle)
-                Debug(Colors.White, format, args);
-            else
-                Debug(Colors.Black, format, args);
+            Debug(HbRelogManager.Settings.UseDarkStyle ? Colors.White : Colors.Black, format, args);
         }
 
-        static public void Write(Color color, string format, params object[] args)
+        public static void Write(Color color, string format, params object[] args)
         {
             if (MainWindow.Instance == null)
                 return;
@@ -72,14 +70,14 @@ namespace HighVoltz.HBRelog
             {
                 MainWindow.Instance.Dispatcher.Invoke(
                     new Action(() =>
-                    {
-                        InternalWrite(color, string.Format(format, args));
-                        WriteToLog(format, args);
-                    }));
+                                   {
+                                       InternalWrite(color, string.Format(format, args));
+                                       WriteToLog(format, args);
+                                   }));
             }
         }
 
-        static public void Write(Color hColor, string header, Color mColor, string format, params object[] args)
+        public static void Write(Color hColor, string header, Color mColor, string format, params object[] args)
         {
             if (MainWindow.Instance == null)
                 return;
@@ -92,14 +90,15 @@ namespace HighVoltz.HBRelog
             {
                 MainWindow.Instance.Dispatcher.Invoke(
                     new Action(() =>
-                    {
-                        InternalWrite(hColor, header, mColor, string.Format(format, args));
-                        WriteToLog(header + format, args);
-                    }));
+                                   {
+                                       InternalWrite(hColor, header, mColor, string.Format(format, args));
+                                       WriteToLog(header + format, args);
+                                   }));
             }
         }
+
         // same Write. might use a diferent tab someday.
-        static public void Debug(Color color, string format, params object[] args)
+        public static void Debug(Color color, string format, params object[] args)
         {
             if (MainWindow.Instance == null)
                 return;
@@ -112,61 +111,67 @@ namespace HighVoltz.HBRelog
             {
                 MainWindow.Instance.Dispatcher.BeginInvoke(
                     new Action(() =>
-                    {
-                        InternalWrite(color, string.Format(format, args));
-                        WriteToLog(format, args);
-                    }));
+                                   {
+                                       InternalWrite(color, string.Format(format, args));
+                                       WriteToLog(format, args);
+                                   }));
             }
         }
 
-        static void InternalWrite(Color color, string text)
+        private static void InternalWrite(Color color, string text)
         {
             try
             {
-                var rtb = MainWindow.Instance.LogTextBox;
-                System.Windows.Media.Color msgColorMedia = System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B);
-                var messageTR = new TextRange(rtb.Document.ContentEnd, rtb.Document.ContentEnd);
-                messageTR.Text = string.Format("[{0:T}] {1}\r", DateTime.Now, text);
-                messageTR.ApplyPropertyValue(TextElement.ForegroundProperty, new System.Windows.Media.SolidColorBrush(msgColorMedia));
+                RichTextBox rtb = MainWindow.Instance.LogTextBox;
+                Color msgColorMedia = Color.FromArgb(color.A, color.R, color.G, color.B);
+                var messageTr = new TextRange(rtb.Document.ContentEnd, rtb.Document.ContentEnd)
+                                    {Text = string.Format("[{0:T}] {1}\r", DateTime.Now, text)};
+                messageTr.ApplyPropertyValue(TextElement.ForegroundProperty, new SolidColorBrush(msgColorMedia));
                 rtb.ScrollToEnd();
             }
-            catch { }
+            catch
+            {
+            }
         }
 
-        static void InternalWrite(Color headerColor, string header, Color msgColor, string format, params object[] args)
+        private static void InternalWrite(Color headerColor, string header, Color msgColor, string format,
+                                          params object[] args)
         {
             try
             {
-                var rtb = MainWindow.Instance.LogTextBox;
-                System.Windows.Media.Color headerColorMedia = System.Windows.Media.Color.FromArgb(headerColor.A, headerColor.R, headerColor.G, headerColor.B);
-                System.Windows.Media.Color msgColorMedia = System.Windows.Media.Color.FromArgb(msgColor.A, msgColor.R, msgColor.G, msgColor.B);
+                RichTextBox rtb = MainWindow.Instance.LogTextBox;
+                Color headerColorMedia = Color.FromArgb(headerColor.A, headerColor.R, headerColor.G, headerColor.B);
+                Color msgColorMedia = Color.FromArgb(msgColor.A, msgColor.R, msgColor.G, msgColor.B);
 
-                var headerTR = new TextRange(rtb.Document.ContentEnd, rtb.Document.ContentEnd)
-                {
-                    Text = string.Format("[{0:T}] {1}", DateTime.Now, header)
-                };
-                headerTR.ApplyPropertyValue(TextElement.ForegroundProperty, new System.Windows.Media.SolidColorBrush(headerColorMedia));
+                var headerTr = new TextRange(rtb.Document.ContentEnd, rtb.Document.ContentEnd)
+                                   {
+                                       Text = string.Format("[{0:T}] {1}", DateTime.Now, header)
+                                   };
+                headerTr.ApplyPropertyValue(TextElement.ForegroundProperty, new SolidColorBrush(headerColorMedia));
 
-                var messageTR = new TextRange(rtb.Document.ContentEnd, rtb.Document.ContentEnd);
+                var messageTr = new TextRange(rtb.Document.ContentEnd, rtb.Document.ContentEnd);
                 string msg = String.Format(format, args);
-                messageTR.Text = msg + '\r';
-                messageTR.ApplyPropertyValue(TextElement.ForegroundProperty, new System.Windows.Media.SolidColorBrush(msgColorMedia));
+                messageTr.Text = msg + '\r';
+                messageTr.ApplyPropertyValue(TextElement.ForegroundProperty, new SolidColorBrush(msgColorMedia));
                 rtb.ScrollToEnd();
             }
-            catch { }
+            catch
+            {
+            }
         }
 
         public static void WriteToLog(string format, params object[] args)
         {
             try
             {
-                using (StreamWriter logStringWriter = new StreamWriter(_logPath, true))
+                using (var logStringWriter = new StreamWriter(LogPath, true))
                 {
-                    if (logStringWriter != null)
-                        logStringWriter.WriteLine(string.Format("[" + DateTime.Now.ToString() + "] " + format, args));
+                    logStringWriter.WriteLine(string.Format("[" + DateTime.Now.ToString(CultureInfo.InvariantCulture) + "] " + format, args));
                 }
             }
-            catch { }
+            catch
+            {
+            }
         }
     }
 }
