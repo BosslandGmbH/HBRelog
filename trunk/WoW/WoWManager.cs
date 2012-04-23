@@ -205,22 +205,23 @@ namespace HighVoltz.HBRelog.WoW
             get
             {
                 // check for crash every 10 seconds and cache the result
-                if (DateTime.Now - _loggedoutTimeStamp >= TimeSpan.FromSeconds(10))
-                {
-                    if (!InGame)
-                    {
-                        if (!_loggedOutSw.IsRunning)
-                            _loggedOutSw.Start();
-                        _wowIsLoggedOutForTooLong = _loggedOutSw.ElapsedMilliseconds >= 120000;
-                        // reset the timer so it doesn't trigger until 120 more seconds has elapsed while not in game.
-                        if (_wowIsLoggedOutForTooLong)
-                            _loggedOutSw.Reset();
-                    }
-                    else if (_loggedOutSw.IsRunning)
-                        _loggedOutSw.Reset();
-                    _loggedoutTimeStamp = DateTime.Now;
-                }
-                return _wowIsLoggedOutForTooLong;
+                //if (DateTime.Now - _loggedoutTimeStamp >= TimeSpan.FromSeconds(10))
+                //{
+                //    if (!InGame)
+                //    {
+                //        if (!_loggedOutSw.IsRunning)
+                //            _loggedOutSw.Start();
+                //        _wowIsLoggedOutForTooLong = _loggedOutSw.ElapsedMilliseconds >= 120000;
+                //        // reset the timer so it doesn't trigger until 120 more seconds has elapsed while not in game.
+                //        if (_wowIsLoggedOutForTooLong)
+                //            _loggedOutSw.Reset();
+                //    }
+                //    else if (_loggedOutSw.IsRunning)
+                //        _loggedOutSw.Reset();
+                //    _loggedoutTimeStamp = DateTime.Now;
+                //}
+                //return _wowIsLoggedOutForTooLong;
+                return false; // todo: remove this
             }
         }
 
@@ -336,12 +337,14 @@ namespace HighVoltz.HBRelog.WoW
                             // check if we need to scan for offsets
                             if (string.IsNullOrEmpty(HbRelogManager.Settings.WowVersion) ||
                                 !HbRelogManager.Settings.WowVersion.Equals(GameProcess.VersionString()))
+                            {
                                 ScanForOffset();
+                            }
                             WowHook.InstallHook();
                             Lua = new Lua(WowHook);
                             UpdateLoginString();
                         }
-                            // hook is installed so lets assume proces is ready for input.
+                        // hook is installed so lets assume proces is ready for input.
                         else if (!_processIsReadyForInput)
                         {
                             // resize and position window.
@@ -454,7 +457,7 @@ namespace HighVoltz.HBRelog.WoW
             {
                 CloseGameProcess(GameProcess);
             }
-                // handle the "No process is associated with this object' exception while wow process is still 'active'
+            // handle the "No process is associated with this object' exception while wow process is still 'active'
             catch (InvalidOperationException ex)
             {
                 Log.Err(ex.ToString());
@@ -475,14 +478,14 @@ namespace HighVoltz.HBRelog.WoW
                 _windowCloseAttempt++;
                 _wowCloseTimer = new Timer(state =>
                                                {
-                                                   if (!((Process) state).HasExited)
+                                                   if (!((Process)state).HasExited)
                                                    {
                                                        if (_windowCloseAttempt++ < 6)
                                                            proc.CloseMainWindow();
                                                        else
                                                        {
                                                            Profile.Log("Killing Wow");
-                                                           ((Process) state).Kill();
+                                                           ((Process)state).Kill();
                                                        }
                                                    }
                                                    else

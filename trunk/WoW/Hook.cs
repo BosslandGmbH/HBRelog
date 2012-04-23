@@ -55,6 +55,12 @@ namespace HighVoltz.HBRelog.WoW
                 uint pEndScene = Memory.ReadUInt(pScene + 0xA8);
                 if (Memory.IsProcessOpen)
                 {
+                    // if we're under windows 8 then we need to patch the endscene hook to make it work with HB's hook.. this is a bit hackish
+                    if (Environment.OSVersion.Version.Major == 6 && Environment.OSVersion.Version.Minor == 2)
+                    {
+                        FixEndSceneForHB(pEndScene);
+                    }
+
                     // check if game is already hooked and dispose Hook
                     if (Memory.ReadByte(pEndScene) == 0xE9 &&
                         (_injectedCode == 0 || _addresseInjection == 0))
@@ -236,29 +242,97 @@ namespace HighVoltz.HBRelog.WoW
         }
 
         static readonly string[] RegisterNames = new[] { "AH", "AL", "BH", "BL", "CH", "CL", "DH", "DL", "EAX", "EBX", "ECX", "EDX" };
+        static readonly string[] Register32BitNames = new[] { "EAX", "EBX", "ECX", "EDX" };
+
         // This should mess up any hash scans...
         void InsertRandomOpCodes()
         {
-            if (Utility.Rand.Next(10) < 3)
-                return;
-            int ranNum = Utility.Rand.Next(0, RegisterNames.Length + 1);
-            // insert a NOP or 2
-            if (ranNum == RegisterNames.Length)
+            for (int n = Utility.Rand.Next(1); n >= 0; n--)
             {
-                Memory.Asm.AddLine("nop");
-                if (Utility.Rand.Next(2) == 0)
+                var ranNum = Utility.Rand.Next(0, 6);
+                if (ranNum == 0)
+                {
                     Memory.Asm.AddLine("nop");
-            }
-            else
-            {
-                Memory.Asm.AddLine("mov " + RegisterNames[ranNum] + "," + RegisterNames[ranNum]);
+                    if (Utility.Rand.Next(2) == 1)
+                        Memory.Asm.AddLine("nop");
+                }
+                else if (ranNum <= 5)
+                    InsertRandomMov();
+                //else
+                //    InsertRandomPushPop();
             }
         }
+
         void AddAsmAndRandomOPs(string asm)
         {
             InsertRandomOpCodes();
             Memory.Asm.AddLine(asm);
             InsertRandomOpCodes();
+        }
+
+        void InsertRandomMov()
+        {
+            var ranNum = Utility.Rand.Next(0, RegisterNames.Length);
+            Memory.Asm.AddLine("mov {0}, {1}", RegisterNames[ranNum], RegisterNames[ranNum]);
+        }
+
+        private void InsertRandomPushPop()
+        {
+            int ranNum = Utility.Rand.Next(0, Register32BitNames.Length);
+            Memory.Asm.AddLine("push {0}", Register32BitNames[ranNum]);
+            Memory.Asm.AddLine("pop {0}", Register32BitNames[ranNum]);
+        }
+
+        private uint _fixHBStub;
+
+        private void FixEndSceneForHB(uint pEndScene)
+        {
+            Memory.Asm.Clear();
+            _fixHBStub = Memory.AllocateMemory(0x200);
+
+            AddAsmAndRandomOPs("push ebx");
+            AddAsmAndRandomOPs("mov bl, [" + pEndScene + "]");
+            AddAsmAndRandomOPs("cmp bl, 0xE9"); // check for the long jmp that hb uses.
+            AddAsmAndRandomOPs("jnz @HbIsNotHooked");
+            AddAsmAndRandomOPs("pop ebx"); // first pop the ebx register we pushed to the stack
+            AddAsmAndRandomOPs("pop ebp"); // then pop the ebp register HB pushed to the stack
+            AddAsmAndRandomOPs("jmp @original");
+            Memory.Asm.AddLine("@HbIsNotHooked:");
+            AddAsmAndRandomOPs("pop ebx");
+            Memory.Asm.AddLine("@original:");
+            AddAsmAndRandomOPs("Push 0x14");
+            AddAsmAndRandomOPs("Mov Eax, " + Memory.ReadUInt(pEndScene + 3));
+            int funcOffset = (int)(pEndScene + 0xC) + Memory.ReadInt(pEndScene + 8);
+            AddAsmAndRandomOPs("Call " + (funcOffset - _fixHBStub));
+
+            // jump back to endscene
+            AddAsmAndRandomOPs("Jmp " + (pEndScene + 0xC - _fixHBStub));
+            
+            Memory.WriteBytes(_fixHBStub, Memory.Asm.Assemble());
+
+            // pad the top of Endscene with some single and 2 byte NOPs
+            Memory.Asm.Clear();
+            // we can't get too random here so this will do
+            int rand = Utility.Rand.Next(0, 2);
+            switch (rand)
+            {
+                case 0:
+                    if (Utility.Rand.Next(2) == 1) InsertRandomMov(); else Memory.Asm.Add("Nop\nNop\n");
+                    if (Utility.Rand.Next(2) == 1) InsertRandomMov(); else Memory.Asm.Add("Nop\nNop\n");
+                    Memory.Asm.AddLine("Nop");
+                    if (Utility.Rand.Next(2) == 1) InsertRandomMov(); else Memory.Asm.Add("Nop\nNop\n");
+                    Memory.Asm.AddLine("Jmp " + (_fixHBStub - pEndScene));
+                    break;
+                case 1:
+                    if (Utility.Rand.Next(2) == 1) InsertRandomMov(); else Memory.Asm.Add("Nop\nNop\n");
+                    if (Utility.Rand.Next(2) == 1) InsertRandomMov(); else Memory.Asm.Add("Nop\nNop\n");
+                    Memory.Asm.AddLine("Nop");
+                    Memory.Asm.AddLine("Jmp " + (_fixHBStub - pEndScene));
+                    if (Utility.Rand.Next(2) == 1) InsertRandomMov(); else Memory.Asm.Add("Nop\nNop\n");
+                    break;
+            }
+            Memory.WriteBytes(pEndScene, Memory.Asm.Assemble());
+            Memory.Asm.Clear();
         }
     }
 }
