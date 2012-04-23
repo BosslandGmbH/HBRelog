@@ -35,6 +35,10 @@ namespace HighVoltz.HBRelog.Settings
             string settingsFolder = Path.GetDirectoryName(SettingsPath);
             if (!Directory.Exists(settingsFolder))
                 Directory.CreateDirectory(settingsFolder);
+
+            // set some default settings
+            HBDelay = 3;
+            UseDarkStyle = true;
         }
 
         public string SettingsPath

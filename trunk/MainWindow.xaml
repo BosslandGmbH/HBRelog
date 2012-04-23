@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:HighVoltz.HBRelog" 
         xmlns:Controls="clr-namespace:HighVoltz.HBRelog.Controls"
+        xmlns:Setting="clr-namespace:HighVoltz.HBRelog.Settings" 
         xmlns:Converters="clr-namespace:HighVoltz.HBRelog.Converters"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d"
@@ -148,7 +149,7 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate >
                             <!-- Bindings get destroyed once user changes the value of the checkbox so I'll have to use callbacks -->
-                            <CheckBox  x:Name="ProfileEnabledCheckBox" IsChecked="{Binding Settings.IsEnabled}" 
+                            <CheckBox  x:Name="ProfileEnabledCheckBox" IsChecked="{Binding Settings.IsEnabled}"
                                        Tag="{Binding Settings}" Checked="ProfileEnabledCheckBoxChecked" Unchecked="ProfileEnabledCheckBoxUnchecked"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
@@ -173,6 +174,20 @@
                                     <MenuItem.Style>
                                         <Style TargetType="{x:Type MenuItem}" BasedOn="{StaticResource  {x:Type MenuItem}}">
                                             <EventSetter Event="Click" Handler="SkipTaskMenuItem_Click" />
+                                        </Style>
+                                    </MenuItem.Style>
+                                </MenuItem>
+                                <MenuItem  x:Name="MaximizeWowMenu" Header="Maximize Wow"  Tag="{Binding}">
+                                    <MenuItem.Style>
+                                        <Style TargetType="{x:Type MenuItem}" BasedOn="{StaticResource  {x:Type MenuItem}}">
+                                            <EventSetter Event="Click" Handler="MaximizeWowMenuItem_Click" />
+                                        </Style>
+                                    </MenuItem.Style>
+                                </MenuItem>
+                                <MenuItem  x:Name="BringHbToForegroundMenu" Header="Bring HB To Foreground"  Tag="{Binding}">
+                                    <MenuItem.Style>
+                                        <Style TargetType="{x:Type MenuItem}" BasedOn="{StaticResource  {x:Type MenuItem}}">
+                                            <EventSetter Event="Click" Handler="BringHbToForegroundMenuItem_Click" />
                                         </Style>
                                     </MenuItem.Style>
                                 </MenuItem>

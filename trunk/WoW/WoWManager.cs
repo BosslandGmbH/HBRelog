@@ -205,23 +205,22 @@ namespace HighVoltz.HBRelog.WoW
             get
             {
                 // check for crash every 10 seconds and cache the result
-                //if (DateTime.Now - _loggedoutTimeStamp >= TimeSpan.FromSeconds(10))
-                //{
-                //    if (!InGame)
-                //    {
-                //        if (!_loggedOutSw.IsRunning)
-                //            _loggedOutSw.Start();
-                //        _wowIsLoggedOutForTooLong = _loggedOutSw.ElapsedMilliseconds >= 120000;
-                //        // reset the timer so it doesn't trigger until 120 more seconds has elapsed while not in game.
-                //        if (_wowIsLoggedOutForTooLong)
-                //            _loggedOutSw.Reset();
-                //    }
-                //    else if (_loggedOutSw.IsRunning)
-                //        _loggedOutSw.Reset();
-                //    _loggedoutTimeStamp = DateTime.Now;
-                //}
-                //return _wowIsLoggedOutForTooLong;
-                return false; // todo: remove this
+                if (DateTime.Now - _loggedoutTimeStamp >= TimeSpan.FromSeconds(10))
+                {
+                    if (!InGame)
+                    {
+                        if (!_loggedOutSw.IsRunning)
+                            _loggedOutSw.Start();
+                        _wowIsLoggedOutForTooLong = _loggedOutSw.ElapsedMilliseconds >= 120000;
+                        // reset the timer so it doesn't trigger until 120 more seconds has elapsed while not in game.
+                        if (_wowIsLoggedOutForTooLong)
+                            _loggedOutSw.Reset();
+                    }
+                    else if (_loggedOutSw.IsRunning)
+                        _loggedOutSw.Reset();
+                    _loggedoutTimeStamp = DateTime.Now;
+                }
+                return _wowIsLoggedOutForTooLong;
             }
         }
 
