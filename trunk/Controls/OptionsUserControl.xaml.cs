@@ -28,5 +28,6 @@ namespace HighVoltz.HBRelog.Controls
         {
             MainWindow.Instance.LoadStyle();
         }
+
     }
 }

@@ -61,6 +61,11 @@ namespace HighVoltz.HBRelog.Settings
         public int LoginDelay { get; set; }
         public bool UseDarkStyle { get; set; }
         public bool CheckRealmStatus { get; set; }
+        /// <summary>
+        /// Minimizes HB to system tray on start
+        /// </summary>
+        public bool MinimizeHbOnStart { get; set; }
+
         public string WowVersion { get; set; }
 
         // offsets
@@ -82,6 +87,7 @@ namespace HighVoltz.HBRelog.Settings
                 root.Add(new XElement("LoginDelay", LoginDelay));
                 root.Add(new XElement("UseDarkStyle", UseDarkStyle));
                 root.Add(new XElement("CheckRealmStatus", CheckRealmStatus));
+                root.Add(new XElement("MinimizeHbOnStart", MinimizeHbOnStart));
                 root.Add(new XElement("WowVersion", WowVersion));
 
                 root.Add(new XElement("DxDeviceOffset", DxDeviceOffset));
@@ -177,6 +183,7 @@ namespace HighVoltz.HBRelog.Settings
                 settings.LoginDelay = GetElementValue(root.Element("LoginDelay"), 3);
                 settings.UseDarkStyle = GetElementValue(root.Element("UseDarkStyle"), true);
                 settings.CheckRealmStatus = GetElementValue(root.Element("CheckRealmStatus"), false);
+                settings.MinimizeHbOnStart = GetElementValue(root.Element("MinimizeHbOnStart"), false);
 
                 settings.DxDeviceOffset = uint.Parse(root.Element("DxDeviceOffset").Value);
                 settings.DxDeviceIndex = uint.Parse(root.Element("DxDeviceIndex").Value);
