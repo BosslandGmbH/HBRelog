@@ -222,6 +222,8 @@ namespace HighVoltz.HBRelog.Honorbuddy
         public void SetStartupSequenceToComplete()
         {
             StartupSequenceIsComplete = true;
+            if (HbRelogManager.Settings.MinimizeHbOnStart)
+                NativeMethods.ShowWindow(BotProcess.MainWindowHandle, NativeMethods.ShowWindowCommands.Minimize);
             if (OnStartupSequenceIsComplete != null)
                 OnStartupSequenceIsComplete(this, new ProfileEventArgs(Profile));
         }

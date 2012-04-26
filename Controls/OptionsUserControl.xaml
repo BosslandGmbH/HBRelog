@@ -61,6 +61,7 @@
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <TextBlock Text="Use Dark UI style" />
                     <CheckBox x:Name="DarkStyleCheck" Grid.Column="1"
@@ -68,6 +69,10 @@
                               IsChecked="{Binding UseDarkStyle}" 
                               Checked="DarkStyleCheckCheckedChanged" 
                               Unchecked="DarkStyleCheckCheckedChanged"/>
+                    <TextBlock Text="Minimize HB on Start" Grid.Row="1"/>
+                    <CheckBox x:Name="AutoMinimzeHbCheck" Grid.Column="1" Grid.Row="1"
+                              ToolTip="Automatically minimizes HB to system tray on start"
+                              IsChecked="{Binding MinimizeHbOnStart}" />
                 </Grid>
             </GroupBox>
         </StackPanel>
