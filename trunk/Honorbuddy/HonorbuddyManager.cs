@@ -237,10 +237,8 @@ namespace HighVoltz.HBRelog.Honorbuddy
         {
             get
             {
-
-                bool isDebugged = false;
-                bool isDebugged2 = NativeMethods.CheckRemoteDebuggerPresent(BotProcess.Handle ,ref isDebugged);
-                Log.Write("isDebugged {0}. isDebugged2: {1}", isDebugged, isDebugged2);
+                if (!HbRelogManager.Settings.CheckHbResponsiveness)
+                    return true;
                 if (BotProcess != null && !BotProcess.HasExited && !BotProcess.Responding && StartupSequenceIsComplete)
                 {
                     if (!_hbRespondingSw.IsRunning)
