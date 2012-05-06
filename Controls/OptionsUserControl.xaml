@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300">
+             d:DesignHeight="291" d:DesignWidth="590">
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalAlignment="Stretch">
         <StackPanel Grid.IsSharedSizeScope="True" Orientation="Horizontal">
             <StackPanel.Resources>
@@ -31,26 +31,21 @@
                     <CheckBox x:Name="AutostartCheck" Grid.Column="1"
                               ToolTip="Automatically start all enabled profiles on start"
                               IsChecked="{Binding AutoStart}"/>
-                    <!-- CheckRealmStatus -->
-                    <TextBlock Text="Check Realm Status" Grid.Row="1" />
-                    <CheckBox x:Name="RealmStatusCheck" Grid.Column="1" Grid.Row="1"
-                              ToolTip="Check if Wow servers are up"
-                              IsChecked="{Binding CheckRealmStatus}"/>
                     <!-- WowDelay -->
-                    <TextBlock Text="Wow Start Delay" Grid.Row="2" />
+                    <TextBlock Text="Wow Start Delay" Grid.Row="1" />
                     <TextBox x:Name="WowDelayText" Width="40" Height="18" FontSize="10"
                             ToolTip="Delay in seconds between starting multiple Wow instance" Grid.Column="1"
-                             Text="{Binding WowDelay}" Grid.Row="2"/>
+                             Text="{Binding WowDelay}" Grid.Row="1"/>
                     <!-- HBDelay -->
-                    <TextBlock Text="Honorbuddy Start Delay" Grid.Row="3" />
+                    <TextBlock Text="Honorbuddy Start Delay" Grid.Row="2" />
                     <TextBox x:Name="HBDelayText" Width="40" Height="18" FontSize="10"
                              ToolTip="Delay in seconds between starting multiple Honorbuddy instances"
-                             Grid.Row="3" Grid.Column="1"  Text="{Binding HBDelay}"/>
+                             Grid.Row="2" Grid.Column="1"  Text="{Binding HBDelay}"/>
                     <!-- LoginDelay -->
-                    <TextBlock Text="Login Delay" Grid.Row="4" />
+                    <TextBlock Text="Login Delay" Grid.Row="3" />
                     <TextBox x:Name="LoginDelayText" Width="40" Height="18" FontSize="10"
                              ToolTip="Delay in seconds between executing login actions. Increasing this will cause login to take longer"
-                             Grid.Row="4" Grid.Column="1" Text="{Binding LoginDelay}"/>
+                             Grid.Row="3" Grid.Column="1" Text="{Binding LoginDelay}"/>
                 </Grid>
             </GroupBox>
             <GroupBox Header="User Interface">
@@ -73,6 +68,25 @@
                     <CheckBox x:Name="AutoMinimzeHbCheck" Grid.Column="1" Grid.Row="1"
                               ToolTip="Automatically minimizes HB to system tray on start"
                               IsChecked="{Binding MinimizeHbOnStart}" />
+                </Grid>
+            </GroupBox>
+            <GroupBox Header="Monitor">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition SharedSizeGroup="OptionsSizeGroup" Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <TextBlock  Text="Check Realm Status" />
+                    <CheckBox Grid.Column="1" IsChecked="{Binding CheckRealmStatus}" Name="checkBox2" ToolTip="Check if Wow servers are up" />
+                    <TextBlock Grid.Row="1" Text="Check HB's Responsiveness" />
+                    <CheckBox Grid.Column="1" Grid.Row="1" IsChecked="{Binding CheckHbResponsiveness}" Name="hbResponsivenessCheck" ToolTip="Disable this if you are a developer and like to attach a debugger to HB" />
                 </Grid>
             </GroupBox>
         </StackPanel>

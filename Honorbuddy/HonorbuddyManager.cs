@@ -21,6 +21,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using HighVoltz.HBRelog.Settings;
+using Microsoft.Win32.SafeHandles;
 
 namespace HighVoltz.HBRelog.Honorbuddy
 {
@@ -236,6 +237,10 @@ namespace HighVoltz.HBRelog.Honorbuddy
         {
             get
             {
+
+                bool isDebugged = false;
+                bool isDebugged2 = NativeMethods.CheckRemoteDebuggerPresent(BotProcess.Handle ,ref isDebugged);
+                Log.Write("isDebugged {0}. isDebugged2: {1}", isDebugged, isDebugged2);
                 if (BotProcess != null && !BotProcess.HasExited && !BotProcess.Responding && StartupSequenceIsComplete)
                 {
                     if (!_hbRespondingSw.IsRunning)
@@ -261,8 +266,8 @@ namespace HighVoltz.HBRelog.Honorbuddy
                     List<IntPtr> childWinHandles = NativeMethods.EnumerateProcessWindowHandles(BotProcess.Id);
                     string hbName = Path.GetFileNameWithoutExtension(Profile.Settings.HonorbuddySettings.HonorbuddyPath);
                     return childWinHandles.Select(NativeMethods.GetWindowText).
-                        Count(n => !string.IsNullOrEmpty(n) && n == "Honorbuddy" ||
-                            (hbName != "Honorbuddy" && n.Contains(hbName))) > 1;
+                        Count(n => !string.IsNullOrEmpty(n) && (n == "Honorbuddy" ||
+                            (hbName != "Honorbuddy" && n.Contains(hbName)))) > 1;
                 }
                 return false;
             }

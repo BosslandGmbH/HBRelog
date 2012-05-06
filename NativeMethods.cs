@@ -266,6 +266,10 @@ namespace HighVoltz.HBRelog
         [return: MarshalAs(UnmanagedType.Bool)]
         static public extern bool ShowWindow(IntPtr hWnd, ShowWindowCommands nCmdShow);
 
+        [DllImport("Kernel32.dll", SetLastError = true, ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool CheckRemoteDebuggerPresent(IntPtr hProcess, [MarshalAs(UnmanagedType.Bool)]ref bool isDebuggerPresent);
+
         public static string GetWindowText(IntPtr hWnd)
         {
             // Allocate correct string length first
