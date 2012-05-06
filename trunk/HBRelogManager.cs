@@ -69,7 +69,7 @@ namespace HighVoltz.HBRelog
                 Log.Err(ex.ToString());
             }
         }
-        static Regex _hbTitleRegex = new Regex(@"^\D*(?<id>\d+)\D*$");
+
         static void DoWork()
         {
             int pulseStartTime = 0;
