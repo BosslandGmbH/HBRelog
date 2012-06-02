@@ -50,11 +50,11 @@ namespace HighVoltz.HBRelog
         #region Delegates
 
         /// <summary>
-        /// Delegate for the EnumChildWindows method
+        ///   Delegate for the EnumChildWindows method
         /// </summary>
-        /// <param name="hWnd">Window handle</param>
-        /// <param name="parameter">Caller-defined variable; we use it for a pointer to our list</param>
-        /// <returns>True to continue enumerating, false to bail.</returns>
+        /// <param name="hWnd"> Window handle </param>
+        /// <param name="parameter"> Caller-defined variable; we use it for a pointer to our list </param>
+        /// <returns> True to continue enumerating, false to bail. </returns>
         public delegate bool EnumWindowProc(IntPtr hWnd, IntPtr parameter);
 
         #endregion
@@ -71,20 +71,21 @@ namespace HighVoltz.HBRelog
             var handles = new List<IntPtr>();
 
             foreach (ProcessThread thread in Process.GetProcessById(processId).Threads)
-                EnumThreadWindows(thread.Id, (hWnd, lParam) =>
-                                                 {
-                                                     handles.Add(hWnd);
-                                                     return true;
-                                                 }, IntPtr.Zero);
+                EnumThreadWindows(
+                    thread.Id, (hWnd, lParam) =>
+                                   {
+                                       handles.Add(hWnd);
+                                       return true;
+                                   }, IntPtr.Zero);
 
             return handles;
         }
 
         /// <summary>
-        /// Returns a list of child windows
+        ///   Returns a list of child windows
         /// </summary>
-        /// <param name="parent">Parent of the windows to return</param>
-        /// <returns>List of child windows</returns>
+        /// <param name="parent"> Parent of the windows to return </param>
+        /// <returns> List of child windows </returns>
         public static List<IntPtr> GetChildWindows(IntPtr parent)
         {
             var result = new List<IntPtr>();
@@ -102,11 +103,11 @@ namespace HighVoltz.HBRelog
         }
 
         /// <summary>
-        /// Callback method to be used when enumerating windows.
+        ///   Callback method to be used when enumerating windows.
         /// </summary>
-        /// <param name="handle">Handle of the next window</param>
-        /// <param name="pointer">Pointer to a GCHandle that holds a reference to the list to fill</param>
-        /// <returns>True to continue the enumeration, false to bail</returns>
+        /// <param name="handle"> Handle of the next window </param>
+        /// <param name="pointer"> Pointer to a GCHandle that holds a reference to the list to fill </param>
+        /// <returns> True to continue the enumeration, false to bail </returns>
         private static bool EnumWindow(IntPtr handle, IntPtr pointer)
         {
             GCHandle gch = GCHandle.FromIntPtr(pointer);
@@ -129,77 +130,77 @@ namespace HighVoltz.HBRelog
         {
             // ReSharper disable InconsistentNaming
             /// <summary>
-            ///     If the calling thread and the thread that owns the window are attached to different input queues, the system posts the request to the thread that owns the window. This prevents the calling thread from blocking its execution while other threads process the request.
+            ///   If the calling thread and the thread that owns the window are attached to different input queues, the system posts the request to the thread that owns the window. This prevents the calling thread from blocking its execution while other threads process the request.
             /// </summary>
             SWP_ASYNCWINDOWPOS = 0x4000,
 
             /// <summary>
-            ///     Prevents generation of the WM_SYNCPAINT message.
+            ///   Prevents generation of the WM_SYNCPAINT message.
             /// </summary>
             SWP_DEFERERASE = 0x2000,
 
             /// <summary>
-            ///     Draws a frame (defined in the window's class description) around the window.
+            ///   Draws a frame (defined in the window's class description) around the window.
             /// </summary>
             SWP_DRAWFRAME = 0x0020,
 
             /// <summary>
-            ///     Applies new frame styles set using the SetWindowLong function. Sends a WM_NCCALCSIZE message to the window, even if the window's size is not being changed. If this flag is not specified, WM_NCCALCSIZE is sent only when the window's size is being changed.
+            ///   Applies new frame styles set using the SetWindowLong function. Sends a WM_NCCALCSIZE message to the window, even if the window's size is not being changed. If this flag is not specified, WM_NCCALCSIZE is sent only when the window's size is being changed.
             /// </summary>
             SWP_FRAMECHANGED = 0x0020,
 
             /// <summary>
-            ///     Hides the window.
+            ///   Hides the window.
             /// </summary>
             SWP_HIDEWINDOW = 0x0080,
 
             /// <summary>
-            ///     Does not activate the window. If this flag is not set, the window is activated and moved to the top of either the topmost or non-topmost group (depending on the setting of the hWndInsertAfter parameter).
+            ///   Does not activate the window. If this flag is not set, the window is activated and moved to the top of either the topmost or non-topmost group (depending on the setting of the hWndInsertAfter parameter).
             /// </summary>
             SWP_NOACTIVATE = 0x0010,
 
             /// <summary>
-            ///     Discards the entire contents of the client area. If this flag is not specified, the valid contents of the client area are saved and copied back into the client area after the window is sized or repositioned.
+            ///   Discards the entire contents of the client area. If this flag is not specified, the valid contents of the client area are saved and copied back into the client area after the window is sized or repositioned.
             /// </summary>
             SWP_NOCOPYBITS = 0x0100,
 
             /// <summary>
-            ///     Retains the current position (ignores X and Y parameters).
+            ///   Retains the current position (ignores X and Y parameters).
             /// </summary>
             SWP_NOMOVE = 0x0002,
 
             /// <summary>
-            ///     Does not change the owner window's position in the Z order.
+            ///   Does not change the owner window's position in the Z order.
             /// </summary>
             SWP_NOOWNERZORDER = 0x0200,
 
             /// <summary>
-            ///     Does not redraw changes. If this flag is set, no repainting of any kind occurs. This applies to the client area, the nonclient area (including the title bar and scroll bars), and any part of the parent window uncovered as a result of the window being moved. When this flag is set, the application must explicitly invalidate or redraw any parts of the window and parent window that need redrawing.
+            ///   Does not redraw changes. If this flag is set, no repainting of any kind occurs. This applies to the client area, the nonclient area (including the title bar and scroll bars), and any part of the parent window uncovered as a result of the window being moved. When this flag is set, the application must explicitly invalidate or redraw any parts of the window and parent window that need redrawing.
             /// </summary>
             SWP_NOREDRAW = 0x0008,
 
             /// <summary>
-            ///     Same as the SWP_NOOWNERZORDER flag.
+            ///   Same as the SWP_NOOWNERZORDER flag.
             /// </summary>
             SWP_NOREPOSITION = 0x0200,
 
             /// <summary>
-            ///     Prevents the window from receiving the WM_WINDOWPOSCHANGING message.
+            ///   Prevents the window from receiving the WM_WINDOWPOSCHANGING message.
             /// </summary>
             SWP_NOSENDCHANGING = 0x0400,
 
             /// <summary>
-            ///     Retains the current size (ignores the cx and cy parameters).
+            ///   Retains the current size (ignores the cx and cy parameters).
             /// </summary>
             SWP_NOSIZE = 0x0001,
 
             /// <summary>
-            ///     Retains the current Z order (ignores the hWndInsertAfter parameter).
+            ///   Retains the current Z order (ignores the hWndInsertAfter parameter).
             /// </summary>
             SWP_NOZORDER = 0x0004,
 
             /// <summary>
-            ///     Displays the window.
+            ///   Displays the window.
             /// </summary>
             SWP_SHOWWINDOW = 0x0040,
             // ReSharper restore InconsistentNaming
@@ -261,10 +262,13 @@ namespace HighVoltz.HBRelog
 
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern bool VirtualProtect(uint lpAddress, uint dwSize, uint flNewProtect, out uint lpflOldProtect);
-        
+
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
-        static public extern bool ShowWindow(IntPtr hWnd, ShowWindowCommands nCmdShow);
+        public static extern bool ShowWindow(IntPtr hWnd, ShowWindowCommands nCmdShow);
+
+        [DllImport("user32.dll")]
+        public static extern int SetWindowText(IntPtr hWnd, string text);
 
         public static string GetWindowText(IntPtr hWnd)
         {
@@ -319,77 +323,75 @@ namespace HighVoltz.HBRelog
         #endregion
 
         #region Nested Type: ShowWndowCommands
-        public enum ShowWindowCommands : int
+
+        public enum ShowWindowCommands
         {
             /// <summary>
-            /// Hides the window and activates another window.
+            ///   Hides the window and activates another window.
             /// </summary>
             Hide = 0,
+
             /// <summary>
-            /// Activates and displays a window. If the window is minimized or 
-            /// maximized, the system restores it to its original size and position.
-            /// An application should specify this flag when displaying the window 
-            /// for the first time.
+            ///   Activates and displays a window. If the window is minimized or maximized, the system restores it to its original size and position. An application should specify this flag when displaying the window for the first time.
             /// </summary>
             Normal = 1,
+
             /// <summary>
-            /// Activates the window and displays it as a minimized window.
+            ///   Activates the window and displays it as a minimized window.
             /// </summary>
             ShowMinimized = 2,
+
             /// <summary>
-            /// Maximizes the specified window.
+            ///   Maximizes the specified window.
             /// </summary>
             Maximize = 3, // is this the right value?
             /// <summary>
-            /// Activates the window and displays it as a maximized window.
-            /// </summary>       
+            ///   Activates the window and displays it as a maximized window.
+            /// </summary>
             ShowMaximized = 3,
+
             /// <summary>
-            /// Displays a window in its most recent size and position. This value 
-            /// is similar to <see cref="Win32.ShowWindowCommand.Normal"/>, except 
-            /// the window is not activated.
+            ///   Displays a window in its most recent size and position. This value is similar to <see
+            ///    cref="Win32.ShowWindowCommand.Normal" /> , except the window is not activated.
             /// </summary>
             ShowNoActivate = 4,
+
             /// <summary>
-            /// Activates the window and displays it in its current size and position. 
+            ///   Activates the window and displays it in its current size and position.
             /// </summary>
             Show = 5,
+
             /// <summary>
-            /// Minimizes the specified window and activates the next top-level 
-            /// window in the Z order.
+            ///   Minimizes the specified window and activates the next top-level window in the Z order.
             /// </summary>
             Minimize = 6,
+
             /// <summary>
-            /// Displays the window as a minimized window. This value is similar to
-            /// <see cref="Win32.ShowWindowCommand.ShowMinimized"/>, except the 
-            /// window is not activated.
+            ///   Displays the window as a minimized window. This value is similar to <see cref="Win32.ShowWindowCommand.ShowMinimized" /> , except the window is not activated.
             /// </summary>
             ShowMinNoActive = 7,
+
             /// <summary>
-            /// Displays the window in its current size and position. This value is 
-            /// similar to <see cref="Win32.ShowWindowCommand.Show"/>, except the 
-            /// window is not activated.
+            ///   Displays the window in its current size and position. This value is similar to <see cref="Win32.ShowWindowCommand.Show" /> , except the window is not activated.
             /// </summary>
             ShowNA = 8,
+
             /// <summary>
-            /// Activates and displays the window. If the window is minimized or 
-            /// maximized, the system restores it to its original size and position. 
-            /// An application should specify this flag when restoring a minimized window.
+            ///   Activates and displays the window. If the window is minimized or maximized, the system restores it to its original size and position. An application should specify this flag when restoring a minimized window.
             /// </summary>
             Restore = 9,
+
             /// <summary>
-            /// Sets the show state based on the SW_* value specified in the 
-            /// STARTUPINFO structure passed to the CreateProcess function by the 
-            /// program that started the application.
+            ///   Sets the show state based on the SW_* value specified in the STARTUPINFO structure passed to the CreateProcess function by the program that started the application.
             /// </summary>
             ShowDefault = 10,
+
             /// <summary>
-            ///  <b>Windows 2000/XP:</b> Minimizes a window, even if the thread 
-            /// that owns the window is not responding. This flag should only be 
-            /// used when minimizing windows from a different thread.
+            ///   <b>Windows 2000/XP:</b> Minimizes a window, even if the thread that owns the window is not responding. This flag should only be used when minimizing windows from a different thread.
             /// </summary>
             ForceMinimize = 11
-        } 
+        }
+
         #endregion
     }
 }

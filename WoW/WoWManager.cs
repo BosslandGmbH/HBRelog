@@ -346,6 +346,8 @@ namespace HighVoltz.HBRelog.WoW
                         // hook is installed so lets assume proces is ready for input.
                         else if (!_processIsReadyForInput)
                         {
+                            // change window title
+                            NativeMethods.SetWindowText(GameProcess.MainWindowHandle, Profile.Settings.ProfileName);
                             // resize and position window.
                             if (Settings.WowWindowWidth > 0 && Settings.WowWindowHeight > 0)
                             {
