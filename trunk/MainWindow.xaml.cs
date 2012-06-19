@@ -304,10 +304,5 @@ namespace HighVoltz.HBRelog
            
         }
 
-        private void Window_Closing(object sender, CancelEventArgs e)
-        {
-            HbRelogManager.Settings.Save();
-        }
-
     }
 }

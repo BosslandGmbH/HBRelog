@@ -76,9 +76,9 @@ namespace HighVoltz.HBRelog
             HbRelogManager.Shutdown();
         }
 
-        static Dictionary<string, string> ProcessCmdLineArgs(string[] args)
+        static Dictionary<string, string> ProcessCmdLineArgs(IEnumerable<string> args)
         {
-            Dictionary<string, string> cmdLineArgs = new Dictionary<string, string>();
+            var cmdLineArgs = new Dictionary<string, string>();
             foreach (string s in args)
             {
                 string[] tokens = s.Split('=');
