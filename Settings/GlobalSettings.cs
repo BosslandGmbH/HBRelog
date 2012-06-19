@@ -20,6 +20,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Serialization;
@@ -141,7 +142,7 @@ namespace HighVoltz.HBRelog.Settings
                             Where(
                                 pi =>
                                 !pi.GetCustomAttributesData().Any(
-                                    cad => cad.Constructor.DeclaringType == typeof (XmlIgnoreAttribute))).ToList();
+                                    cad => cad.Constructor.DeclaringType == typeof(XmlIgnoreAttribute))).ToList();
                         foreach (PropertyInfo property in propertyList)
                         {
                             taskElement.Add(new XAttribute(property.Name, property.GetValue(task, null)));
@@ -176,115 +177,122 @@ namespace HighVoltz.HBRelog.Settings
         public static GlobalSettings Load()
         {
             var settings = new GlobalSettings();
-            if (File.Exists(settings.SettingsPath))
+            try
             {
-                XElement root = XElement.Load(settings.SettingsPath);
-                settings.WowVersion = root.Element("WowVersion").Value;
-                settings.AutoStart = GetElementValue<bool>(root.Element("AutoStart"));
-                settings.WowDelay = GetElementValue<int>(root.Element("WowDelay"));
-                settings.HBDelay = GetElementValue(root.Element("HBDelay"), 10);
-                settings.LoginDelay = GetElementValue(root.Element("LoginDelay"), 3);
-                settings.UseDarkStyle = GetElementValue(root.Element("UseDarkStyle"), true);
-                settings.CheckRealmStatus = GetElementValue(root.Element("CheckRealmStatus"), false);
-                settings.CheckHbResponsiveness = GetElementValue(root.Element("CheckHbResponsiveness"), true);
-                settings.MinimizeHbOnStart = GetElementValue(root.Element("MinimizeHbOnStart"), false);
-
-                settings.DxDeviceOffset = uint.Parse(root.Element("DxDeviceOffset").Value);
-                settings.DxDeviceIndex = uint.Parse(root.Element("DxDeviceIndex").Value);
-                settings.GameStateOffset = uint.Parse(root.Element("GameStateOffset").Value);
-                settings.FrameScriptExecuteOffset = uint.Parse(root.Element("FrameScriptExecuteOffset").Value);
-                settings.LastHardwareEventOffset = uint.Parse(root.Element("LastHardwareEventOffset").Value);
-                settings.GlueStateOffset = uint.Parse(root.Element("GlueStateOffset").Value);
-                XElement characterProfilesElement = root.Element("CharacterProfiles");
-                foreach (XElement profileElement in characterProfilesElement.Elements("CharacterProfile"))
+                if (File.Exists(settings.SettingsPath))
                 {
-                    var profile = new CharacterProfile();
-                    XElement settingsElement = profileElement.Element("Settings");
-                    profile.Settings.ProfileName = GetElementValue<string>(settingsElement.Element("ProfileName"));
-                    profile.Settings.IsEnabled = GetElementValue<bool>(settingsElement.Element("IsEnabled"));
-                    XElement wowSettingsElement = settingsElement.Element("WowSettings");
+                    XElement root = XElement.Load(settings.SettingsPath);
+                    settings.WowVersion = root.Element("WowVersion").Value;
+                    settings.AutoStart = GetElementValue<bool>(root.Element("AutoStart"));
+                    settings.WowDelay = GetElementValue<int>(root.Element("WowDelay"));
+                    settings.HBDelay = GetElementValue(root.Element("HBDelay"), 10);
+                    settings.LoginDelay = GetElementValue(root.Element("LoginDelay"), 3);
+                    settings.UseDarkStyle = GetElementValue(root.Element("UseDarkStyle"), true);
+                    settings.CheckRealmStatus = GetElementValue(root.Element("CheckRealmStatus"), false);
+                    settings.CheckHbResponsiveness = GetElementValue(root.Element("CheckHbResponsiveness"), true);
+                    settings.MinimizeHbOnStart = GetElementValue(root.Element("MinimizeHbOnStart"), false);
 
-                    // Wow Settings 
-                    if (wowSettingsElement != null)
+                    settings.DxDeviceOffset = uint.Parse(root.Element("DxDeviceOffset").Value);
+                    settings.DxDeviceIndex = uint.Parse(root.Element("DxDeviceIndex").Value);
+                    settings.GameStateOffset = uint.Parse(root.Element("GameStateOffset").Value);
+                    settings.FrameScriptExecuteOffset = uint.Parse(root.Element("FrameScriptExecuteOffset").Value);
+                    settings.LastHardwareEventOffset = uint.Parse(root.Element("LastHardwareEventOffset").Value);
+                    settings.GlueStateOffset = uint.Parse(root.Element("GlueStateOffset").Value);
+                    XElement characterProfilesElement = root.Element("CharacterProfiles");
+                    foreach (XElement profileElement in characterProfilesElement.Elements("CharacterProfile"))
                     {
-                        profile.Settings.WowSettings.LoginData =
-                            GetElementValue<string>(wowSettingsElement.Element("LoginData"));
-                        profile.Settings.WowSettings.PasswordData =
-                            GetElementValue<string>(wowSettingsElement.Element("PasswordData"));
-                        profile.Settings.WowSettings.AcountName =
-                            GetElementValue<string>(wowSettingsElement.Element("AcountName"));
-                        profile.Settings.WowSettings.CharacterName =
-                            GetElementValue<string>(wowSettingsElement.Element("CharacterName"));
-                        profile.Settings.WowSettings.ServerName =
-                            GetElementValue<string>(wowSettingsElement.Element("ServerName"));
-                        profile.Settings.WowSettings.Region =
-                            GetElementValue<WowSettings.WowRegion>(wowSettingsElement.Element("Region"));
-                        profile.Settings.WowSettings.WowPath =
-                            GetElementValue<string>(wowSettingsElement.Element("WowPath"));
-                        profile.Settings.WowSettings.WowWindowWidth =
-                            GetElementValue<int>(wowSettingsElement.Element("WowWindowWidth"));
-                        profile.Settings.WowSettings.WowWindowHeight =
-                            GetElementValue<int>(wowSettingsElement.Element("WowWindowHeight"));
-                        profile.Settings.WowSettings.WowWindowX =
-                            GetElementValue<int>(wowSettingsElement.Element("WowWindowX"));
-                        profile.Settings.WowSettings.WowWindowY =
-                            GetElementValue<int>(wowSettingsElement.Element("WowWindowY"));
-                    }
-                    XElement hbSettingsElement = settingsElement.Element("HonorbuddySettings");
-                    // Honorbuddy Settings
-                    if (hbSettingsElement != null)
-                    {
-                        profile.Settings.HonorbuddySettings.CustomClass =
-                            GetElementValue<string>(hbSettingsElement.Element("CustomClass"));
-                        profile.Settings.HonorbuddySettings.BotBase =
-                            GetElementValue<string>(hbSettingsElement.Element("BotBase"));
-                        profile.Settings.HonorbuddySettings.HonorbuddyProfile =
-                            GetElementValue<string>(hbSettingsElement.Element("HonorbuddyProfile"));
-                        profile.Settings.HonorbuddySettings.HonorbuddyPath =
-                            GetElementValue<string>(hbSettingsElement.Element("HonorbuddyPath"));
-                    }
-                    XElement tasksElement = profileElement.Element("Tasks");
-                    // Load the Task list.
-                    foreach (XElement taskElement in tasksElement.Elements())
-                    {
-                        Type taskType = Type.GetType("HighVoltz.HBRelog.Tasks." + taskElement.Name);
-                        if (taskType != null)
+                        var profile = new CharacterProfile();
+                        XElement settingsElement = profileElement.Element("Settings");
+                        profile.Settings.ProfileName = GetElementValue<string>(settingsElement.Element("ProfileName"));
+                        profile.Settings.IsEnabled = GetElementValue<bool>(settingsElement.Element("IsEnabled"));
+                        XElement wowSettingsElement = settingsElement.Element("WowSettings");
+
+                        // Wow Settings 
+                        if (wowSettingsElement != null)
                         {
-                            var task = (BMTask) Activator.CreateInstance(taskType);
-                            task.SetProfile(profile);
-                            // Dictionary of property Names and the corresponding PropertyInfo
-                            Dictionary<string, PropertyInfo> propertyDict = task.GetType().GetProperties().
-                                Where(
-                                    pi =>
-                                    !pi.GetCustomAttributesData().Any(
-                                        cad => cad.Constructor.DeclaringType == typeof (XmlIgnoreAttribute))).
-                                ToDictionary(k => k.Name);
-
-                            foreach (XAttribute attr in taskElement.Attributes())
+                            profile.Settings.WowSettings.LoginData =
+                                GetElementValue<string>(wowSettingsElement.Element("LoginData"));
+                            profile.Settings.WowSettings.PasswordData =
+                                GetElementValue<string>(wowSettingsElement.Element("PasswordData"));
+                            profile.Settings.WowSettings.AcountName =
+                                GetElementValue<string>(wowSettingsElement.Element("AcountName"));
+                            profile.Settings.WowSettings.CharacterName =
+                                GetElementValue<string>(wowSettingsElement.Element("CharacterName"));
+                            profile.Settings.WowSettings.ServerName =
+                                GetElementValue<string>(wowSettingsElement.Element("ServerName"));
+                            profile.Settings.WowSettings.Region =
+                                GetElementValue<WowSettings.WowRegion>(wowSettingsElement.Element("Region"));
+                            profile.Settings.WowSettings.WowPath =
+                                GetElementValue<string>(wowSettingsElement.Element("WowPath"));
+                            profile.Settings.WowSettings.WowWindowWidth =
+                                GetElementValue<int>(wowSettingsElement.Element("WowWindowWidth"));
+                            profile.Settings.WowSettings.WowWindowHeight =
+                                GetElementValue<int>(wowSettingsElement.Element("WowWindowHeight"));
+                            profile.Settings.WowSettings.WowWindowX =
+                                GetElementValue<int>(wowSettingsElement.Element("WowWindowX"));
+                            profile.Settings.WowSettings.WowWindowY =
+                                GetElementValue<int>(wowSettingsElement.Element("WowWindowY"));
+                        }
+                        XElement hbSettingsElement = settingsElement.Element("HonorbuddySettings");
+                        // Honorbuddy Settings
+                        if (hbSettingsElement != null)
+                        {
+                            profile.Settings.HonorbuddySettings.CustomClass =
+                                GetElementValue<string>(hbSettingsElement.Element("CustomClass"));
+                            profile.Settings.HonorbuddySettings.BotBase =
+                                GetElementValue<string>(hbSettingsElement.Element("BotBase"));
+                            profile.Settings.HonorbuddySettings.HonorbuddyProfile =
+                                GetElementValue<string>(hbSettingsElement.Element("HonorbuddyProfile"));
+                            profile.Settings.HonorbuddySettings.HonorbuddyPath =
+                                GetElementValue<string>(hbSettingsElement.Element("HonorbuddyPath"));
+                        }
+                        XElement tasksElement = profileElement.Element("Tasks");
+                        // Load the Task list.
+                        foreach (XElement taskElement in tasksElement.Elements())
+                        {
+                            Type taskType = Type.GetType("HighVoltz.HBRelog.Tasks." + taskElement.Name);
+                            if (taskType != null)
                             {
-                                string propKey = attr.Name.ToString();
-                                if (propertyDict.ContainsKey(propKey))
+                                var task = (BMTask)Activator.CreateInstance(taskType);
+                                task.SetProfile(profile);
+                                // Dictionary of property Names and the corresponding PropertyInfo
+                                Dictionary<string, PropertyInfo> propertyDict = task.GetType().GetProperties().
+                                    Where(
+                                        pi =>
+                                        !pi.GetCustomAttributesData().Any(
+                                            cad => cad.Constructor.DeclaringType == typeof(XmlIgnoreAttribute))).
+                                    ToDictionary(k => k.Name);
+
+                                foreach (XAttribute attr in taskElement.Attributes())
                                 {
-                                    // if property is an enum then use Enum.Parse.. otherwise use Convert.ChangeValue
-                                    object val = typeof (Enum).IsAssignableFrom(propertyDict[propKey].PropertyType) ? 
-                                        Enum.Parse(propertyDict[propKey].PropertyType, attr.Value) : 
-                                        Convert.ChangeType(attr.Value, propertyDict[propKey].PropertyType);
-                                    propertyDict[propKey].SetValue(task, val, null);
+                                    string propKey = attr.Name.ToString();
+                                    if (propertyDict.ContainsKey(propKey))
+                                    {
+                                        // if property is an enum then use Enum.Parse.. otherwise use Convert.ChangeValue
+                                        object val = typeof(Enum).IsAssignableFrom(propertyDict[propKey].PropertyType) ?
+                                            Enum.Parse(propertyDict[propKey].PropertyType, attr.Value) :
+                                            Convert.ChangeType(attr.Value, propertyDict[propKey].PropertyType);
+                                        propertyDict[propKey].SetValue(task, val, null);
+                                    }
+                                    else
+                                    {
+                                        Log.Err("{0} does not have a property called {1}", taskElement.Name, attr.Name);
+                                    }
                                 }
-                                else
-                                {
-                                    Log.Err("{0} does not have a property called {1}", taskElement.Name, attr.Name);
-                                }
+                                profile.Tasks.Add(task);
                             }
-                            profile.Tasks.Add(task);
+                            else
+                            {
+                                Log.Err("{0} is not a known task type", taskElement.Name);
+                            }
                         }
-                        else
-                        {
-                            Log.Err("{0} is not a known task type", taskElement.Name);
-                        }
+                        settings.CharacterProfiles.Add(profile);
                     }
-                    settings.CharacterProfiles.Add(profile);
                 }
+            }
+            catch (Exception ex)
+            {
+                Log.Err(ex.ToString());
             }
             return settings;
         }
@@ -295,11 +303,26 @@ namespace HighVoltz.HBRelog.Settings
             {
                 if (defaultValue is Enum)
                 {
-                    return (T) Enum.Parse(typeof (T), element.Value);
+                    return (T)Enum.Parse(typeof(T), element.Value);
                 }
-                return (T) Convert.ChangeType(element.Value, typeof (T));
+                return (T)Convert.ChangeType(element.Value, typeof(T));
             }
             return defaultValue;
         }
+
+        private Timer _autoSaveTimer;
+        public void AutoSave()
+        {
+            if (_autoSaveTimer != null)
+                _autoSaveTimer.Dispose();
+
+            _autoSaveTimer = new Timer(state =>
+                                           {
+                                               Save();
+                                               _autoSaveTimer.Dispose();
+                                               _autoSaveTimer = null;
+                                           },null,5000, -1);
+        }
+
     }
 }

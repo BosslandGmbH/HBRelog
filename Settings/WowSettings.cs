@@ -173,6 +173,8 @@ namespace HighVoltz.HBRelog.Settings
             {
                 PropertyChanged(this, new PropertyChangedEventArgs(name));
             }
+            if (HbRelogManager.Settings != null)
+                HbRelogManager.Settings.AutoSave();
         }
         
         #region Embeded type - WowRegion
