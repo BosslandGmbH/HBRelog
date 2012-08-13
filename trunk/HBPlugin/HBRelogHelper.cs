@@ -256,5 +256,10 @@ namespace HighVoltz.HBRelogHelper
         {
             HBRelogRemoteApi.SetProfileStatusText(HbProcID, status);
         }
+
+        public static void SkipCurrentTask(string profileName)
+        {
+            HBRelogRemoteApi.SkipCurrentTask(profileName);
+        }
     }
 }
