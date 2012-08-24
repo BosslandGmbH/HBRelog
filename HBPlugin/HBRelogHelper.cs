@@ -1,5 +1,4 @@
 ﻿//!CompilerOption:Optimize:On
-//!CompilerOption:AddRef:Remoting.dll
 using System;
 using System.Diagnostics;
 using System.ServiceModel;
