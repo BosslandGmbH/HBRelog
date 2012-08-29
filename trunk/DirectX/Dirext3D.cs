@@ -21,7 +21,7 @@ namespace HighVoltz.HBRelog.DirectX
         {
             Process = targetProc;
 
-            if (Process.Modules.Cast<ProcessModule>().Any(m => m.ModuleName.ToLowerInvariant() == "d3d11.dll".ToLowerInvariant()))
+            if (Process.Modules.Cast<ProcessModule>().Any(m => m.ModuleName == "d3d11.dll"))
                 throw new InvalidOperationException("DirectX11 is no currently supported");
             LoadD3D9Dll();
 
@@ -42,7 +42,7 @@ namespace HighVoltz.HBRelog.DirectX
 
             TheirD3D9Dll =
                 Process.Modules.Cast<ProcessModule>().First(
-                    m => m.ModuleName.ToLowerInvariant() == "d3d9.dll".ToLowerInvariant()).BaseAddress;
+                    m => m.ModuleName == "d3d9.dll").BaseAddress;
         }
 
         public IntPtr GetAbsolutePointer(IntPtr pointer)
