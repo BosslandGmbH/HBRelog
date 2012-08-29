@@ -72,8 +72,6 @@ namespace HighVoltz.HBRelog.Settings
         public string WowVersion { get; set; }
 
         // offsets
-        public uint DxDeviceOffset { get; set; }
-        public uint DxDeviceIndex { get; set; }
         public uint GameStateOffset { get; set; }
         public uint FrameScriptExecuteOffset { get; set; }
         public uint LastHardwareEventOffset { get; set; }
@@ -94,8 +92,6 @@ namespace HighVoltz.HBRelog.Settings
                 root.Add(new XElement("MinimizeHbOnStart", MinimizeHbOnStart));
                 root.Add(new XElement("WowVersion", WowVersion));
 
-                root.Add(new XElement("DxDeviceOffset", DxDeviceOffset));
-                root.Add(new XElement("DxDeviceIndex", DxDeviceIndex));
                 root.Add(new XElement("GameStateOffset", GameStateOffset));
                 root.Add(new XElement("FrameScriptExecuteOffset", FrameScriptExecuteOffset));
                 root.Add(new XElement("LastHardwareEventOffset", LastHardwareEventOffset));
@@ -192,8 +188,6 @@ namespace HighVoltz.HBRelog.Settings
                     settings.CheckHbResponsiveness = GetElementValue(root.Element("CheckHbResponsiveness"), true);
                     settings.MinimizeHbOnStart = GetElementValue(root.Element("MinimizeHbOnStart"), false);
 
-                    settings.DxDeviceOffset = uint.Parse(root.Element("DxDeviceOffset").Value);
-                    settings.DxDeviceIndex = uint.Parse(root.Element("DxDeviceIndex").Value);
                     settings.GameStateOffset = uint.Parse(root.Element("GameStateOffset").Value);
                     settings.FrameScriptExecuteOffset = uint.Parse(root.Element("FrameScriptExecuteOffset").Value);
                     settings.LastHardwareEventOffset = uint.Parse(root.Element("LastHardwareEventOffset").Value);

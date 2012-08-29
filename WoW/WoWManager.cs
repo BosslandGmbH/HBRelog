@@ -601,11 +601,6 @@ namespace HighVoltz.HBRelog.WoW
         {
             if (Memory != null)
             {
-                HbRelogManager.Settings.DxDeviceOffset = WoWPatterns.Dx9DevicePattern.Find(Memory);
-                Log.Debug("DxDevice9 Offset found at 0x{0:X}", HbRelogManager.Settings.DxDeviceOffset);
-                HbRelogManager.Settings.DxDeviceIndex =
-                    Memory.ReadUInt(WoWPatterns.Dx9DeviceInxPattern.Find(Memory) + GameProcess.BaseOffset());
-                Log.Debug("DxDevice9 Index is 0x{0:X}", HbRelogManager.Settings.DxDeviceIndex);
                 HbRelogManager.Settings.GameStateOffset = WoWPatterns.GameStatePattern.Find(Memory);
                 Log.Debug("GameState Offset found at 0x{0:X}", HbRelogManager.Settings.GameStateOffset);
                 HbRelogManager.Settings.FrameScriptExecuteOffset = WoWPatterns.FrameScriptExecutePattern.Find(Memory);

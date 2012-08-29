@@ -30,6 +30,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -39,6 +40,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject />
@@ -88,6 +90,8 @@
     <Compile Include="Controls\OptionsUserControl.xaml.cs">
       <DependentUpon>OptionsUserControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="DirectX\D3DDevice.cs" />
+    <Compile Include="DirectX\Dirext3D.cs" />
     <Compile Include="Remoting\IRemotingApi.cs" />
     <Compile Include="Controls\ProfileEditUserControl.xaml.cs">
       <DependentUpon>ProfileEditUserControl.xaml</DependentUpon>

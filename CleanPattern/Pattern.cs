@@ -53,7 +53,7 @@ namespace HighVoltz.HBRelog.CleanPattern
             var size = mainModule.ModuleMemorySize;
             var patternLength = Bytes.Length;
 
-            for (uint i = 0; i < size; i += (uint)(CacheSize - patternLength))
+            for (uint i = 0; i < size - patternLength; i += (uint)(CacheSize - patternLength))
             {
                 byte[] cache = bm.ReadBytes(start + i, CacheSize > size - i ? size - (int)i : CacheSize);
                 for (uint i2 = 0; i2 < (cache.Length - patternLength); i2++)
@@ -62,7 +62,7 @@ namespace HighVoltz.HBRelog.CleanPattern
                         return start + i + i2;
                 }
             }
-            throw new InvalidDataException("Pattern not found");
+            throw new InvalidDataException(string.Format("Pattern {0} not found",Name));
         }
 
         public uint Find(BlackMagic bm)

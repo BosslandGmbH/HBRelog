@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
+using HighVoltz.HBRelog.DirectX;
 using Magic;
 
 namespace HighVoltz.HBRelog.WoW
@@ -16,13 +17,14 @@ namespace HighVoltz.HBRelog.WoW
         private uint _addresseInjection;
         private uint _injectedCode;
         private uint _retnInjectionAsm;
-
+        private readonly Dirext3D _dx9;
         private byte[] _endSceneOriginalBytes;
 
         public Hook(Process wowProc)
         {
             Process = wowProc;
             Memory = new BlackMagic(ProcessId);
+            _dx9 = new Dirext3D(wowProc);
             _wowProcess = wowProc;
             Installed = false;
         }
@@ -44,6 +46,8 @@ namespace HighVoltz.HBRelog.WoW
                 {
                     throw new InvalidOperationException("Only 32bit Wow is supported");
                 }
+
+                /*
                 // Get address of EndScene
                 uint pDevice = Memory.ReadUInt(HbRelogManager.Settings.DxDeviceOffset + _wowProcess.BaseOffset());
                 uint pEnd = Memory.ReadUInt(pDevice + HbRelogManager.Settings.DxDeviceIndex);
@@ -53,16 +57,18 @@ namespace HighVoltz.HBRelog.WoW
                 }
                 uint pScene = Memory.ReadUInt(pEnd);
                 uint pEndScene = Memory.ReadUInt(pScene + 0xA8);
+                 */
+
                 if (Memory.IsProcessOpen)
                 {
                     // if we're under windows 8 then we need to patch the endscene hook to make it work with HB's hook.. this is a bit hackish
                     if (Environment.OSVersion.Version.Major == 6 && Environment.OSVersion.Version.Minor == 2)
                     {
-                        FixEndSceneForHB(pEndScene);
+                        FixEndSceneForHB((uint)_dx9.EndScene);
                     }
 
                     // check if game is already hooked and dispose Hook
-                    if (Memory.ReadByte(pEndScene) == 0xE9 &&
+                    if (Memory.ReadByte((uint)_dx9.EndScene) == 0xE9 &&
                         (_injectedCode == 0 || _addresseInjection == 0))
                     {
                         DisposeHooking();
@@ -115,11 +121,11 @@ namespace HighVoltz.HBRelog.WoW
                     const int sizeJumpBack = 2;
 
                     // store original bytes
-                    _endSceneOriginalBytes = Memory.ReadBytes(pEndScene - 5, 7);
+                    _endSceneOriginalBytes = Memory.ReadBytes((uint)_dx9.EndScene - 5, 7);
                     // copy and save original instructions
                     Memory.WriteBytes(_injectedCode + sizeAsm, new[] { _endSceneOriginalBytes[5], _endSceneOriginalBytes[6] }, 2);
                     Memory.Asm.Clear();
-                    Memory.Asm.AddLine("jmp " + (pEndScene + sizeJumpBack)); // short jump takes 2 bytes.
+                    Memory.Asm.AddLine("jmp " + ((uint)_dx9.EndScene + sizeJumpBack)); // short jump takes 2 bytes.
                     // create jump back stub
                     Memory.Asm.Inject(_injectedCode + sizeAsm + sizeJumpBack);
 
@@ -129,7 +135,7 @@ namespace HighVoltz.HBRelog.WoW
                     Memory.Asm.AddLine("jmp " + (_injectedCode));
                     Memory.Asm.AddLine("jmp @top");
 
-                    Memory.Asm.Inject(pEndScene - 5);
+                    Memory.Asm.Inject((uint)_dx9.EndScene - 5);
                     //}
                     Installed = true;
                 }
@@ -146,15 +152,17 @@ namespace HighVoltz.HBRelog.WoW
         {
             try
             {
+                /*
                 // Get address of EndScene
                 uint pDevice = Memory.ReadUInt(HbRelogManager.Settings.DxDeviceOffset + _wowProcess.BaseOffset());
                 uint pEnd = Memory.ReadUInt(pDevice + HbRelogManager.Settings.DxDeviceIndex);
                 uint pScene = Memory.ReadUInt(pEnd);
                 uint pEndScene = Memory.ReadUInt(pScene + 0xA8);
-                if (Memory.ReadByte(pEndScene) == 0xEB) // check if wow is already hooked and dispose Hook
+                 */
+                if (Memory.ReadByte((uint)_dx9.EndScene) == 0xEB) // check if wow is already hooked and dispose Hook
                 {
                     // Restore original endscene:
-                    Memory.WriteBytes(pEndScene - 5, _endSceneOriginalBytes);
+                    Memory.WriteBytes((uint)_dx9.EndScene - 5, _endSceneOriginalBytes);
                 }
 
                 // free memory:
