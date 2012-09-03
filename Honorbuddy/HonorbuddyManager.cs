@@ -20,6 +20,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using System.Windows;
 using HighVoltz.HBRelog.Settings;
 using Microsoft.Win32.SafeHandles;
 
@@ -116,7 +117,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
                 StartHonorbuddy();
             }
             else
-                throw new InvalidOperationException(string.Format("path to honorbuddy.exe does not exist: {0}", Settings.HonorbuddyPath));
+                MessageBox.Show(string.Format("path to honorbuddy.exe does not exist: {0}", Settings.HonorbuddyPath));
         }
 
         bool _waitingToStart;
