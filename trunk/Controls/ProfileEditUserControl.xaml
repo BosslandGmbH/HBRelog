@@ -19,7 +19,7 @@
         <!-- Bind to the currently selected profile in grid -->
         <TabControl HorizontalAlignment="Stretch" Name="AccountTabControl" VerticalAlignment="Stretch" Padding="4" 
                     HorizontalContentAlignment="Center" DataContext="{Binding Path=/Settings}" >
-            <TabItem Header="Acount" Name="AcountTab" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+            <TabItem Header="Account" Name="AcountTab" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
                 <Border Padding="2" BorderThickness="1" BorderBrush="Gray" CornerRadius="3" Name="GameConfigBorder">
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <Grid>
