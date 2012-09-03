@@ -90,6 +90,8 @@
     <Compile Include="Controls\OptionsUserControl.xaml.cs">
       <DependentUpon>OptionsUserControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="DirectX\D3D11Device.cs" />
+    <Compile Include="DirectX\D3D9Device.cs" />
     <Compile Include="DirectX\D3DDevice.cs" />
     <Compile Include="DirectX\Dirext3D.cs" />
     <Compile Include="Remoting\IRemotingApi.cs" />

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Windows;
 using HighVoltz.HBRelog.Settings;
 using Magic;
 
@@ -276,8 +277,7 @@ namespace HighVoltz.HBRelog.WoW
                     StartWoW();
                 }
                 else
-                    throw new InvalidOperationException(string.Format("path to WoW.exe does not exist: {0}",
-                                                                      Settings.WowPath));
+                    MessageBox.Show(string.Format("path to WoW.exe does not exist: {0}", Settings.WowPath));
             }
         }
 
@@ -613,7 +613,7 @@ namespace HighVoltz.HBRelog.WoW
                 HbRelogManager.Settings.Save();
             }
             else
-                throw new InvalidOperationException("Can not scan for offsets before attaching to process");
+                MessageBox.Show("Can not scan for offsets before attaching to process");
         }
 
         #region Embeded Types

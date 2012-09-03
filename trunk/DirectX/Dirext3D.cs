@@ -1,68 +1,27 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Security;
-using System.Windows.Forms;
-using Magic;
 
 namespace HighVoltz.HBRelog.DirectX
 {
-    class Dirext3D
+    internal class Dirext3D
     {
-        public Process Process { get; set; }
-
-        private IntPtr D3D9Dll { get; set; }
-        private IntPtr TheirD3D9Dll { get; set; }
-        public IntPtr EndScene { get; private set; }
-        public IntPtr BeginScene { get; private set; }
-
         public Dirext3D(Process targetProc)
         {
-            Process = targetProc;
+            TargetProcess = targetProc;
 
-            if (Process.Modules.Cast<ProcessModule>().Any(m => m.ModuleName == "d3d11.dll"))
-                throw new InvalidOperationException("DirectX11 is no currently supported");
-            LoadD3D9Dll();
+            UsingDirectX11 = TargetProcess.Modules.Cast<ProcessModule>().Any(m => m.ModuleName == "d3d11.dll");
 
-            using (var d3D = new D3DDevice())
+            using (D3DDevice d3D = UsingDirectX11
+                                       ? (D3DDevice)new D3D11Device(targetProc)
+                                       : new D3D9Device(targetProc))
             {
-                BeginScene = GetAbsolutePointer(d3D.GetDeviceVTableFuncAddress((int)VTableIndexes.BeginScene));
-                EndScene = GetAbsolutePointer(d3D.GetDeviceVTableFuncAddress((int)VTableIndexes.EndScene));
+                HookPtr = UsingDirectX11 ? ((D3D11Device)d3D).GetSwapVTableFuncAbsoluteAddress(d3D.PresentVtableIndex) : d3D.GetDeviceVTableFuncAbsoluteAddress(d3D.EndSceneVtableIndex);
             }
         }
 
-        private void LoadD3D9Dll()
-        {
-            D3D9Dll = LoadLibrary("d3d9.dll");
-            if (D3D9Dll == IntPtr.Zero)
-            {
-                throw new Exception("Could not load d3d9.dll");
-            }
-
-            TheirD3D9Dll =
-                Process.Modules.Cast<ProcessModule>().First(
-                    m => m.ModuleName == "d3d9.dll").BaseAddress;
-        }
-
-        public IntPtr GetAbsolutePointer(IntPtr pointer)
-        {
-            var value = new IntPtr((int)pointer - (int)D3D9Dll);
-            return new IntPtr((int)TheirD3D9Dll + (int)value);
-        }
-
-
-        [SuppressUnmanagedCodeSecurity, DllImport("kernel32")]
-        internal static extern IntPtr LoadLibrary(string libraryName);
-
-        public enum VTableIndexes 
-        {
-            Reset = 16,
-            ResetEx = 132,
-            BeginScene = 39,
-            EndScene = 42,
-        }
-
+        public Process TargetProcess { get; private set; }
+        public bool UsingDirectX11 { get; private set; }
+        public IntPtr HookPtr { get; private set; }
     }
 }
-

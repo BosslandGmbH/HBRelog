@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Security;
 using System.Text;
 
 namespace HighVoltz.HBRelog
@@ -59,8 +60,11 @@ namespace HighVoltz.HBRelog
 
         #endregion
 
+        [SuppressUnmanagedCodeSecurity, DllImport("kernel32")]
+        public static extern IntPtr LoadLibrary(string libraryName);
+
         [DllImport("user32.dll")]
-        private static extern bool EnumThreadWindows(int dwThreadId, EnumWindowProc lpfn, IntPtr lParam);
+        public static extern bool EnumThreadWindows(int dwThreadId, EnumWindowProc lpfn, IntPtr lParam);
 
         [DllImport("user32")]
         [return: MarshalAs(UnmanagedType.Bool)]
