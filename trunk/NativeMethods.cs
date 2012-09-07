@@ -63,6 +63,13 @@ namespace HighVoltz.HBRelog
         [SuppressUnmanagedCodeSecurity, DllImport("kernel32")]
         public static extern IntPtr LoadLibrary(string libraryName);
 
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
+        public static extern IntPtr GetModuleHandle(string lpModuleName);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool FreeLibrary(IntPtr hModule);
+
         [DllImport("user32.dll")]
         public static extern bool EnumThreadWindows(int dwThreadId, EnumWindowProc lpfn, IntPtr lParam);
 

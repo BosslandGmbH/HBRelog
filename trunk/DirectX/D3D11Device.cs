@@ -64,7 +64,7 @@ namespace HighVoltz.HBRelog.DirectX
 
         private void LoadDxgiDll()
         {
-            _myDxgiDll = NativeMethods.LoadLibrary("dxgi.dll");
+            _myDxgiDll = LoadLibrary("dxgi.dll");
             if (_myDxgiDll == IntPtr.Zero)
                 throw new Exception(String.Format("Could not load {0}", "dxgi.dll"));
 

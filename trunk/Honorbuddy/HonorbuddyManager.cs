@@ -103,8 +103,13 @@ namespace HighVoltz.HBRelog.Honorbuddy
                         string pluginString = reader.ReadToEnd();
                         // copy the HBPlugin over to the Honorbuddy plugin folder if it doesn't exist.
                         // or length doesn't match with the version in resource.
-                        string pluginPath = Path.Combine(Path.GetDirectoryName(Settings.HonorbuddyPath),
-                                            "Plugins\\HBRelogHelper.cs");
+                        string pluginFolder = Path.Combine(Path.GetDirectoryName(Settings.HonorbuddyPath),
+                                            "Plugins\\HBRelogHelper");
+                        if (!Directory.Exists(pluginFolder))
+                            Directory.CreateDirectory(pluginFolder);
+
+                        string pluginPath = Path.Combine(pluginFolder,"HBRelogHelper.cs");
+
                         var fi = new FileInfo(pluginPath);
                         if (!fi.Exists || fi.Length != pluginString.Length)
                         {
