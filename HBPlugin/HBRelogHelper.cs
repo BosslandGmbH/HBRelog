@@ -94,8 +94,8 @@ namespace HighVoltz.HBRelogHelper
                 //Logging.Write(Color.Red, ex.ToString());
             }
             // since theres no point of this plugin showing up in plugin list lets just throw an exception.
-
-            throw new Exception("Ignore this exception");
+            // new HB doesn't catch exceptions 
+           //  throw new Exception("Ignore this exception");
         }
 
         void Shutdown()
@@ -214,13 +214,13 @@ namespace HighVoltz.HBRelogHelper
             get { return new Version(1, 0); }
         }
 
-        public override bool WantButton { get { return true; } }
+        public override bool WantButton { get { return false; } }
         public override void OnButtonPress()
         {
             Logging.Write("IsConnected: {0}", IsConnected);
             foreach (string name in HBRelogRemoteApi.GetProfileNames())
             {
-                Logging.Write("GetProfileStatus: {0}", HBRelogRemoteApi.GetProfileStatus(name));
+                Logging.Write("{1}: GetProfileStatus: {0}", HBRelogRemoteApi.GetProfileStatus(name), name);
                 HBRelogRemoteApi.SetProfileStatusText(HbProcId, TreeRoot.StatusText);
             }
         }
