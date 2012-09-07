@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -17,6 +18,7 @@ namespace HighVoltz.HBRelog.DirectX
 
         protected Form Form { get; private set; }
 
+        private List<IntPtr> _loadedLibraries = new List<IntPtr>();
         protected D3DDevice(Process targetProcess, string d3DDllName)
         {
             TargetProcess = targetProcess;
@@ -41,12 +43,26 @@ namespace HighVoltz.HBRelog.DirectX
 
         private void LoadDll()
         {
-            _myD3DDll = NativeMethods.LoadLibrary(_d3DDllName);
+            _myD3DDll = LoadLibrary(_d3DDllName);
             if (_myD3DDll == IntPtr.Zero)
                 throw new Exception(String.Format("Could not load {0}", _d3DDllName));
 
             _theirD3DDll = TargetProcess.Modules.Cast<ProcessModule>().First(m => m.ModuleName == _d3DDllName).BaseAddress;
         }
+
+        protected IntPtr LoadLibrary(string library)
+        {
+            // Attempt to grab the module handle if its loaded already.
+            var ret = NativeMethods.GetModuleHandle(library);
+            if (ret == IntPtr.Zero)
+            {
+                // Load the lib manually if its not, storing it in a list so we can free it later.
+                ret = NativeMethods.LoadLibrary(library);
+                _loadedLibraries.Add(ret);
+            }
+            return ret;
+        }
+
 
         protected unsafe IntPtr GetVTableFuncAddress(IntPtr obj, int funcIndex)
         {
@@ -85,6 +101,11 @@ namespace HighVoltz.HBRelog.DirectX
                     CleanD3D();
                     if (Form != null)
                         Form.Dispose();
+
+                    foreach (var loadedLibrary in _loadedLibraries)
+                    {
+                        NativeMethods.FreeLibrary(loadedLibrary);
+                    }
                 }
                 _disposed = true;
             }

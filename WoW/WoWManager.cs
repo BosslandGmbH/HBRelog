@@ -347,7 +347,7 @@ namespace HighVoltz.HBRelog.WoW
                         else if (!_processIsReadyForInput)
                         {
                             // change window title
-                            NativeMethods.SetWindowText(GameProcess.MainWindowHandle, Profile.Settings.ProfileName);
+                            NativeMethods.SetWindowText(GameProcess.MainWindowHandle, string.Format("{0} - ProcID: {1}", Profile.Settings.ProfileName, GameProcess.Id));
                             // resize and position window.
                             if (Settings.WowWindowWidth > 0 && Settings.WowWindowHeight > 0)
                             {

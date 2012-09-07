@@ -6,9 +6,10 @@ using System.Windows;
 using System.Windows.Threading;
 using HighVoltz.HBRelog.Remoting;
 using Styx;
+using Styx.Common;
+using Styx.CommonBot;
 using Styx.Helpers;
-using Styx.Logic.BehaviorTree;
-using Styx.Plugins.PluginClass;
+using Styx.Plugins;
 
 
 namespace HighVoltz.HBRelog.Remoting
@@ -144,7 +145,7 @@ namespace HighVoltz.HBRelogHelper
                     HBRelogRemoteApi.SetProfileStatusText(HbProcId, TreeRoot.StatusText);
                     _lastStatus = TreeRoot.StatusText;
                 }
-                if (InfoPanel.IsMeasuring)
+                if (GameStats.IsMeasuring)
                     UpdateTooltip();
             }
             catch (Exception ex)
@@ -159,27 +160,27 @@ namespace HighVoltz.HBRelogHelper
             {
                 string tooltip = string.Empty;
                 if (StyxWoW.Me.Level < 85)
-                    tooltip += string.Format("XP/hr: {0}\n", InfoPanel.XPPerHour);
+                    tooltip += string.Format("XP/hr: {0}\n", GameStats.XPPerHour);
                 if (TreeRoot.Current.Name == "BGBuddy")
                 {
                     tooltip += string.Format("BGs: {0} ({1}/hr)\n",
-                        InfoPanel.BGsCompleted, InfoPanel.BGsPerHour);
+                        GameStats.BGsCompleted, GameStats.BGsPerHour);
                     tooltip += string.Format("BGs won: {0} ({1}/hr)\n",
-                        InfoPanel.BGsWon, InfoPanel.BGsWonPerHour);
+                        GameStats.BGsWon, GameStats.BGsWonPerHour);
                     tooltip += string.Format("BGs lost: {0} ({1}/hr)\n",
-                        InfoPanel.BGsLost, InfoPanel.BGsLostPerHour);
-                    tooltip += string.Format("Honor/hr: {0}\n", InfoPanel.HonorPerHour);
+                        GameStats.BGsLost, GameStats.BGsLostPerHour);
+                    tooltip += string.Format("Honor/hr: {0}\n", GameStats.HonorPerHour);
                 }
                 else
                 {
                     tooltip += string.Format("Loots: {0} ({1}/hr)\n",
-                        InfoPanel.Loots, InfoPanel.LootsPerHour);
+                        GameStats.Loots, GameStats.LootsPerHour);
                     tooltip += string.Format("Deaths: {0} - ({1}/hr)\n",
-                        InfoPanel.Deaths, InfoPanel.DeathsPerHour);
+                        GameStats.Deaths, GameStats.DeathsPerHour);
                     if (TreeRoot.Current.Name != "Gatherbuddy2")
                     {
                         tooltip += string.Format("Mobs killed: {0} - ({1}/hr)\n",
-                        InfoPanel.MobsKilled, InfoPanel.MobsPerHour);
+                        GameStats.MobsKilled, GameStats.MobsPerHour);
                     }
                 }
                 if (tooltip != _lastTooltip)
