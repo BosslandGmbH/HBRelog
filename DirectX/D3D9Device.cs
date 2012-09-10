@@ -108,7 +108,7 @@ namespace HighVoltz.HBRelog.DirectX
         }
 
 
-        private struct VTableIndexes
+        public struct VTableIndexes
         {
             public const int Direct3D9Release = 2;
             public const int Direct3D9CreateDevice = 0x10;

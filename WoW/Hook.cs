@@ -38,6 +38,8 @@ namespace HighVoltz.HBRelog.WoW
 
         public int ProcessId { get { return Process.Id; } }
 
+        bool UsingWin8 { get { return Environment.OSVersion.Version.Major == 6 && Environment.OSVersion.Version.Minor == 2; } }
+
         public bool InstallHook()
         {
             try
@@ -51,9 +53,9 @@ namespace HighVoltz.HBRelog.WoW
                 if (Memory.IsProcessOpen)
                 {
                     // if we're under windows 8 then we need to patch the endscene hook to make it work with HB's hook.. this is a bit hackish
-                    if (Environment.OSVersion.Version.Major == 6 && Environment.OSVersion.Version.Minor == 2)
+                    if (UsingWin8 && !_dx3D.UsingDirectX11)
                     {
-                       // FixEndSceneForHB((uint)_dx3D.Present);
+                        FixEndSceneForHB((uint)_dx3D.HookPtr);
                     }
 
                     // check if game is already hooked and dispose Hook

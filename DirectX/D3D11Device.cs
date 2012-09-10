@@ -145,7 +145,7 @@ namespace HighVoltz.HBRelog.DirectX
             public int Flags;
         }
 
-        private struct VTableIndexes
+        public struct VTableIndexes
         {
             public const int DXGISwapChainRelease = 2;
             public const int D3D11DeviceRelease = 2;
