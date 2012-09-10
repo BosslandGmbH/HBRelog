@@ -73,7 +73,7 @@ namespace HighVoltz.HBRelog.DirectX
 
         public unsafe IntPtr GetSwapVTableFuncAbsoluteAddress(int funcIndex)
         {
-            IntPtr pointer = *(IntPtr*)((void*)D3DDevicePtr);
+            IntPtr pointer = *(IntPtr*)((void*)_swapChain);
             pointer = *(IntPtr*)((void*)((int)pointer + funcIndex * 4));
             var offset = IntPtr.Subtract(pointer, _myDxgiDll.ToInt32());
             return IntPtr.Add(_theirDxgiDll, offset.ToInt32());
