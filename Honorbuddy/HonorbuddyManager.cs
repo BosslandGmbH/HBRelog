@@ -122,7 +122,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
                 StartHonorbuddy();
             }
             else
-                MessageBox.Show(string.Format("path to honorbuddy.exe does not exist: {0}", Settings.HonorbuddyPath));
+                throw new FileNotFoundException(string.Format("path to honorbuddy.exe does not exist: {0}", Settings.HonorbuddyPath));
         }
 
         bool _waitingToStart;
