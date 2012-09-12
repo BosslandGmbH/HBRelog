@@ -18,19 +18,25 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Threading;
 using System.Windows;
 using HighVoltz.HBRelog.Settings;
+using ICSharpCode.SharpZipLib.Zip;
 using Microsoft.Win32.SafeHandles;
 
 namespace HighVoltz.HBRelog.Honorbuddy
 {
     public class HonorbuddyManager : IBotManager
     {
+        private const string HbUpdateUrl = "http://updates.buddywing.com/GetNewest?filter=Honorbuddy";
+        private const string HbVersionUrl = "http://updates.buddyauth.com/GetVersion?filter=Honorbuddy";
+
         readonly object _lockObject = new object();
         public bool IsRunning { get; private set; }
         public bool StartupSequenceIsComplete { get; private set; }
+
         public event EventHandler<ProfileEventArgs> OnStartupSequenceIsComplete;
         CharacterProfile _profile;
         public CharacterProfile Profile
@@ -87,10 +93,61 @@ namespace HighVoltz.HBRelog.Honorbuddy
         }
 
         bool _pluginIsUptodate;
+        private DateTime _lastUpdateCheck;
         public void Start()
         {
             if (File.Exists(Settings.HonorbuddyPath))
             {
+                // check if there is a new version available.
+                if (DateTime.Now - _lastUpdateCheck >= TimeSpan.FromMinutes(30))
+                {
+                    Log.Write("Checking for new  Honorbuddy update");
+                    // get local honorbuddy file version.
+                    FileVersionInfo localFileVersionInfo = FileVersionInfo.GetVersionInfo(Settings.HonorbuddyPath);
+                    // download the latest Honorbuddy version string from server
+                    var client = new WebClient { Proxy = null };
+                    string latestHbVersion = client.DownloadString(HbVersionUrl);
+                    // check if local version is different from remote honorbuddy version.
+                    if (localFileVersionInfo.FileVersion != latestHbVersion)
+                    {
+                        Log.Write("New version of Honorbuddy is available.");
+                        var originalFileName = Path.GetFileName(Settings.HonorbuddyPath);
+                        // close all instances of Honorbuddy
+                        Log.Write("Closing all instances of Honorbuddy");
+                        var psi = new ProcessStartInfo("taskKill", "/IM " + originalFileName) {WindowStyle = ProcessWindowStyle.Hidden};
+
+                        Process.Start(psi);
+                        // download the new honorbuddy zip
+                        Log.Write("Downloading new version of Honorbuddy");
+                        Profile.Status = "Downloading new version of HB";
+                        string tempFileName = Path.GetTempFileName();
+
+                        client.DownloadFile(HbUpdateUrl, tempFileName);
+
+                        // extract the downloaded zip
+                        var hbFolder = Path.GetDirectoryName(Settings.HonorbuddyPath);
+                        Log.Write("Extracting Honorbuddy to {0}", hbFolder);
+                        Profile.Status = "Extracting Honorbuddy";
+                        var zip = new FastZip();
+                        zip.ExtractZip(tempFileName, hbFolder, FastZip.Overwrite.Always, s => true, ".*", ".*", true);
+
+                        // delete the downloaded zip
+                        Log.Write("Deleting temporary file");
+                        File.Delete(tempFileName);
+
+                        // rename the Honorbuddy.exe if original .exe was different
+                        if (originalFileName != "Honorbuddy.exe")
+                        {
+                            File.Delete(Settings.HonorbuddyPath);
+                            Log.Write("Renaming Honorbuddy.exe to {0}", originalFileName);
+                            File.Move(Path.Combine(hbFolder, "Honorbuddy.exe"), Settings.HonorbuddyPath);
+                        }
+                    }
+                    else
+                        Log.Write("Honorbuddy is up-to-date");
+                    _lastUpdateCheck = DateTime.Now;
+                }
+
                 // remove internet zone restrictions from Honorbuddy.exe if it exists
                 Utility.UnblockFileIfZoneRestricted(Settings.HonorbuddyPath);
                 // check if we need to copy over plugin.
@@ -108,7 +165,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
                         if (!Directory.Exists(pluginFolder))
                             Directory.CreateDirectory(pluginFolder);
 
-                        string pluginPath = Path.Combine(pluginFolder,"HBRelogHelper.cs");
+                        string pluginPath = Path.Combine(pluginFolder, "HBRelogHelper.cs");
 
                         var fi = new FileInfo(pluginPath);
                         if (!fi.Exists || fi.Length != pluginString.Length)
@@ -124,6 +181,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
             else
                 throw new FileNotFoundException(string.Format("path to honorbuddy.exe does not exist: {0}", Settings.HonorbuddyPath));
         }
+
 
         bool _waitingToStart;
 
@@ -154,7 +212,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
                             Profile.Log("starting {0}", Profile.Settings.HonorbuddySettings.HonorbuddyPath);
                             Profile.Status = "Starting Honorbuddy";
                             StartupSequenceIsComplete = false;
-                            string hbArgs = string.Format("/pid={0} /autostart {1}{2}{3}",
+                            string hbArgs = string.Format("/noupdate /pid={0} /autostart {1}{2}{3}",
                                 Profile.TaskManager.WowManager.GameProcess.Id,
                                 !string.IsNullOrEmpty(Settings.CustomClass) ? string.Format("/customclass=\"{0}\" ", Settings.CustomClass) : string.Empty,
                                 !string.IsNullOrEmpty(Settings.HonorbuddyPath) ? string.Format("/loadprofile=\"{0}\" ", Settings.HonorbuddyProfile) : string.Empty,

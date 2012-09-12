@@ -94,6 +94,47 @@
     <Compile Include="DirectX\D3D9Device.cs" />
     <Compile Include="DirectX\D3DDevice.cs" />
     <Compile Include="DirectX\Dirext3D.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Checksums\Adler32.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Checksums\CRC32.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Checksums\IChecksum.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Checksums\StrangeCRC.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Core\FileSystemScanner.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Core\INameTransform.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Core\IScanFilter.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Core\NameFilter.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Core\PathFilter.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Core\StreamUtils.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Core\WindowsPathUtils.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Encryption\PkzipClassic.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Encryption\ZipAESStream.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Encryption\ZipAESTransform.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\SharpZipBaseException.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Zip\Compression\Deflater.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Zip\Compression\DeflaterConstants.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Zip\Compression\DeflaterEngine.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Zip\Compression\DeflaterHuffman.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Zip\Compression\DeflaterPending.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Zip\Compression\Inflater.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Zip\Compression\InflaterDynHeader.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Zip\Compression\InflaterHuffmanTree.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Zip\Compression\PendingBuffer.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Zip\Compression\Streams\DeflaterOutputStream.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Zip\Compression\Streams\InflaterInputStream.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Zip\Compression\Streams\OutputWindow.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Zip\Compression\Streams\StreamManipulator.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Zip\FastZip.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Zip\IEntryFactory.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Zip\WindowsNameTransform.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Zip\ZipConstants.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Zip\ZipEntry.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Zip\ZipEntryFactory.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Zip\ZipException.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Zip\ZipExtraData.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Zip\ZipFile.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Zip\ZipHelperStream.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Zip\ZipInputStream.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Zip\ZipNameTransform.cs" />
+    <Compile Include="ICSharpCode.SharpZLib\Zip\ZipOutputStream.cs" />
     <Compile Include="Remoting\IRemotingApi.cs" />
     <Compile Include="Controls\ProfileEditUserControl.xaml.cs">
       <DependentUpon>ProfileEditUserControl.xaml</DependentUpon>
@@ -216,7 +257,6 @@
   <ItemGroup>
     <Resource Include="Images\Logo.ico" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <Content Include="bin\Debug\BlackMagic.dll" />
     <Content Include="bin\Debug\fasmdll_managed.dll" />
@@ -225,6 +265,7 @@
     <Content Include="bin\Release\BlackMagic.dll" />
     <Content Include="bin\Release\fasmdll_managed.dll" />
     <Content Include="bin\Release\HBRelog.exe" />
+    <Resource Include="License.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
