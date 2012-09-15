@@ -110,12 +110,14 @@ namespace HighVoltz.HBRelog.DirectX
 
 #pragma warning disable 169
 
+        [StructLayout(LayoutKind.Sequential)]
         public struct Rational
         {
             public int Numerator;
             public int Denominator;
         }
 
+        [StructLayout(LayoutKind.Sequential)]
         public struct ModeDescription
         {
             public int Width;
@@ -126,12 +128,14 @@ namespace HighVoltz.HBRelog.DirectX
             public int Scaling;
         }
 
+        [StructLayout(LayoutKind.Sequential)]
         public struct SampleDescription
         {
             public int Count;
             public int Quality;
         }
 
+        [StructLayout(LayoutKind.Sequential)]
         public struct SwapChainDescription
         {
             public ModeDescription ModeDescription;
