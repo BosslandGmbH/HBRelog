@@ -39,7 +39,7 @@ namespace HighVoltz.HBRelog.Settings
 
             // set some default settings
             HBDelay = 3;
-            CheckHbResponsiveness = UseDarkStyle = true;
+            AutoUpdateHB = CheckHbResponsiveness = UseDarkStyle = true;
         }
 
         public string SettingsPath
@@ -63,6 +63,7 @@ namespace HighVoltz.HBRelog.Settings
         public bool UseDarkStyle { get; set; }
         public bool CheckRealmStatus { get; set; }
         public bool CheckHbResponsiveness { get; set; }
+        public bool AutoUpdateHB { get; set; }
 
         /// <summary>
         /// Minimizes HB to system tray on start
@@ -90,6 +91,7 @@ namespace HighVoltz.HBRelog.Settings
                 root.Add(new XElement("CheckRealmStatus", CheckRealmStatus));
                 root.Add(new XElement("CheckHbResponsiveness", CheckHbResponsiveness));
                 root.Add(new XElement("MinimizeHbOnStart", MinimizeHbOnStart));
+                root.Add(new XElement("AutoUpdateHB", AutoUpdateHB));
                 root.Add(new XElement("WowVersion", WowVersion));
 
                 root.Add(new XElement("GameStateOffset", GameStateOffset));
@@ -186,6 +188,7 @@ namespace HighVoltz.HBRelog.Settings
                     settings.UseDarkStyle = GetElementValue(root.Element("UseDarkStyle"), true);
                     settings.CheckRealmStatus = GetElementValue(root.Element("CheckRealmStatus"), false);
                     settings.CheckHbResponsiveness = GetElementValue(root.Element("CheckHbResponsiveness"), true);
+                    settings.AutoUpdateHB = GetElementValue(root.Element("AutoUpdateHB"), true);
                     settings.MinimizeHbOnStart = GetElementValue(root.Element("MinimizeHbOnStart"), false);
 
                     settings.GameStateOffset = uint.Parse(root.Element("GameStateOffset").Value);

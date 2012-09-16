@@ -25,6 +25,7 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <!-- AutoStart -->
                     <TextBlock Text="AutoStart"  />
@@ -46,6 +47,11 @@
                     <TextBox x:Name="LoginDelayText" Width="40" Height="18" FontSize="10"
                              ToolTip="Delay in seconds between executing login actions. Increasing this will cause login to take longer"
                              Grid.Row="3" Grid.Column="1" Text="{Binding LoginDelay}"/>
+                    <!-- AutoStart -->
+                    <TextBlock Text="Auto-update HB" Grid.Row="4" />
+                    <CheckBox x:Name="AutoUpdateHBCheck" Grid.Column="1" Grid.Row="4"
+                              ToolTip="Automatically install latest HB if there is a new version before running it"
+                              IsChecked="{Binding AutoUpdateHB}"/>                    
                 </Grid>
             </GroupBox>
             <GroupBox Header="User Interface">
