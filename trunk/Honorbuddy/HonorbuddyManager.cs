@@ -99,7 +99,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
             if (File.Exists(Settings.HonorbuddyPath))
             {
                 // check if there is a new version available.
-                if (DateTime.Now - _lastUpdateCheck >= TimeSpan.FromMinutes(30))
+                if (HbRelogManager.Settings.AutoUpdateHB &&  DateTime.Now - _lastUpdateCheck >= TimeSpan.FromMinutes(30))
                 {
                     Log.Write("Checking for new  Honorbuddy update");
                     // get local honorbuddy file version.

@@ -13,70 +13,72 @@ namespace HighVoltz.HBRelog.WoW
     public sealed class WowManager : IGameManager
     {
         private const string LoginLuaFormat =
-            "local acct = \"{2}\" " +
-            "if (WoWAccountSelectDialog and WoWAccountSelectDialog:IsShown()) then " +
-            "for i = 1, GetNumGameAccounts() do " +
-            "if GetGameAccountInfo(i):upper() == acct:upper() then " +
-            "WoWAccountSelect_SelectAccount(i) " +
-            "end " +
-            "end " +
-            "elseif (AccountLoginUI and AccountLoginUI:IsVisible()) then " +
-            "if (AccountLoginDropDown:IsShown()) then " +
-            " for i=1, #AccountList  do " +
-            "if AccountList[i].text:upper() == acct:upper() then " +
-            "GlueDropDownMenu_SetSelectedName(AccountLoginDropDown,AccountList[i].text) " +
-            "GlueDialog_Show('ACCOUNT_MSG',AccountList[i].text) " +
-            "end " +
-            "end  " +
-            "end " +
-            "DefaultServerLogin(\"{0}\",\"{1}\") " +
-            "AccountLoginUI:Hide() " +
-            "end ";
+        @"local acct = ""{2}""
+        if (WoWAccountSelectDialog and WoWAccountSelectDialog:IsShown()) then    
+            for i = 1, GetNumGameAccounts() do    
+                if GetGameAccountInfo(i):upper() == acct:upper() then    
+                    WoWAccountSelect_SelectAccount(i)    
+                end    
+            end    
+        elseif (AccountLoginUI and AccountLoginUI:IsVisible()) then    
+            if (AccountLoginDropDown:IsShown()) then    
+                for i=1, #AccountList  do    
+                    if AccountList[i].text:upper() == acct:upper() then    
+                        GlueDropDownMenu_SetSelectedName(AccountLoginDropDown,AccountList[i].text)    
+                        GlueDialog_Show('ACCOUNT_MSG',AccountList[i].text)    
+                    end    
+                end     
+            end    
+            DefaultServerLogin(""{0}"" ,""{1}"" )    
+            AccountLoginUI:Hide()    
+        end";
 
         // indexes are {0}=character, {1}=server
         private const string CharSelectLuaFormat =
-            "local name = \"{0}\" " +
-            "local server = \"{1}\" " +
-            "if (CharacterSelectUI and CharacterSelectUI:IsVisible()) then " +
-            "if GetServerName():upper() ~= server:upper() and (not RealmList or not RealmList:IsVisible()) then " +
-            "RequestRealmList(1) " +
-            "else " +
-            "if (GetCharacterInfo(CharacterSelect.selectedIndex):upper() == name:upper()) then " +
-            "CharSelectEnterWorldButton:Click() " +
-            "else " +
-            "for i = 1,GetNumCharacters() do " +
-            "if (GetCharacterInfo(i):upper() == name:upper()) then " +
-            "CharacterSelect_SelectCharacter(i) " +
-            "return " +
-            "end " +
-            "end " +
-            "end " +
-            //        "for i = 1,GetNumCharacters() do " +
-            ////"local name = GetCharacterInfo(i) " +
-            ////"GlueDialog_Show('ACCOUNT_MSG',name:upper()..':'..CharacterSelect.selectedIndex) " + 
-            //            "if (GetCharacterInfo(i):upper() == name:upper()) then " +
-            //               // "CharacterSelect_SelectCharacter(i) " +
-            //               // "CharSelectEnterWorldButton:Click() " +
-            //            "end " +
-            //        "end " +
-            "end " +
-            "elseif (CharCreateRandomizeButton and CharCreateRandomizeButton:IsVisible()) then " +
-            "CharacterCreate_Back() " +
-            "end ";
+             @"local name = ""{0}""
+             local server = ""{1}""     
+             if (CharacterSelectUI and CharacterSelectUI:IsVisible()) then    
+                 if GetServerName():upper() ~= server:upper() and (not RealmList or not RealmList:IsVisible()) then    
+                    RequestRealmList(1)    
+                 else    
+                     if (GetCharacterInfo(CharacterSelect.selectedIndex):upper() == name:upper()) then    
+                        CharSelectEnterWorldButton:Click()    
+                     else    
+                         for i = 1,GetNumCharacters() do    
+                             if (GetCharacterInfo(i):upper() == name:upper()) then    
+                                 CharacterSelect_SelectCharacter(i)    
+                                 return    
+                             end    
+                         end    
+                     end   
+ 
+
+                --  for i = 1,GetNumCharacters() do    
+                --  local name = GetCharacterInfo(i)    
+                --  GlueDialog_Show('ACCOUNT_MSG',name:upper()..':'..CharacterSelect.selectedIndex)    
+                -- if (GetCharacterInfo(i):upper() == name:upper()) then    
+                --                 CharacterSelect_SelectCharacter(i)    
+                --                 CharSelectEnterWorldButton:Click()    
+                --  end    
+                --  end    
+
+
+                 end      
+             end " ;
 
         // indexes are {0}=server
         private const string RealmSelectLuaFormat =
-            "local server = \"{0}\" " +
-            "if (RealmList and RealmList:IsVisible()) then " +
-            "for i = 1, select('#',GetRealmCategories()) do " +
-            "for j = 1, GetNumRealms(i) do " +
-            "if GetRealmInfo(i, j):upper() == server:upper() then " +
-            "RealmList:Hide() " +
-            "ChangeRealm(i, j) " +
-            "end " +
-            "end " +
-            "end " +
-            "end ";
+             @"local server = ""{0}""
+             if (RealmList and RealmList:IsVisible()) then    
+                 for i = 1, select('#',GetRealmCategories()) do    
+                     for j = 1, GetNumRealms(i) do    
+                         if GetRealmInfo(i, j):upper() == server:upper() then    
+                             RealmList:Hide()    
+                             ChangeRealm(i, j)    
+                         end    
+                     end    
+                 end    
+             end";
 
         private readonly object _lockObject = new object();
         private readonly Stopwatch _loggedOutSw = new Stopwatch();
@@ -552,7 +554,7 @@ namespace HighVoltz.HBRelog.WoW
                             break;
                         case GlueState.CharacterCreation:
                             Lua.DoString(
-                                "if (CharCreateRandomizeButton and CharCreateRandomizeButton:IsVisible()) then CharacterCreate_Back() end ");
+                                "CharacterCreate_Back()");
                             break;
                         case GlueState.Updater:
                             Profile.Pause();
