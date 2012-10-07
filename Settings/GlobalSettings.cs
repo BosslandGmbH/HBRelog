@@ -17,6 +17,7 @@ Copyright 2012 HighVoltz
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -28,7 +29,7 @@ using HighVoltz.HBRelog.Tasks;
 
 namespace HighVoltz.HBRelog.Settings
 {
-    public class GlobalSettings
+    public class GlobalSettings : INotifyPropertyChanged
     {
         private GlobalSettings()
         {
@@ -53,22 +54,74 @@ namespace HighVoltz.HBRelog.Settings
 
         public ObservableCollection<CharacterProfile> CharacterProfiles { get; set; }
         // Automatically start all enabled profiles on start
-        public bool AutoStart { get; set; }
-        // delay in seconds between starting multiple Wow instance
-        public int WowDelay { get; set; }
-        // delay in seconds between starting multiple Honorbuddy instance
-        public int HBDelay { get; set; }
-        // delay in seconds between executing login actions.
-        public int LoginDelay { get; set; }
-        public bool UseDarkStyle { get; set; }
-        public bool CheckRealmStatus { get; set; }
-        public bool CheckHbResponsiveness { get; set; }
-        public bool AutoUpdateHB { get; set; }
+        private bool _autoStart;
+        public bool AutoStart
+        {
+            get { return _autoStart; }
+            set { _autoStart = value; NotifyPropertyChanged("AutoStart"); }
+        }
 
+        // delay in seconds between starting multiple Wow instance
+        private int _wowDelay;
+        public int WowDelay
+        {
+            get { return _wowDelay; }
+            set { _wowDelay = value; NotifyPropertyChanged("WowDelay"); }
+        }
+
+        // delay in seconds between starting multiple Honorbuddy instance
+        private int _hBDelay;
+        public int HBDelay
+        {
+            get { return _hBDelay; }
+            set { _hBDelay = value; NotifyPropertyChanged("HBDelay"); }
+        }
+
+        // delay in seconds between executing login actions.
+        private int _loginDelay;
+        public int LoginDelay
+        {
+            get { return _loginDelay; }
+            set { _loginDelay = value; NotifyPropertyChanged("LoginDelay"); }
+        }
+
+        private bool _useDarkStyle;
+        public bool UseDarkStyle
+        {
+            get { return _useDarkStyle; }
+            set { _useDarkStyle = value; NotifyPropertyChanged("UseDarkStyle"); }
+        }
+
+        private bool _checkRealmStatus;
+        public bool CheckRealmStatus
+        {
+            get { return _checkRealmStatus; }
+            set { _checkRealmStatus = value; NotifyPropertyChanged("CheckRealmStatus"); }
+        }
+
+        private bool _checkHbResponsiveness;
+        public bool CheckHbResponsiveness
+        {
+            get { return _checkHbResponsiveness; }
+            set { _checkHbResponsiveness = value; NotifyPropertyChanged("CheckHbResponsiveness"); }
+        }
+
+        private bool _autoUpdateHB;
+        public bool AutoUpdateHB
+        {
+            get { return _autoUpdateHB; }
+            set { _autoUpdateHB = value; NotifyPropertyChanged("AutoUpdateHB"); }
+        }
+
+        private bool _minimizeHbOnStart;
         /// <summary>
         /// Minimizes HB to system tray on start
         /// </summary>
-        public bool MinimizeHbOnStart { get; set; }
+        public bool MinimizeHbOnStart
+        {
+            get { return _minimizeHbOnStart; }
+            set { _minimizeHbOnStart = value; NotifyPropertyChanged("MinimizeHbOnStart"); }
+        }
 
         public string WowVersion { get; set; }
 
@@ -308,17 +361,57 @@ namespace HighVoltz.HBRelog.Settings
         }
 
         private Timer _autoSaveTimer;
-        public void AutoSave()
+        private DateTime _lastSaveTimeStamp;
+        public void QueueSave()
         {
-            if (_autoSaveTimer != null)
-                _autoSaveTimer.Dispose();
+            if (DateTime.Now - _lastSaveTimeStamp >= TimeSpan.FromSeconds(5) && _autoSaveTimer == null)
+                Save();
+            else
+            {
+                if (_autoSaveTimer != null)
+                    _autoSaveTimer.Dispose();
 
-            _autoSaveTimer = new Timer(state =>
-                                           {
-                                               Save();
-                                               _autoSaveTimer.Dispose();
-                                               _autoSaveTimer = null;
-                                           },null,5000, -1);
+                _autoSaveTimer = new Timer(
+                    state =>
+                        {
+                            Save();
+                            _autoSaveTimer.Dispose();
+                            _autoSaveTimer = null;
+                        },
+                    null,
+                    5000,
+                    -1);
+            }
+            _lastSaveTimeStamp = DateTime.Now;
+        }
+
+        public TimeSpan SaveCompleteTimeSpan
+        {
+            get
+            {
+                var timeSinceLastSave = DateTime.Now - _lastSaveTimeStamp;
+                // check if a save queue is in process
+                if (_autoSaveTimer != null && timeSinceLastSave < TimeSpan.FromSeconds(7))
+                {
+                    return TimeSpan.FromSeconds(7) - timeSinceLastSave;
+                }
+                else if (timeSinceLastSave < TimeSpan.FromSeconds(2))
+                {
+                    return TimeSpan.FromSeconds(2) - timeSinceLastSave;
+                }
+                return TimeSpan.FromSeconds(0);
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        private void NotifyPropertyChanged(string name)
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(name));
+            }
+            if (HbRelogManager.Settings != null)
+                HbRelogManager.Settings.QueueSave();
         }
 
     }
