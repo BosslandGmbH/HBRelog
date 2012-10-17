@@ -1,4 +1,7 @@
 Rival from www.ownedcore.com - used most of his hooking code, big thanks !
 caytchen from www.ownedcore.com - used a modifed version of his CleanPattern classes. https://github.com/caytchen/cleanCore/
+Apoc of www.ownedcore.com - the GreyMagic library is made by him.
+
 www.pinvoke.com - for most of the native win32 method and type declarations.
 findicons.com - used several 'free for non-comercial use' items found here.
+
