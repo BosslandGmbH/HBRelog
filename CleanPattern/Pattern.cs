@@ -24,12 +24,13 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #*/
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Globalization;
+using GreyMagic;
 
-using Magic;
 
 namespace HighVoltz.HBRelog.CleanPattern
 {
@@ -46,30 +47,30 @@ namespace HighVoltz.HBRelog.CleanPattern
             return !Mask.Where((t, i) => t && Bytes[i] != data[dataOffset + i]).Any();
         }
 
-        private uint FindStart(BlackMagic bm)
+        private IntPtr FindStart(ExternalProcessReader bm)
         {
-            var mainModule = bm.MainModule;
-            var start = (uint)mainModule.BaseAddress.ToInt32();
+            var mainModule = bm.Process.MainModule;
+            var start = mainModule.BaseAddress;
             var size = mainModule.ModuleMemorySize;
             var patternLength = Bytes.Length;
 
             for (uint i = 0; i < size - patternLength; i += (uint)(CacheSize - patternLength))
             {
-                byte[] cache = bm.ReadBytes(start + i, CacheSize > size - i ? size - (int)i : CacheSize);
+                byte[] cache = bm.ReadBytes(start + (int)i, CacheSize > size - i ? size - (int)i : CacheSize);
                 for (uint i2 = 0; i2 < (cache.Length - patternLength); i2++)
                 {
                     if (DataCompare(cache, i2))
-                        return start + i + i2;
+                        return start + (int)(i + i2);
                 }
             }
             throw new InvalidDataException(string.Format("Pattern {0} not found",Name));
         }
 
-        public uint Find(BlackMagic bm)
+        public IntPtr Find(ExternalProcessReader bm)
         {
             var start = FindStart(bm);
             start = Modifiers.Aggregate(start, (current, mod) => mod.Apply(bm, current));
-            return start - (uint)bm.MainModule.BaseAddress.ToInt32();
+            return start - (int)bm.Process.MainModule.BaseAddress;
         }
 
         public static Pattern FromTextstyle(string name, string pattern, params IModifier[] modifiers)

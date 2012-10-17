@@ -5,8 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows;
+using GreyMagic;
 using HighVoltz.HBRelog.Settings;
-using Magic;
 
 namespace HighVoltz.HBRelog.WoW
 {
@@ -64,7 +64,7 @@ namespace HighVoltz.HBRelog.WoW
 
 
                  end      
-             end " ;
+             end ";
 
         // indexes are {0}=server
         private const string RealmSelectLuaFormat =
@@ -107,7 +107,7 @@ namespace HighVoltz.HBRelog.WoW
 
         public WowSettings Settings { get; private set; }
 
-        public BlackMagic Memory
+        public ExternalProcessReader Memory
         {
             get { return WowHook != null ? WowHook.Memory : null; }
         }
@@ -125,7 +125,7 @@ namespace HighVoltz.HBRelog.WoW
                 try
                 {
                     return WowHook != null &&
-                           Memory.ReadByte((HbRelogManager.Settings.GameStateOffset + 1) + GameProcess.BaseOffset()) ==
+                           Memory.Read<byte>(true, ((IntPtr)HbRelogManager.Settings.GameStateOffset + 1)) ==
                            1;
                 }
                 catch
@@ -141,7 +141,7 @@ namespace HighVoltz.HBRelog.WoW
             {
                 return WowHook != null
                            ? (GlueState)
-                             Memory.ReadInt(HbRelogManager.Settings.GlueStateOffset + GameProcess.BaseOffset())
+                             Memory.Read<GlueState>(true, (IntPtr)HbRelogManager.Settings.GlueStateOffset)
                            : GlueState.Disconnected;
             }
         }
@@ -256,7 +256,7 @@ namespace HighVoltz.HBRelog.WoW
                 try
                 {
                     return WowHook != null &&
-                           Memory.ReadByte(HbRelogManager.Settings.GameStateOffset + GameProcess.BaseOffset()) == 1;
+                           Memory.Read<byte>(true, (IntPtr)HbRelogManager.Settings.GameStateOffset) == 1;
                 }
                 catch
                 {
@@ -573,8 +573,7 @@ namespace HighVoltz.HBRelog.WoW
         private void AntiAfk()
         {
             if (WowHook != null)
-                WowHook.Memory.WriteInt(HbRelogManager.Settings.LastHardwareEventOffset + GameProcess.BaseOffset(),
-                                        Environment.TickCount);
+                WowHook.Memory.Write<int>(true, Environment.TickCount, (IntPtr)HbRelogManager.Settings.LastHardwareEventOffset);
         }
 
         // credits mnbvc for original version. modified to work with Cata
@@ -603,13 +602,13 @@ namespace HighVoltz.HBRelog.WoW
         {
             if (Memory != null)
             {
-                HbRelogManager.Settings.GameStateOffset = WoWPatterns.GameStatePattern.Find(Memory);
+                HbRelogManager.Settings.GameStateOffset = (uint) WoWPatterns.GameStatePattern.Find(Memory);
                 Log.Debug("GameState Offset found at 0x{0:X}", HbRelogManager.Settings.GameStateOffset);
-                HbRelogManager.Settings.FrameScriptExecuteOffset = WoWPatterns.FrameScriptExecutePattern.Find(Memory);
+                HbRelogManager.Settings.FrameScriptExecuteOffset = (uint)WoWPatterns.FrameScriptExecutePattern.Find(Memory);
                 Log.Debug("FrameScriptExecute Offset found at 0x{0:X}", HbRelogManager.Settings.FrameScriptExecuteOffset);
-                HbRelogManager.Settings.LastHardwareEventOffset = WoWPatterns.LastHardwareEventPattern.Find(Memory);
+                HbRelogManager.Settings.LastHardwareEventOffset = (uint)WoWPatterns.LastHardwareEventPattern.Find(Memory);
                 Log.Debug("LastHardwareEvent Offset found at 0x{0:X}", HbRelogManager.Settings.LastHardwareEventOffset);
-                HbRelogManager.Settings.GlueStateOffset = WoWPatterns.GlueStatePattern.Find(Memory);
+                HbRelogManager.Settings.GlueStateOffset = (uint)WoWPatterns.GlueStatePattern.Find(Memory);
                 Log.Debug("GlueStateOffset Offset found at 0x{0:X}", HbRelogManager.Settings.GlueStateOffset);
                 HbRelogManager.Settings.WowVersion = GameProcess.VersionString();
                 HbRelogManager.Settings.Save();

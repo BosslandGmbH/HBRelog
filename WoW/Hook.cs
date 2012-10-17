@@ -5,8 +5,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Windows;
+using GreyMagic;
 using HighVoltz.HBRelog.DirectX;
-using Magic;
 
 namespace HighVoltz.HBRelog.WoW
 {
@@ -15,22 +15,22 @@ namespace HighVoltz.HBRelog.WoW
         // Addresse Inection code:
         private readonly object _executeLockObject = new object();
         private readonly Process _wowProcess;
-        private uint _addresseInjection;
-        private uint _injectedCode;
-        private uint _retnInjectionAsm;
+        private IntPtr _addresseInjection;
+        private IntPtr _injectedCode;
+        private IntPtr _retnInjectionAsm;
         private readonly Dirext3D _dx3D;
         private byte[] _endSceneOriginalBytes;
 
         public Hook(Process wowProc)
         {
             Process = wowProc;
-            Memory = new BlackMagic(ProcessId);
+            Memory = new ExternalProcessReader(wowProc);
             _dx3D = new Dirext3D(wowProc);
             _wowProcess = wowProc;
             Installed = false;
         }
 
-        public BlackMagic Memory { get; set; }
+        public ExternalProcessReader Memory { get; set; }
 
         public bool Installed { get; private set; }
 
@@ -55,12 +55,12 @@ namespace HighVoltz.HBRelog.WoW
                     // if we're under windows 8 then we need to patch the endscene hook to make it work with HB's hook.. this is a bit hackish
                     if (UsingWin8 && !_dx3D.UsingDirectX11)
                     {
-                        FixEndSceneForHB((uint)_dx3D.HookPtr);
+                        FixEndSceneForHB(_dx3D.HookPtr);
                     }
 
                     // check if game is already hooked and dispose Hook
-                    if (Memory.ReadByte((uint)_dx3D.HookPtr) == 0xE9 &&
-                        (_injectedCode == 0 || _addresseInjection == 0))
+                    if (Memory.Read<byte>(_dx3D.HookPtr) == 0xE9 &&
+                        (_injectedCode == IntPtr.Zero || _addresseInjection == IntPtr.Zero))
                     {
                         DisposeHooking();
                     }
@@ -72,10 +72,10 @@ namespace HighVoltz.HBRelog.WoW
                     _injectedCode = Memory.AllocateMemory(2048);
                     // allocate memory the new injection code pointer:
                     _addresseInjection = Memory.AllocateMemory(0x4);
-                    Memory.WriteInt(_addresseInjection, 0);
+                    Memory.Write<int>(_addresseInjection, 0);
                     // allocate memory the pointer return value:
                     _retnInjectionAsm = Memory.AllocateMemory(0x4);
-                    Memory.WriteInt(_retnInjectionAsm, 0);
+                    Memory.Write<int>(_retnInjectionAsm, 0);
 
                     // Generate the STUB to be injected
                     Memory.Asm.Clear(); // $Asm
@@ -106,19 +106,19 @@ namespace HighVoltz.HBRelog.WoW
 
                     // injected code
                     var sizeAsm = (uint)(Memory.Asm.Assemble().Length);
-                    Memory.Asm.Inject(_injectedCode);
+                    Memory.Asm.Inject((uint)_injectedCode);
 
                     // Size asm jumpback
                     const int sizeJumpBack = 2;
 
                     // store original bytes
-                    _endSceneOriginalBytes = Memory.ReadBytes((uint)_dx3D.HookPtr - 5, 7);
+                    _endSceneOriginalBytes = Memory.ReadBytes(_dx3D.HookPtr - 5, 7);
                     // copy and save original instructions
-                    Memory.WriteBytes(_injectedCode + sizeAsm, new[] { _endSceneOriginalBytes[5], _endSceneOriginalBytes[6] }, 2);
+                    Memory.WriteBytes(IntPtr.Add(_injectedCode, (int) sizeAsm), new[] { _endSceneOriginalBytes[5], _endSceneOriginalBytes[6] });
                     Memory.Asm.Clear();
                     Memory.Asm.AddLine("jmp " + ((uint)_dx3D.HookPtr + sizeJumpBack)); // short jump takes 2 bytes.
                     // create jump back stub
-                    Memory.Asm.Inject(_injectedCode + sizeAsm + sizeJumpBack);
+                    Memory.Asm.Inject((uint)_injectedCode + sizeAsm + sizeJumpBack);
 
                     // create hook jump
                     Memory.Asm.Clear();
@@ -150,10 +150,10 @@ namespace HighVoltz.HBRelog.WoW
                 uint pScene = Memory.ReadUInt(pEnd);
                 uint pEndScene = Memory.ReadUInt(pScene + 0xA8);
                  */
-                if (Memory.ReadByte((uint)_dx3D.HookPtr) == 0xEB) // check if wow is already hooked and dispose Hook
+                if (Memory.Read<byte>(_dx3D.HookPtr) == 0xEB) // check if wow is already hooked and dispose Hook
                 {
                     // Restore original endscene:
-                    Memory.WriteBytes((uint)_dx3D.HookPtr - 5, _endSceneOriginalBytes);
+                    Memory.WriteBytes(_dx3D.HookPtr - 5, _endSceneOriginalBytes);
                 }
 
                 // free memory:
@@ -174,7 +174,7 @@ namespace HighVoltz.HBRelog.WoW
             {
                 var tempsByte = new byte[0];
                 // reset return value pointer
-                Memory.WriteInt(_retnInjectionAsm, 0);
+                Memory.Write<int>(_retnInjectionAsm, 0);
 
                 if (Memory.IsProcessOpen && Installed)
                 {
@@ -186,14 +186,14 @@ namespace HighVoltz.HBRelog.WoW
                     }
 
                     // Allocation Memory
-                    uint injectionAsmCodecave = Memory.AllocateMemory(Memory.Asm.Assemble().Length);
+                    IntPtr injectionAsmCodecave = Memory.AllocateMemory(Memory.Asm.Assemble().Length);
 
                     try
                     {
                         // Inject
-                        Memory.Asm.Inject(injectionAsmCodecave);
-                        Memory.WriteInt(_addresseInjection, (int)injectionAsmCodecave);
-                        while (Memory.ReadInt(_addresseInjection) > 0)
+                        Memory.Asm.Inject((uint)injectionAsmCodecave);
+                        Memory.Write<int>(_addresseInjection, (int)injectionAsmCodecave);
+                        while (Memory.Read<int>(_addresseInjection) > 0)
                         {
                             Thread.Sleep(5);
                         } // Wait to launch code
@@ -232,7 +232,7 @@ namespace HighVoltz.HBRelog.WoW
                         // Free memory allocated 
                         //Memory.FreeMemory(injectionAsmCodecave);
                         // schedule resources to be freed at a later date cause freeing it immediately was causing wow crashes
-                        new Timer(state => Memory.FreeMemory((uint)state), injectionAsmCodecave, 100, 0);
+                        new Timer(state => Memory.FreeMemory((IntPtr)state), injectionAsmCodecave, 100, 0);
                     }
                 }
                 // return
@@ -282,9 +282,9 @@ namespace HighVoltz.HBRelog.WoW
             Memory.Asm.AddLine("pop {0}", Register32BitNames[ranNum]);
         }
 
-        private uint _fixHBStub;
+        private IntPtr _fixHBStub;
 
-        private void FixEndSceneForHB(uint pEndScene)
+        private void FixEndSceneForHB(IntPtr pEndScene)
         {
             Memory.Asm.Clear();
             _fixHBStub = Memory.AllocateMemory(0x200);
@@ -300,12 +300,12 @@ namespace HighVoltz.HBRelog.WoW
             AddAsmAndRandomOPs("pop ebx");
             Memory.Asm.AddLine("@original:");
             AddAsmAndRandomOPs("Push 0x14");
-            AddAsmAndRandomOPs("Mov Eax, " + Memory.ReadUInt(pEndScene + 3));
-            int funcOffset = (int)(pEndScene + 0xC) + Memory.ReadInt(pEndScene + 8);
-            AddAsmAndRandomOPs("Call " + (funcOffset - _fixHBStub));
+            AddAsmAndRandomOPs("Mov Eax, " + Memory.Read<uint>(pEndScene + 3));
+            IntPtr funcOffset =(pEndScene + 0xC) + Memory.Read<int>(pEndScene + 8);
+            AddAsmAndRandomOPs("Call " + ((uint)funcOffset - (uint)_fixHBStub));
 
             // jump back to endscene
-            AddAsmAndRandomOPs("Jmp " + (pEndScene + 0xC - _fixHBStub));
+            AddAsmAndRandomOPs("Jmp " + ((uint)pEndScene + 0xC - (uint) _fixHBStub));
             
             Memory.WriteBytes(_fixHBStub, Memory.Asm.Assemble());
 
@@ -320,13 +320,13 @@ namespace HighVoltz.HBRelog.WoW
                     if (Utility.Rand.Next(2) == 1) InsertRandomMov(); else Memory.Asm.Add("Nop\nNop\n");
                     Memory.Asm.AddLine("Nop");
                     if (Utility.Rand.Next(2) == 1) InsertRandomMov(); else Memory.Asm.Add("Nop\nNop\n");
-                    Memory.Asm.AddLine("Jmp " + (_fixHBStub - pEndScene));
+                    Memory.Asm.AddLine("Jmp " + ((uint)_fixHBStub - (uint)pEndScene));
                     break;
                 case 1:
                     if (Utility.Rand.Next(2) == 1) InsertRandomMov(); else Memory.Asm.Add("Nop\nNop\n");
                     if (Utility.Rand.Next(2) == 1) InsertRandomMov(); else Memory.Asm.Add("Nop\nNop\n");
                     Memory.Asm.AddLine("Nop");
-                    Memory.Asm.AddLine("Jmp " + (_fixHBStub - pEndScene));
+                    Memory.Asm.AddLine("Jmp " + ((uint)_fixHBStub - (uint)pEndScene));
                     if (Utility.Rand.Next(2) == 1) InsertRandomMov(); else Memory.Asm.Add("Nop\nNop\n");
                     break;
             }

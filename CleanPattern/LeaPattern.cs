@@ -23,8 +23,9 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #*/
 
+using System;
 using System.IO;
-using Magic;
+using GreyMagic;
 
 namespace HighVoltz.HBRelog.CleanPattern
 {
@@ -49,16 +50,16 @@ namespace HighVoltz.HBRelog.CleanPattern
             Type = type;
         }
 
-        public uint Apply(BlackMagic bm, uint address)
+        public IntPtr Apply(ExternalProcessReader bm, IntPtr address)
         {
             switch (Type)
             {
                 case LeaType.Byte:
-                    return bm.ReadByte(address);
+                    return (IntPtr)bm.Read<byte>(address);
                 case LeaType.Word:
-                    return bm.ReadUShort(address);
+                    return (IntPtr)bm.Read<ushort>(address);
                 case LeaType.Dword:
-                    return bm.ReadUInt(address);
+                    return (IntPtr)bm.Read<uint>(address);
             }
             throw new InvalidDataException("Unknown LeaType");
         }

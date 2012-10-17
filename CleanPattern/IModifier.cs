@@ -23,12 +23,13 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #*/
 
-using Magic;
+using System;
+using GreyMagic;
 
 namespace HighVoltz.HBRelog.CleanPattern
 {
     public interface IModifier
     {
-        uint Apply(BlackMagic bm, uint address);
+        IntPtr Apply(ExternalProcessReader bm, IntPtr address);
     }
 }

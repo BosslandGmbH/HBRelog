@@ -4,5 +4,7 @@ CleanPattern by Stefan Schake is under the Simplified BSD License which is embed
 an online copy can be found here https://github.com/stschake/cleanCore/blob/master/LICENSE
 
 ICSharpCode.SharpZLib (http://www.icsharpcode.net/opensource/sharpziplib/)  is under the GNU General Public License. License is displayed in the source files.
+
+
  
  

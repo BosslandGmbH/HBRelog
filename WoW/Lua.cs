@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 
 namespace HighVoltz.HBRelog.WoW
 {
@@ -15,7 +16,7 @@ namespace HighVoltz.HBRelog.WoW
             if (_wowHook.Installed)
             {
                 // Allocate memory
-                uint doStringArgCodecave = _wowHook.Memory.AllocateMemory(Encoding.UTF8.GetBytes(command).Length + 1);
+                IntPtr doStringArgCodecave = _wowHook.Memory.AllocateMemory(Encoding.UTF8.GetBytes(command).Length + 1);
                 // Write value:
                 _wowHook.Memory.WriteBytes(doStringArgCodecave, Encoding.UTF8.GetBytes(command));
 

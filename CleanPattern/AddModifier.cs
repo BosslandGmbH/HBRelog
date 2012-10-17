@@ -23,7 +23,9 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #*/
 
-using Magic;
+
+using System;
+using GreyMagic;
 
 namespace HighVoltz.HBRelog.CleanPattern
 {
@@ -36,9 +38,9 @@ namespace HighVoltz.HBRelog.CleanPattern
             Offset = val;
         }
 
-        public uint Apply(BlackMagic bm, uint addr)
+        public IntPtr Apply(ExternalProcessReader bm, IntPtr addr)
         {
-            return (addr + Offset);
+            return (addr + (int)Offset);
         }
     }
 }
