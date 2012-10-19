@@ -200,8 +200,6 @@
     <None Include="app.manifest">
       <SubType>Designer</SubType>
     </None>
-    <None Include="bin\Debug\HBRelog.exe.config" />
-    <None Include="bin\Release\HBRelog.exe.config" />
     <None Include="Properties\AssemblyInfo.template" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -254,11 +252,9 @@
     <Resource Include="Images\Logo.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="bin\Debug\BlackMagic.dll" />
     <Content Include="bin\Debug\fasmdll_managed.dll" />
     <Content Include="bin\Debug\HBRelog.exe" />
     <Content Include="bin\Debug\HBRelog.pdb" />
-    <Content Include="bin\Release\BlackMagic.dll" />
     <Content Include="bin\Release\fasmdll_managed.dll" />
     <Content Include="bin\Release\HBRelog.exe" />
     <Resource Include="License.txt" />
