@@ -158,7 +158,7 @@ namespace HighVoltz.HBRelogHelper
             try
             {
                 string tooltip = string.Empty;
-                if (StyxWoW.Me.Level < 85)
+                if (StyxWoW.Me.Level < 90)
                     tooltip += string.Format("XP/hr: {0}\n", GameStats.XPPerHour);
                 if (TreeRoot.Current.Name == "BGBuddy")
                 {
