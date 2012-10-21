@@ -6,6 +6,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HBPlugin", "HBPlugin\HBPlugin.csproj", "{8CBFDD9D-64B2-4ED8-962F-312D7E6A7F05}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GreyMagic", "Libs\GreyMagic\GreyMagic.csproj", "{29BEE34E-8D6A-47BF-96FA-ABA46F6E9B66}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4756CF18-2091-446F-A79D-9E521611DEB5} = {4756CF18-2091-446F-A79D-9E521611DEB5}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fasmdll_managed", "Libs\fasmdll_managed\fasmdll_managed.vcxproj", "{4756CF18-2091-446F-A79D-9E521611DEB5}"
 EndProject
