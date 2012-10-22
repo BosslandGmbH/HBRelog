@@ -6,11 +6,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HBPlugin", "HBPlugin\HBPlugin.csproj", "{8CBFDD9D-64B2-4ED8-962F-312D7E6A7F05}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GreyMagic", "Libs\GreyMagic\GreyMagic.csproj", "{29BEE34E-8D6A-47BF-96FA-ABA46F6E9B66}"
-	ProjectSection(ProjectDependencies) = postProject
-		{4756CF18-2091-446F-A79D-9E521611DEB5} = {4756CF18-2091-446F-A79D-9E521611DEB5}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fasmdll_managed", "Libs\fasmdll_managed\fasmdll_managed.vcxproj", "{4756CF18-2091-446F-A79D-9E521611DEB5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -68,20 +63,6 @@ Global
 		{29BEE34E-8D6A-47BF-96FA-ABA46F6E9B66}.Release|Win32.Build.0 = Release|x86
 		{29BEE34E-8D6A-47BF-96FA-ABA46F6E9B66}.Release|x86.ActiveCfg = Release|x86
 		{29BEE34E-8D6A-47BF-96FA-ABA46F6E9B66}.Release|x86.Build.0 = Release|x86
-		{4756CF18-2091-446F-A79D-9E521611DEB5}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{4756CF18-2091-446F-A79D-9E521611DEB5}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
-		{4756CF18-2091-446F-A79D-9E521611DEB5}.Debug|Mixed Platforms.Build.0 = Debug|Win32
-		{4756CF18-2091-446F-A79D-9E521611DEB5}.Debug|Win32.ActiveCfg = Debug|Win32
-		{4756CF18-2091-446F-A79D-9E521611DEB5}.Debug|Win32.Build.0 = Debug|Win32
-		{4756CF18-2091-446F-A79D-9E521611DEB5}.Debug|x86.ActiveCfg = Debug|Win32
-		{4756CF18-2091-446F-A79D-9E521611DEB5}.Debug|x86.Build.0 = Debug|Win32
-		{4756CF18-2091-446F-A79D-9E521611DEB5}.Release|Any CPU.ActiveCfg = Release|Win32
-		{4756CF18-2091-446F-A79D-9E521611DEB5}.Release|Mixed Platforms.ActiveCfg = Release|Win32
-		{4756CF18-2091-446F-A79D-9E521611DEB5}.Release|Mixed Platforms.Build.0 = Release|Win32
-		{4756CF18-2091-446F-A79D-9E521611DEB5}.Release|Win32.ActiveCfg = Release|Win32
-		{4756CF18-2091-446F-A79D-9E521611DEB5}.Release|Win32.Build.0 = Release|Win32
-		{4756CF18-2091-446F-A79D-9E521611DEB5}.Release|x86.ActiveCfg = Release|Win32
-		{4756CF18-2091-446F-A79D-9E521611DEB5}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -59,6 +59,10 @@
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="fasmdll_managed, Version=1.0.4674.39124, Culture=neutral, PublicKeyToken=f20f8f99ca0718ca, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Release\fasmdll_managed.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Data.Entity" />
@@ -260,10 +264,6 @@
     <Resource Include="License.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="Libs\fasmdll_managed\fasmdll_managed.vcxproj">
-      <Project>{4756cf18-2091-446f-a79d-9e521611deb5}</Project>
-      <Name>fasmdll_managed</Name>
-    </ProjectReference>
     <ProjectReference Include="Libs\GreyMagic\GreyMagic.csproj">
       <Project>{29bee34e-8d6a-47bf-96fa-aba46f6e9b66}</Project>
       <Name>GreyMagic</Name>
