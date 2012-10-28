@@ -113,6 +113,14 @@ namespace HighVoltz.HBRelog.Settings
             set { _autoUpdateHB = value; NotifyPropertyChanged("AutoUpdateHB"); }
         }
 
+
+        private bool _useHBBeta;
+        public bool UseHBBeta
+        {
+            get { return _useHBBeta; }
+            set { _useHBBeta = value; NotifyPropertyChanged("UseHBBeta"); }
+        }
+
         private bool _minimizeHbOnStart;
         /// <summary>
         /// Minimizes HB to system tray on start
@@ -145,6 +153,8 @@ namespace HighVoltz.HBRelog.Settings
                 root.Add(new XElement("CheckHbResponsiveness", CheckHbResponsiveness));
                 root.Add(new XElement("MinimizeHbOnStart", MinimizeHbOnStart));
                 root.Add(new XElement("AutoUpdateHB", AutoUpdateHB));
+                root.Add(new XElement("UseHBBeta", UseHBBeta));
+                
                 root.Add(new XElement("WowVersion", WowVersion));
 
                 root.Add(new XElement("GameStateOffset", GameStateOffset));
@@ -192,8 +202,7 @@ namespace HighVoltz.HBRelog.Settings
                         List<PropertyInfo> propertyList = task.GetType().GetProperties().
                             Where(
                                 pi =>
-                                !pi.GetCustomAttributesData().Any(
-                                    cad => cad.Constructor.DeclaringType == typeof(XmlIgnoreAttribute))).ToList();
+                                pi.GetCustomAttributesData().All(cad => cad.Constructor.DeclaringType != typeof(XmlIgnoreAttribute))).ToList();
                         foreach (PropertyInfo property in propertyList)
                         {
                             taskElement.Add(new XAttribute(property.Name, property.GetValue(task, null)));
@@ -242,6 +251,7 @@ namespace HighVoltz.HBRelog.Settings
                     settings.CheckRealmStatus = GetElementValue(root.Element("CheckRealmStatus"), false);
                     settings.CheckHbResponsiveness = GetElementValue(root.Element("CheckHbResponsiveness"), true);
                     settings.AutoUpdateHB = GetElementValue(root.Element("AutoUpdateHB"), true);
+                    settings.UseHBBeta = GetElementValue(root.Element("UseHBBeta"), false);
                     settings.MinimizeHbOnStart = GetElementValue(root.Element("MinimizeHbOnStart"), false);
 
                     settings.GameStateOffset = uint.Parse(root.Element("GameStateOffset").Value);
@@ -309,8 +319,7 @@ namespace HighVoltz.HBRelog.Settings
                                 Dictionary<string, PropertyInfo> propertyDict = task.GetType().GetProperties().
                                     Where(
                                         pi =>
-                                        !pi.GetCustomAttributesData().Any(
-                                            cad => cad.Constructor.DeclaringType == typeof(XmlIgnoreAttribute))).
+                                        pi.GetCustomAttributesData().All(cad => cad.Constructor.DeclaringType != typeof(XmlIgnoreAttribute))).
                                     ToDictionary(k => k.Name);
 
                                 foreach (XAttribute attr in taskElement.Attributes())
