@@ -31,7 +31,9 @@ namespace HighVoltz.HBRelog.Honorbuddy
     public class HonorbuddyManager : IBotManager
     {
         private const string HbUpdateUrl = "http://updates.buddywing.com/GetNewest?filter=Honorbuddy";
+        private const string HbBetaUpdateUrl = "http://updates.buddywing.com/GetNewest?filter=HonorbuddyBeta";
         private const string HbVersionUrl = "http://updates.buddyauth.com/GetVersion?filter=Honorbuddy";
+        private const string HbBetaVersionUrl = "http://updates.buddyauth.com/GetVersion?filter=HonorbuddyBeta";
 
         readonly object _lockObject = new object();
         public bool IsRunning { get; private set; }
@@ -106,7 +108,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
                     FileVersionInfo localFileVersionInfo = FileVersionInfo.GetVersionInfo(Settings.HonorbuddyPath);
                     // download the latest Honorbuddy version string from server
                     var client = new WebClient { Proxy = null };
-                    string latestHbVersion = client.DownloadString(HbVersionUrl);
+                    string latestHbVersion = client.DownloadString( HbRelogManager.Settings.UseHBBeta ? HbBetaVersionUrl: HbVersionUrl);
                     // check if local version is different from remote honorbuddy version.
                     if (localFileVersionInfo.FileVersion != latestHbVersion)
                     {
@@ -122,7 +124,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
                         Profile.Status = "Downloading new version of HB";
                         string tempFileName = Path.GetTempFileName();
 
-                        client.DownloadFile(HbUpdateUrl, tempFileName);
+                        client.DownloadFile(HbRelogManager.Settings.UseHBBeta ? HbBetaUpdateUrl : HbUpdateUrl, tempFileName);
 
                         // extract the downloaded zip
                         var hbFolder = Path.GetDirectoryName(Settings.HonorbuddyPath);

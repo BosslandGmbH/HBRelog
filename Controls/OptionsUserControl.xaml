@@ -47,11 +47,16 @@
                     <TextBox x:Name="LoginDelayText" Width="40" Height="18" FontSize="10"
                              ToolTip="Delay in seconds between executing login actions. Increasing this will cause login to take longer"
                              Grid.Row="3" Grid.Column="1" Text="{Binding LoginDelay}"/>
-                    <!-- AutoStart -->
+                    <!-- Auto-update HB -->
                     <TextBlock Text="Auto-update HB" Grid.Row="4" />
                     <CheckBox x:Name="AutoUpdateHBCheck" Grid.Column="1" Grid.Row="4"
                               ToolTip="Automatically install latest HB if there is a new version before running it"
-                              IsChecked="{Binding AutoUpdateHB}"/>                    
+                              IsChecked="{Binding AutoUpdateHB}"/>
+                    <!-- Use HB Beta-->
+                    <TextBlock Text="Use HB Beta" Grid.Row="5" />
+                    <CheckBox x:Name="UseHBBetaCheck" Grid.Column="1" Grid.Row="5"
+                              ToolTip="Uses HB beta. Auto-update HB must be enabled."
+                              IsChecked="{Binding UseHBBeta}"/>
                 </Grid>
             </GroupBox>
             <GroupBox Header="User Interface">
