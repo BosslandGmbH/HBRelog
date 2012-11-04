@@ -44,20 +44,8 @@ namespace HighVoltz.HBRelog.WoW
         {
             try
             {
-                // check if target is 64 bit
-                if (Utility.Is64BitProcess(_wowProcess))
-                {
-                    MessageBox.Show("Only 32bit Wow is supported");
-                }
-
                 if (Memory.IsProcessOpen)
                 {
-                    // if we're under windows 8 then we need to patch the endscene hook to make it work with HB's hook.. this is a bit hackish
-                    if (UsingWin8 && !_dx3D.UsingDirectX11)
-                    {
-                        FixEndSceneForHB(_dx3D.HookPtr);
-                    }
-
                     // check if game is already hooked and dispose Hook
                     if (Memory.Read<byte>(_dx3D.HookPtr) == 0xE9 &&
                         (_injectedCode == IntPtr.Zero || _addresseInjection == IntPtr.Zero))

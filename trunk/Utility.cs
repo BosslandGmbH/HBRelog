@@ -31,11 +31,11 @@ namespace HighVoltz.HBRelog
         public const uint WmChar = 0x0102;
         public const uint WmKeyup = 0x0101;
         public readonly static Random Rand = new Random();
+
         public static string EncodeToUTF8(this string text)
         {
-            Encoding encodeUTF8 = Encoding.UTF8;
-            var buffer = new StringBuilder(encodeUTF8.GetByteCount(text));
-            byte[] utf8Encoded = encodeUTF8.GetBytes(text);
+            var buffer = new StringBuilder(Encoding.UTF8.GetByteCount(text)*2);
+            byte[] utf8Encoded = Encoding.UTF8.GetBytes(text);
             foreach (byte b in utf8Encoded)
             {
                 buffer.Append(string.Format("\\{0:D3}", b));
