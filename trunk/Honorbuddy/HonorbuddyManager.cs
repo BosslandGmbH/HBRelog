@@ -108,7 +108,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
                     FileVersionInfo localFileVersionInfo = FileVersionInfo.GetVersionInfo(Settings.HonorbuddyPath);
                     // download the latest Honorbuddy version string from server
                     var client = new WebClient { Proxy = null };
-                    string latestHbVersion = client.DownloadString( HbRelogManager.Settings.UseHBBeta ? HbBetaVersionUrl: HbVersionUrl);
+                    string latestHbVersion = client.DownloadString(Profile.Settings.HonorbuddySettings.UseHBBeta ? HbBetaVersionUrl: HbVersionUrl);
                     // check if local version is different from remote honorbuddy version.
                     if (localFileVersionInfo.FileVersion != latestHbVersion)
                     {
@@ -124,7 +124,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
                         Profile.Status = "Downloading new version of HB";
                         string tempFileName = Path.GetTempFileName();
 
-                        client.DownloadFile(HbRelogManager.Settings.UseHBBeta ? HbBetaUpdateUrl : HbUpdateUrl, tempFileName);
+                        client.DownloadFile(Profile.Settings.HonorbuddySettings.UseHBBeta ? HbBetaUpdateUrl : HbUpdateUrl, tempFileName);
 
                         // extract the downloaded zip
                         var hbFolder = Path.GetDirectoryName(Settings.HonorbuddyPath);
@@ -246,6 +246,8 @@ namespace HighVoltz.HBRelog.Honorbuddy
                     // return if hb isn't ready for input.
                     if (!BotProcess.WaitForInputIdle(0))
                         return;
+                    // force the mainWindow handle to cache before HB auto minimizes to system tray..
+                    if (BotProcess.MainWindowHandle == IntPtr.Zero) ;
 
                     // check if it's taking Honorbuddy too long to connect.
                     if (!StartupSequenceIsComplete && DateTime.Now - _hbStartupTimeStamp > TimeSpan.FromMinutes(1))
