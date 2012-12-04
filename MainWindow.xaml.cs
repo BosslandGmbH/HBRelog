@@ -326,10 +326,18 @@ namespace HighVoltz.HBRelog
 
             //only show the 'Bring HB to Foreground' task menu item if hb is running.
             var bringHbToForegroundTaskMenuItem = (MenuItem)row.ContextMenu.Items[2];
+            var killHBMenu = (MenuItem)row.ContextMenu.Items[3];
+
             if (hbManager.IsRunning && hbManager.BotProcess != null && !hbManager.BotProcess.HasExited)
+            {
                 bringHbToForegroundTaskMenuItem.Visibility = Visibility.Visible;
+                killHBMenu.Visibility = Visibility.Visible;
+            }
             else
+            {
                 bringHbToForegroundTaskMenuItem.Visibility = Visibility.Collapsed;
+                killHBMenu.Visibility = Visibility.Collapsed;
+            }
         }
     }
 }
