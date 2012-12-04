@@ -113,14 +113,6 @@ namespace HighVoltz.HBRelog.Settings
             set { _autoUpdateHB = value; NotifyPropertyChanged("AutoUpdateHB"); }
         }
 
-
-        private bool _useHBBeta;
-        public bool UseHBBeta
-        {
-            get { return _useHBBeta; }
-            set { _useHBBeta = value; NotifyPropertyChanged("UseHBBeta"); }
-        }
-
         private bool _minimizeHbOnStart;
         /// <summary>
         /// Minimizes HB to system tray on start
@@ -153,7 +145,6 @@ namespace HighVoltz.HBRelog.Settings
                 root.Add(new XElement("CheckHbResponsiveness", CheckHbResponsiveness));
                 root.Add(new XElement("MinimizeHbOnStart", MinimizeHbOnStart));
                 root.Add(new XElement("AutoUpdateHB", AutoUpdateHB));
-                root.Add(new XElement("UseHBBeta", UseHBBeta));
                 
                 root.Add(new XElement("WowVersion", WowVersion));
 
@@ -191,6 +182,9 @@ namespace HighVoltz.HBRelog.Settings
                                                        profile.Settings.HonorbuddySettings.HonorbuddyProfile));
                     hbSettingsElement.Add(new XElement("HonorbuddyPath",
                                                        profile.Settings.HonorbuddySettings.HonorbuddyPath));
+                    hbSettingsElement.Add(new XElement("UseHBBeta",
+                                                       profile.Settings.HonorbuddySettings.UseHBBeta));
+
                     settingsElement.Add(hbSettingsElement);
                     profileElement.Add(settingsElement);
                     var tasksElement = new XElement("Tasks");
@@ -251,7 +245,6 @@ namespace HighVoltz.HBRelog.Settings
                     settings.CheckRealmStatus = GetElementValue(root.Element("CheckRealmStatus"), false);
                     settings.CheckHbResponsiveness = GetElementValue(root.Element("CheckHbResponsiveness"), true);
                     settings.AutoUpdateHB = GetElementValue(root.Element("AutoUpdateHB"), true);
-                    settings.UseHBBeta = GetElementValue(root.Element("UseHBBeta"), false);
                     settings.MinimizeHbOnStart = GetElementValue(root.Element("MinimizeHbOnStart"), false);
 
                     settings.GameStateOffset = uint.Parse(root.Element("GameStateOffset").Value);
@@ -305,6 +298,8 @@ namespace HighVoltz.HBRelog.Settings
                                 GetElementValue<string>(hbSettingsElement.Element("HonorbuddyProfile"));
                             profile.Settings.HonorbuddySettings.HonorbuddyPath =
                                 GetElementValue<string>(hbSettingsElement.Element("HonorbuddyPath"));
+                            profile.Settings.HonorbuddySettings.UseHBBeta =
+                                GetElementValue<bool>(hbSettingsElement.Element("UseHBBeta"));
                         }
                         XElement tasksElement = profileElement.Element("Tasks");
                         // Load the Task list.

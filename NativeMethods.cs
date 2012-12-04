@@ -63,6 +63,46 @@ namespace HighVoltz.HBRelog
         [SuppressUnmanagedCodeSecurity, DllImport("kernel32")]
         public static extern IntPtr LoadLibrary(string libraryName);
 
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern IntPtr GetWindow(IntPtr hWnd, GetWindow_Cmd uCmd);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool IsWindowVisible(IntPtr hWnd);
+
+        // ReSharper disable InconsistentNaming
+        public enum GetWindow_Cmd : uint
+        {
+            GW_HWNDFIRST = 0,
+            GW_HWNDLAST = 1,
+            GW_HWNDNEXT = 2,
+            GW_HWNDPREV = 3,
+            GW_OWNER = 4,
+            GW_CHILD = 5,
+            GW_ENABLEDPOPUP = 6
+        }
+        // ReSharper restore InconsistentNaming
+
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
+
+        public static string GetClassName(IntPtr hWnd)
+        {
+            var buf = new StringBuilder(100);
+            GetClassName(hWnd, buf, buf.Capacity);
+            return buf.ToString();
+        }
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+
+        public static uint GetWindowProcessId(IntPtr hWnd)
+        {
+            uint pid;
+            GetWindowThreadProcessId(hWnd, out pid);
+            return pid;
+        }
+
         [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
         public static extern IntPtr GetModuleHandle(string lpModuleName);
 
@@ -131,6 +171,7 @@ namespace HighVoltz.HBRelog
             //  You can modify this to check to see if you want to cancel the operation, then return a null here
             return true;
         }
+
 
         #endregion
 
@@ -327,8 +368,10 @@ namespace HighVoltz.HBRelog
             public uint nFileSizeLow; //| http://www.pinvoke.net/default.aspx/Structures/WIN32_FIND_DATA.html
             public uint dwReserved0; //|
             public uint dwReserved1; //v
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = MaxPath)] public string cFileName;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = MaxAlternate)] public string cAlternate;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = MaxPath)]
+            public string cFileName;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = MaxAlternate)]
+            public string cAlternate;
         }
 
         #endregion

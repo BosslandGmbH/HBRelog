@@ -188,6 +188,13 @@
                                         </Style>
                                     </MenuItem.Style>
                                 </MenuItem>
+                                <MenuItem  x:Name="KillHBMenu" Header="Kill HB"  Tag="{Binding}">
+                                    <MenuItem.Style>
+                                        <Style TargetType="{x:Type MenuItem}" BasedOn="{StaticResource  {x:Type MenuItem}}">
+                                            <EventSetter Event="Click" Handler="KillHbMenuItem_Click" />
+                                        </Style>
+                                    </MenuItem.Style>
+                                </MenuItem>                                
                             </ContextMenu>
                         </Setter.Value>
                     </Setter>

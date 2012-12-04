@@ -64,6 +64,15 @@ namespace HighVoltz.HBRelog.Settings
             get { return _customClass; }
             set { _customClass = value; NotifyPropertyChanged("CustomClass"); }
         }
+        private bool _useHBBeta;
+        /// <summary>
+        /// The Honorbuddy CustomClass to use. It can be left empty
+        /// </summary>
+        public bool UseHBBeta
+        {
+            get { return _useHBBeta; }
+            set { _useHBBeta = value; NotifyPropertyChanged("UseHBBeta"); }
+        }
         public HonorbuddySettings ShadowCopy()
         {
             return (HonorbuddySettings)MemberwiseClone();
