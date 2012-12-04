@@ -319,7 +319,7 @@ namespace HighVoltz.HBRelog
 
             //only show the 'Maximize Wow' task menu item if wow is running.
             var maximizeWowMenuItem = (MenuItem)row.ContextMenu.Items[1];
-            if (wowManager.IsRunning && !wowManager.GameProcess.HasExited)
+            if (wowManager.IsRunning && wowManager.GameProcess!= null &&!wowManager.GameProcess.HasExited)
                 maximizeWowMenuItem.Visibility = Visibility.Visible;
             else
                 maximizeWowMenuItem.Visibility = Visibility.Collapsed;
