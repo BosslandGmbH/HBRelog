@@ -15,6 +15,7 @@ Copyright 2012 HighVoltz
 */
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Windows;
@@ -82,7 +83,7 @@ namespace HighVoltz.HBRelog.Settings
             }
             set
             {
-                byte[] data = Encoding.Unicode.GetBytes(value);
+                byte[] data = Encoding.Unicode.GetBytes(value.Substring(0, value.Length > 16 ? 16 : value.Length));
                 data = ProtectedData.Protect(data, null, DataProtectionScope.CurrentUser);
                 PasswordData = Convert.ToBase64String(data);
             }
@@ -176,7 +177,7 @@ namespace HighVoltz.HBRelog.Settings
             if (HbRelogManager.Settings != null)
                 HbRelogManager.Settings.QueueSave();
         }
-        
+
         #region Embeded type - WowRegion
         public enum WowRegion
         {
@@ -186,7 +187,7 @@ namespace HighVoltz.HBRelog.Settings
             Korea,
             China,
             Taiwan
-        } 
+        }
         #endregion
 
     }
