@@ -113,6 +113,13 @@ namespace HighVoltz.HBRelog.Settings
             set { _autoUpdateHB = value; NotifyPropertyChanged("AutoUpdateHB"); }
         }
 
+        private bool _autoAcceptTosEula;
+        public bool AutoAcceptTosEula
+        {
+            get { return _autoAcceptTosEula; }
+            set { _autoAcceptTosEula = value; NotifyPropertyChanged("AutoAcceptTosEula"); }
+        }
+        
         private bool _minimizeHbOnStart;
         /// <summary>
         /// Minimizes HB to system tray on start
@@ -145,7 +152,8 @@ namespace HighVoltz.HBRelog.Settings
                 root.Add(new XElement("CheckHbResponsiveness", CheckHbResponsiveness));
                 root.Add(new XElement("MinimizeHbOnStart", MinimizeHbOnStart));
                 root.Add(new XElement("AutoUpdateHB", AutoUpdateHB));
-                
+                root.Add(new XElement("AutoAcceptTosEula", AutoAcceptTosEula));
+
                 root.Add(new XElement("WowVersion", WowVersion));
 
                 root.Add(new XElement("GameStateOffset", GameStateOffset));
@@ -246,6 +254,7 @@ namespace HighVoltz.HBRelog.Settings
                     settings.CheckHbResponsiveness = GetElementValue(root.Element("CheckHbResponsiveness"), true);
                     settings.AutoUpdateHB = GetElementValue(root.Element("AutoUpdateHB"), true);
                     settings.MinimizeHbOnStart = GetElementValue(root.Element("MinimizeHbOnStart"), false);
+                    settings.AutoAcceptTosEula = GetElementValue(root.Element("AutoAcceptTosEula"), false);
 
                     settings.GameStateOffset = uint.Parse(root.Element("GameStateOffset").Value);
                     settings.FrameScriptExecuteOffset = uint.Parse(root.Element("FrameScriptExecuteOffset").Value);

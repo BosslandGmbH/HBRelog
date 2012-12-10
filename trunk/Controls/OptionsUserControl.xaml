@@ -25,6 +25,7 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <!-- AutoStart -->
                     <TextBlock Text="AutoStart"  />
@@ -51,7 +52,11 @@
                     <CheckBox x:Name="AutoUpdateHBCheck" Grid.Column="1" Grid.Row="4"
                               ToolTip="Automatically install latest HB if there is a new version before running it"
                               IsChecked="{Binding AutoUpdateHB}"/>
-
+                    <!-- Auto-accept ToS/Eula -->
+                    <TextBlock Text="Auto-accept ToS and Eula" Grid.Row="5" />
+                    <CheckBox x:Name="AutoAcceptToSAndEulaCheck" Grid.Column="1" Grid.Row="5"
+                              ToolTip="Automatically accepts the Tos and Eula aggreement."
+                              IsChecked="{Binding AutoAcceptTosEula}"/>
                 </Grid>
             </GroupBox>
             <GroupBox Header="User Interface">
