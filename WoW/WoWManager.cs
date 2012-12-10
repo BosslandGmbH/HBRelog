@@ -12,8 +12,16 @@ namespace HighVoltz.HBRelog.WoW
 {
     public sealed class WowManager : IGameManager
     {
+        private const string AcceptTosEulaLua =
+        @"if TOSFrame and TOSFrame:IsShown() then
+            AcceptTOS();
+            AcceptEULA();
+        end";
+
         private const string LoginLuaFormat =
-        @"local acct = ""{2}""
+        @"
+
+        local acct = ""{2}""
         if (WoWAccountSelectDialog and WoWAccountSelectDialog:IsShown()) then    
             for i = 1, GetNumGameAccounts() do    
                 if GetGameAccountInfo(i):upper() == acct:upper() then    
@@ -589,6 +597,8 @@ namespace HighVoltz.HBRelog.WoW
             string character = Settings.CharacterName;
             // indexes are 0=BnetEmail, 1=password, 2=accountName, 3=character, 4=server
             _loginLua = string.Format(LoginLuaFormat, bnetLogin, password, accountName);
+            if (HbRelogManager.Settings.AutoAcceptTosEula)
+                _loginLua = AcceptTosEulaLua + _loginLua;
             // indexes are {0}=character, {1}=server
             _charSelectLua = string.Format(CharSelectLuaFormat, character, server);
             // indexes are {0}=server
@@ -602,7 +612,7 @@ namespace HighVoltz.HBRelog.WoW
         {
             if (Memory != null)
             {
-                HbRelogManager.Settings.GameStateOffset = (uint) WoWPatterns.GameStatePattern.Find(Memory);
+                HbRelogManager.Settings.GameStateOffset = (uint)WoWPatterns.GameStatePattern.Find(Memory);
                 Log.Debug("GameState Offset found at 0x{0:X}", HbRelogManager.Settings.GameStateOffset);
                 HbRelogManager.Settings.FrameScriptExecuteOffset = (uint)WoWPatterns.FrameScriptExecutePattern.Find(Memory);
                 Log.Debug("FrameScriptExecute Offset found at 0x{0:X}", HbRelogManager.Settings.FrameScriptExecuteOffset);
