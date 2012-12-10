@@ -16,6 +16,8 @@ namespace HighVoltz.HBRelog.WoW
         @"if TOSFrame and TOSFrame:IsShown() then
             AcceptTOS();
             AcceptEULA();
+            AccountLoginUI:Show();
+            TOSFrame:Hide();
         end";
 
         private const string LoginLuaFormat =
