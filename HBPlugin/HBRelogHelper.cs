@@ -129,12 +129,14 @@ namespace HighVoltz.HBRelogHelper
             {
                 if (!IsConnected)
                     return;
+                if (!StyxWoW.IsInGame)
+                    return;
                 if (!TreeRoot.IsRunning)
                 {
                     int profileStatus = HBRelogRemoteApi.GetProfileStatus(CurrentProfileName);
                     // if HB isn't running after 30 seconds 
                     // and the HBRelog profile isn't paused then restart hb
-                    if (profileStatus != 1 && DateTime.Now - _runningTimeStamp >= TimeSpan.FromSeconds(50))
+                    if (profileStatus != 1 && DateTime.Now - _runningTimeStamp >= TimeSpan.FromSeconds(120))
                         HBRelogRemoteApi.RestartHB(HbProcId);
                 }
                 else

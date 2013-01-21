@@ -22,7 +22,6 @@ namespace HighVoltz.HBRelog.WoW
 
         private const string LoginLuaFormat =
         @"
-
         local acct = ""{2}""
         if (WoWAccountSelectDialog and WoWAccountSelectDialog:IsShown()) then    
             for i = 1, GetNumGameAccounts() do    
