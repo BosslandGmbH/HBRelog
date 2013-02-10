@@ -52,8 +52,9 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="fasmdll_managed">
-      <HintPath>..\..\bin\Release\fasmdll_managed.dll</HintPath>
+    <Reference Include="fasmdll_managed, Version=1.0.4674.39124, Culture=neutral, PublicKeyToken=f20f8f99ca0718ca, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\HBRelog\Libs\GreyMagic\bin\x86\Release\fasmdll_managed.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
