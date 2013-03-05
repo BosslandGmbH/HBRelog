@@ -338,41 +338,46 @@ namespace HighVoltz.HBRelog.WoW
                     {
                         WowHook = new Hook(GameProcess);
                     }
-                    if (!StartupSequenceIsComplete && !InGame && !IsConnectiongOrLoading)
+                    if (!StartupSequenceIsComplete )
                     {
-                        if (!WowHook.Installed)
+                        if (string.IsNullOrEmpty(HbRelogManager.Settings.WowVersion) || !HbRelogManager.Settings.WowVersion.Equals(GameProcess.VersionString()))
                         {
-                            Profile.Log("Installing Endscene hook");
-                            Profile.Status = "Logging into WoW";
-                            // check if we need to scan for offsets
-                            if (string.IsNullOrEmpty(HbRelogManager.Settings.WowVersion) ||
-                                !HbRelogManager.Settings.WowVersion.Equals(GameProcess.VersionString()))
-                            {
-                                ScanForOffset();
-                            }
-                            WowHook.InstallHook();
-                            Lua = new Lua(WowHook);
-                            UpdateLoginString();
+                            ScanForOffset();
                         }
-                        // hook is installed so lets assume proces is ready for input.
-                        else if (!_processIsReadyForInput)
+                        if (!InGame && !IsConnectiongOrLoading)
                         {
-                            // change window title
-                            NativeMethods.SetWindowText(GameProcess.MainWindowHandle, string.Format("{0} - ProcID: {1}", Profile.Settings.ProfileName, GameProcess.Id));
-                            // resize and position window.
-                            if (Settings.WowWindowWidth > 0 && Settings.WowWindowHeight > 0)
+                            if (!WowHook.Installed)
                             {
-                                Profile.Log("Setting Window location to X:{0}, Y:{1} and Size to Width {2}, Height:{3}",
-                                            Settings.WowWindowX, Settings.WowWindowY,
-                                            Settings.WowWindowWidth, Settings.WowWindowHeight);
+                                Profile.Log("Installing Endscene hook");
+                                Profile.Status = "Logging into WoW";
+                                // check if we need to scan for offsets
 
-                                Utility.ResizeAndMoveWindow(GameProcess.MainWindowHandle, Settings.WowWindowX,
-                                                            Settings.WowWindowY,
-                                                            Settings.WowWindowWidth, Settings.WowWindowHeight);
+                                WowHook.InstallHook();
+                                Lua = new Lua(WowHook);
+                                UpdateLoginString();
                             }
-                            _processIsReadyForInput = true;
+                            // hook is installed so lets assume proces is ready for input.
+                            else if (!_processIsReadyForInput)
+                            {
+                                // change window title
+                                NativeMethods.SetWindowText(GameProcess.MainWindowHandle, string.Format("{0} - ProcID: {1}", Profile.Settings.ProfileName, GameProcess.Id));
+                                // resize and position window.
+                                if (Settings.WowWindowWidth > 0 && Settings.WowWindowHeight > 0)
+                                {
+                                    Profile.Log(
+                                        "Setting Window location to X:{0}, Y:{1} and Size to Width {2}, Height:{3}",
+                                        Settings.WowWindowX,
+                                        Settings.WowWindowY,
+                                        Settings.WowWindowWidth,
+                                        Settings.WowWindowHeight);
+
+                                    Utility.ResizeAndMoveWindow(
+                                        GameProcess.MainWindowHandle, Settings.WowWindowX, Settings.WowWindowY, Settings.WowWindowWidth, Settings.WowWindowHeight);
+                                }
+                                _processIsReadyForInput = true;
+                            }
+                            LoginWoW();
                         }
-                        LoginWoW();
                     }
                     // remove hook since its nolonger needed.
                     if (WowHook.Installed && (InGame || IsConnectiongOrLoading) && WowHook != null)
