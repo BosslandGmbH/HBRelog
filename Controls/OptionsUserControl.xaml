@@ -13,6 +13,34 @@
                     <Setter Property="Grid.Column" Value="0" />
                 </Style>
             </StackPanel.Resources>
+            <GroupBox Header="General">
+                <Grid>
+                    <Grid.ColumnDefinitions >
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="OptionsSizeGroup"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="Use Dark UI style" />
+                    <CheckBox x:Name="DarkStyleCheck" Grid.Column="1"
+                              ToolTip="Switches to a darker UI style. Try it!. Might need to restart HBRelog"
+                              IsChecked="{Binding UseDarkStyle}" 
+                              Checked="DarkStyleCheckCheckedChanged" 
+                              Unchecked="DarkStyleCheckCheckedChanged"/>
+                    <TextBlock Text="Minimize HB on Start" Grid.Row="1"/>
+                    <CheckBox x:Name="AutoMinimzeHbCheck" Grid.Column="1" Grid.Row="1"
+                              ToolTip="Automatically minimizes HB to system tray on start"
+                              IsChecked="{Binding MinimizeHbOnStart}" />
+                    <Button x:Name="ImportSettingsButton" Content="Import Settings" Grid.Row="2" Click="ImportSettingsButton_Click"
+                            ToolTip="Import settings" Height="21" VerticalAlignment="Bottom"/>
+                    <Button x:Name="ExportSettingsButton" Content="Export Settings" Grid.Row="3" Click="ExportSettingsButton_Click"
+                            ToolTip="Export settings. Useful when copying settings to another computer"/>
+                </Grid>
+            </GroupBox>
             <GroupBox Header="Relogger">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -57,28 +85,6 @@
                     <CheckBox x:Name="AutoAcceptToSAndEulaCheck" Grid.Column="1" Grid.Row="5"
                               ToolTip="Automatically accepts the Tos and Eula aggreement."
                               IsChecked="{Binding AutoAcceptTosEula}"/>
-                </Grid>
-            </GroupBox>
-            <GroupBox Header="User Interface">
-                <Grid>
-                    <Grid.ColumnDefinitions >
-                        <ColumnDefinition Width="Auto" SharedSizeGroup="OptionsSizeGroup"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <TextBlock Text="Use Dark UI style" />
-                    <CheckBox x:Name="DarkStyleCheck" Grid.Column="1"
-                              ToolTip="Switches to a darker UI style. Try it!. Might need to restart HBRelog"
-                              IsChecked="{Binding UseDarkStyle}" 
-                              Checked="DarkStyleCheckCheckedChanged" 
-                              Unchecked="DarkStyleCheckCheckedChanged"/>
-                    <TextBlock Text="Minimize HB on Start" Grid.Row="1"/>
-                    <CheckBox x:Name="AutoMinimzeHbCheck" Grid.Column="1" Grid.Row="1"
-                              ToolTip="Automatically minimizes HB to system tray on start"
-                              IsChecked="{Binding MinimizeHbOnStart}" />
                 </Grid>
             </GroupBox>
             <GroupBox Header="Monitor">

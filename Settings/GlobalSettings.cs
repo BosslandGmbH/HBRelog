@@ -31,8 +31,22 @@ namespace HighVoltz.HBRelog.Settings
 {
     public class GlobalSettings : INotifyPropertyChanged
     {
-        private GlobalSettings()
+        private bool _autoAcceptTosEula;
+        private Timer _autoSaveTimer;
+        private bool _autoStart;
+        private bool _autoUpdateHB;
+        private bool _checkHbResponsiveness;
+        private bool _checkRealmStatus;
+        private int _hBDelay;
+        private DateTime _lastSaveTimeStamp;
+        private int _loginDelay;
+        private bool _minimizeHbOnStart;
+        private bool _useDarkStyle;
+        private int _wowDelay;
+
+        private GlobalSettings(string path)
         {
+            SettingsPath = string.IsNullOrEmpty(path) ? DefaultPath : path;
             CharacterProfiles = new ObservableCollection<CharacterProfile>();
             string settingsFolder = Path.GetDirectoryName(SettingsPath);
             if (!Directory.Exists(settingsFolder))
@@ -43,91 +57,126 @@ namespace HighVoltz.HBRelog.Settings
             AutoUpdateHB = CheckHbResponsiveness = UseDarkStyle = true;
         }
 
-        public string SettingsPath
+        string DefaultPath
         {
             get
             {
-                return Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) +
-                       "\\HighVoltz\\HBRelog\\Setting.xml";
+                return Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\HighVoltz\\HBRelog\\Setting.xml";
             }
         }
 
+        public string SettingsPath { get; private set; }
+
         public ObservableCollection<CharacterProfile> CharacterProfiles { get; set; }
         // Automatically start all enabled profiles on start
-        private bool _autoStart;
+
         public bool AutoStart
         {
             get { return _autoStart; }
-            set { _autoStart = value; NotifyPropertyChanged("AutoStart"); }
+            set
+            {
+                _autoStart = value;
+                NotifyPropertyChanged("AutoStart");
+            }
         }
 
         // delay in seconds between starting multiple Wow instance
-        private int _wowDelay;
+
         public int WowDelay
         {
             get { return _wowDelay; }
-            set { _wowDelay = value; NotifyPropertyChanged("WowDelay"); }
+            set
+            {
+                _wowDelay = value;
+                NotifyPropertyChanged("WowDelay");
+            }
         }
 
         // delay in seconds between starting multiple Honorbuddy instance
-        private int _hBDelay;
+
         public int HBDelay
         {
             get { return _hBDelay; }
-            set { _hBDelay = value; NotifyPropertyChanged("HBDelay"); }
+            set
+            {
+                _hBDelay = value;
+                NotifyPropertyChanged("HBDelay");
+            }
         }
 
         // delay in seconds between executing login actions.
-        private int _loginDelay;
+
         public int LoginDelay
         {
             get { return _loginDelay; }
-            set { _loginDelay = value; NotifyPropertyChanged("LoginDelay"); }
+            set
+            {
+                _loginDelay = value;
+                NotifyPropertyChanged("LoginDelay");
+            }
         }
 
-        private bool _useDarkStyle;
         public bool UseDarkStyle
         {
             get { return _useDarkStyle; }
-            set { _useDarkStyle = value; NotifyPropertyChanged("UseDarkStyle"); }
+            set
+            {
+                _useDarkStyle = value;
+                NotifyPropertyChanged("UseDarkStyle");
+            }
         }
 
-        private bool _checkRealmStatus;
         public bool CheckRealmStatus
         {
             get { return _checkRealmStatus; }
-            set { _checkRealmStatus = value; NotifyPropertyChanged("CheckRealmStatus"); }
+            set
+            {
+                _checkRealmStatus = value;
+                NotifyPropertyChanged("CheckRealmStatus");
+            }
         }
 
-        private bool _checkHbResponsiveness;
         public bool CheckHbResponsiveness
         {
             get { return _checkHbResponsiveness; }
-            set { _checkHbResponsiveness = value; NotifyPropertyChanged("CheckHbResponsiveness"); }
+            set
+            {
+                _checkHbResponsiveness = value;
+                NotifyPropertyChanged("CheckHbResponsiveness");
+            }
         }
 
-        private bool _autoUpdateHB;
         public bool AutoUpdateHB
         {
             get { return _autoUpdateHB; }
-            set { _autoUpdateHB = value; NotifyPropertyChanged("AutoUpdateHB"); }
+            set
+            {
+                _autoUpdateHB = value;
+                NotifyPropertyChanged("AutoUpdateHB");
+            }
         }
 
-        private bool _autoAcceptTosEula;
         public bool AutoAcceptTosEula
         {
             get { return _autoAcceptTosEula; }
-            set { _autoAcceptTosEula = value; NotifyPropertyChanged("AutoAcceptTosEula"); }
+            set
+            {
+                _autoAcceptTosEula = value;
+                NotifyPropertyChanged("AutoAcceptTosEula");
+            }
         }
-        
-        private bool _minimizeHbOnStart;
+
         /// <summary>
-        /// Minimizes HB to system tray on start
+        ///     Minimizes HB to system tray on start
         /// </summary>
         public bool MinimizeHbOnStart
         {
             get { return _minimizeHbOnStart; }
-            set { _minimizeHbOnStart = value; NotifyPropertyChanged("MinimizeHbOnStart"); }
+            set
+            {
+                _minimizeHbOnStart = value;
+                NotifyPropertyChanged("MinimizeHbOnStart");
+            }
         }
 
         public string WowVersion { get; set; }
@@ -137,6 +186,26 @@ namespace HighVoltz.HBRelog.Settings
         public uint FrameScriptExecuteOffset { get; set; }
         public uint LastHardwareEventOffset { get; set; }
         public uint GlueStateOffset { get; set; }
+
+        public TimeSpan SaveCompleteTimeSpan
+        {
+            get
+            {
+                var timeSinceLastSave = DateTime.Now - _lastSaveTimeStamp;
+                // check if a save queue is in process
+                if (_autoSaveTimer != null && timeSinceLastSave < TimeSpan.FromSeconds(7))
+                {
+                    return TimeSpan.FromSeconds(7) - timeSinceLastSave;
+                }
+                else if (timeSinceLastSave < TimeSpan.FromSeconds(2))
+                {
+                    return TimeSpan.FromSeconds(2) - timeSinceLastSave;
+                }
+                return TimeSpan.FromSeconds(0);
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
         // serializers giving me issues with colections.. so saving stuff manually.
         public void Save()
         {
@@ -184,14 +253,12 @@ namespace HighVoltz.HBRelog.Settings
                     settingsElement.Add(wowSettingsElement);
                     var hbSettingsElement = new XElement("HonorbuddySettings");
                     // Honorbuddy Settings
+                    hbSettingsElement.Add(new XElement("HonorbuddyKeyData", profile.Settings.HonorbuddySettings.HonorbuddyKeyData));
                     hbSettingsElement.Add(new XElement("CustomClass", profile.Settings.HonorbuddySettings.CustomClass));
                     hbSettingsElement.Add(new XElement("BotBase", profile.Settings.HonorbuddySettings.BotBase));
-                    hbSettingsElement.Add(new XElement("HonorbuddyProfile",
-                                                       profile.Settings.HonorbuddySettings.HonorbuddyProfile));
-                    hbSettingsElement.Add(new XElement("HonorbuddyPath",
-                                                       profile.Settings.HonorbuddySettings.HonorbuddyPath));
-                    hbSettingsElement.Add(new XElement("UseHBBeta",
-                                                       profile.Settings.HonorbuddySettings.UseHBBeta));
+                    hbSettingsElement.Add(new XElement("HonorbuddyProfile", profile.Settings.HonorbuddySettings.HonorbuddyProfile));
+                    hbSettingsElement.Add(new XElement("HonorbuddyPath", profile.Settings.HonorbuddySettings.HonorbuddyPath));
+                    hbSettingsElement.Add(new XElement("UseHBBeta", profile.Settings.HonorbuddySettings.UseHBBeta));
 
                     settingsElement.Add(hbSettingsElement);
                     profileElement.Add(settingsElement);
@@ -201,10 +268,11 @@ namespace HighVoltz.HBRelog.Settings
                     {
                         var taskElement = new XElement(task.GetType().Name);
                         // get a list of propertyes that don't have [XmlIgnore] custom attribute attached.
-                        List<PropertyInfo> propertyList = task.GetType().GetProperties().
-                            Where(
-                                pi =>
-                                pi.GetCustomAttributesData().All(cad => cad.Constructor.DeclaringType != typeof(XmlIgnoreAttribute))).ToList();
+                        List<PropertyInfo> propertyList =
+                            task.GetType()
+                                .GetProperties()
+                                .Where(pi => pi.GetCustomAttributesData().All(cad => cad.Constructor.DeclaringType != typeof(XmlIgnoreAttribute)))
+                                .ToList();
                         foreach (PropertyInfo property in propertyList)
                         {
                             taskElement.Add(new XAttribute(property.Name, property.GetValue(task, null)));
@@ -215,11 +283,7 @@ namespace HighVoltz.HBRelog.Settings
                     characterProfilesElement.Add(profileElement);
                 }
                 root.Add(characterProfilesElement);
-                var xmlSettings = new XmlWriterSettings
-                                      {
-                                          OmitXmlDeclaration = true,
-                                          Indent = true,
-                                      };
+                var xmlSettings = new XmlWriterSettings { OmitXmlDeclaration = true, Indent = true, };
 
                 using (XmlWriter xmlOutFile = XmlWriter.Create(SettingsPath, xmlSettings))
                 {
@@ -233,12 +297,12 @@ namespace HighVoltz.HBRelog.Settings
         }
 
         /// <summary>
-        /// Attempts to load settings from file
+        ///     Attempts to load settings from file
         /// </summary>
         /// <returns>A GlocalSettings</returns>
-        public static GlobalSettings Load()
+        public static GlobalSettings Load(string path = null)
         {
-            var settings = new GlobalSettings();
+            var settings = new GlobalSettings(path);
             try
             {
                 if (File.Exists(settings.SettingsPath))
@@ -272,43 +336,28 @@ namespace HighVoltz.HBRelog.Settings
                         // Wow Settings 
                         if (wowSettingsElement != null)
                         {
-                            profile.Settings.WowSettings.LoginData =
-                                GetElementValue<string>(wowSettingsElement.Element("LoginData"));
-                            profile.Settings.WowSettings.PasswordData =
-                                GetElementValue<string>(wowSettingsElement.Element("PasswordData"));
-                            profile.Settings.WowSettings.AcountName =
-                                GetElementValue<string>(wowSettingsElement.Element("AcountName"));
-                            profile.Settings.WowSettings.CharacterName =
-                                GetElementValue<string>(wowSettingsElement.Element("CharacterName"));
-                            profile.Settings.WowSettings.ServerName =
-                                GetElementValue<string>(wowSettingsElement.Element("ServerName"));
-                            profile.Settings.WowSettings.Region =
-                                GetElementValue<WowSettings.WowRegion>(wowSettingsElement.Element("Region"));
-                            profile.Settings.WowSettings.WowPath =
-                                GetElementValue<string>(wowSettingsElement.Element("WowPath"));
-                            profile.Settings.WowSettings.WowWindowWidth =
-                                GetElementValue<int>(wowSettingsElement.Element("WowWindowWidth"));
-                            profile.Settings.WowSettings.WowWindowHeight =
-                                GetElementValue<int>(wowSettingsElement.Element("WowWindowHeight"));
-                            profile.Settings.WowSettings.WowWindowX =
-                                GetElementValue<int>(wowSettingsElement.Element("WowWindowX"));
-                            profile.Settings.WowSettings.WowWindowY =
-                                GetElementValue<int>(wowSettingsElement.Element("WowWindowY"));
+                            profile.Settings.WowSettings.LoginData = GetElementValue<string>(wowSettingsElement.Element("LoginData"));
+                            profile.Settings.WowSettings.PasswordData = GetElementValue<string>(wowSettingsElement.Element("PasswordData"));
+                            profile.Settings.WowSettings.AcountName = GetElementValue<string>(wowSettingsElement.Element("AcountName"));
+                            profile.Settings.WowSettings.CharacterName = GetElementValue<string>(wowSettingsElement.Element("CharacterName"));
+                            profile.Settings.WowSettings.ServerName = GetElementValue<string>(wowSettingsElement.Element("ServerName"));
+                            profile.Settings.WowSettings.Region = GetElementValue<WowSettings.WowRegion>(wowSettingsElement.Element("Region"));
+                            profile.Settings.WowSettings.WowPath = GetElementValue<string>(wowSettingsElement.Element("WowPath"));
+                            profile.Settings.WowSettings.WowWindowWidth = GetElementValue<int>(wowSettingsElement.Element("WowWindowWidth"));
+                            profile.Settings.WowSettings.WowWindowHeight = GetElementValue<int>(wowSettingsElement.Element("WowWindowHeight"));
+                            profile.Settings.WowSettings.WowWindowX = GetElementValue<int>(wowSettingsElement.Element("WowWindowX"));
+                            profile.Settings.WowSettings.WowWindowY = GetElementValue<int>(wowSettingsElement.Element("WowWindowY"));
                         }
                         XElement hbSettingsElement = settingsElement.Element("HonorbuddySettings");
                         // Honorbuddy Settings
                         if (hbSettingsElement != null)
                         {
-                            profile.Settings.HonorbuddySettings.CustomClass =
-                                GetElementValue<string>(hbSettingsElement.Element("CustomClass"));
-                            profile.Settings.HonorbuddySettings.BotBase =
-                                GetElementValue<string>(hbSettingsElement.Element("BotBase"));
-                            profile.Settings.HonorbuddySettings.HonorbuddyProfile =
-                                GetElementValue<string>(hbSettingsElement.Element("HonorbuddyProfile"));
-                            profile.Settings.HonorbuddySettings.HonorbuddyPath =
-                                GetElementValue<string>(hbSettingsElement.Element("HonorbuddyPath"));
-                            profile.Settings.HonorbuddySettings.UseHBBeta =
-                                GetElementValue<bool>(hbSettingsElement.Element("UseHBBeta"));
+                            profile.Settings.HonorbuddySettings.HonorbuddyKeyData = GetElementValue<string>(hbSettingsElement.Element("HonorbuddyKeyData"));
+                            profile.Settings.HonorbuddySettings.CustomClass = GetElementValue<string>(hbSettingsElement.Element("CustomClass"));
+                            profile.Settings.HonorbuddySettings.BotBase = GetElementValue<string>(hbSettingsElement.Element("BotBase"));
+                            profile.Settings.HonorbuddySettings.HonorbuddyProfile = GetElementValue<string>(hbSettingsElement.Element("HonorbuddyProfile"));
+                            profile.Settings.HonorbuddySettings.HonorbuddyPath = GetElementValue<string>(hbSettingsElement.Element("HonorbuddyPath"));
+                            profile.Settings.HonorbuddySettings.UseHBBeta = GetElementValue<bool>(hbSettingsElement.Element("UseHBBeta"));
                         }
                         XElement tasksElement = profileElement.Element("Tasks");
                         // Load the Task list.
@@ -320,11 +369,11 @@ namespace HighVoltz.HBRelog.Settings
                                 var task = (BMTask)Activator.CreateInstance(taskType);
                                 task.SetProfile(profile);
                                 // Dictionary of property Names and the corresponding PropertyInfo
-                                Dictionary<string, PropertyInfo> propertyDict = task.GetType().GetProperties().
-                                    Where(
-                                        pi =>
-                                        pi.GetCustomAttributesData().All(cad => cad.Constructor.DeclaringType != typeof(XmlIgnoreAttribute))).
-                                    ToDictionary(k => k.Name);
+                                Dictionary<string, PropertyInfo> propertyDict =
+                                    task.GetType()
+                                        .GetProperties()
+                                        .Where(pi => pi.GetCustomAttributesData().All(cad => cad.Constructor.DeclaringType != typeof(XmlIgnoreAttribute)))
+                                        .ToDictionary(k => k.Name);
 
                                 foreach (XAttribute attr in taskElement.Attributes())
                                 {
@@ -332,9 +381,9 @@ namespace HighVoltz.HBRelog.Settings
                                     if (propertyDict.ContainsKey(propKey))
                                     {
                                         // if property is an enum then use Enum.Parse.. otherwise use Convert.ChangeValue
-                                        object val = typeof(Enum).IsAssignableFrom(propertyDict[propKey].PropertyType) ?
-                                            Enum.Parse(propertyDict[propKey].PropertyType, attr.Value) :
-                                            Convert.ChangeType(attr.Value, propertyDict[propKey].PropertyType);
+                                        object val = typeof(Enum).IsAssignableFrom(propertyDict[propKey].PropertyType)
+                                                         ? Enum.Parse(propertyDict[propKey].PropertyType, attr.Value)
+                                                         : Convert.ChangeType(attr.Value, propertyDict[propKey].PropertyType);
                                         propertyDict[propKey].SetValue(task, val, null);
                                     }
                                     else
@@ -360,6 +409,74 @@ namespace HighVoltz.HBRelog.Settings
             return settings;
         }
 
+        static readonly byte[] Key = new byte[] { 230, 123, 245, 78, 43, 229, 126, 109, 126, 10, 134, 61, 167, 2, 138, 142 };
+        static  readonly byte[] Iv = new byte[] { 113, 110, 177, 211, 193, 101, 36, 36, 52, 12, 51, 73, 61, 42, 239, 236 }; 
+
+        public static GlobalSettings Import(string path)
+        {
+            var settings = Load(path);
+            foreach (var characterProfile in settings.CharacterProfiles)
+            {
+                if (!string.IsNullOrEmpty(characterProfile.Settings.WowSettings.LoginData))
+                {
+                    characterProfile.Settings.WowSettings.LoginData =
+                        Utility.EncrptDpapi(Utility.DecryptAes(characterProfile.Settings.WowSettings.LoginData, Key, Iv));
+                }
+                if (!string.IsNullOrEmpty(characterProfile.Settings.WowSettings.PasswordData))
+                {
+                    characterProfile.Settings.WowSettings.PasswordData =
+                        Utility.EncrptDpapi(Utility.DecryptAes(characterProfile.Settings.WowSettings.PasswordData, Key, Iv));
+                }
+                if (!string.IsNullOrEmpty(characterProfile.Settings.HonorbuddySettings.HonorbuddyKeyData))
+                {
+                    characterProfile.Settings.HonorbuddySettings.HonorbuddyKeyData =
+                        Utility.EncrptDpapi(Utility.DecryptAes(characterProfile.Settings.HonorbuddySettings.HonorbuddyKeyData, Key, Iv));
+                }
+            }
+            settings.SettingsPath = settings.DefaultPath;
+            return settings;
+        }
+
+        public GlobalSettings Export(string path)
+        {
+            var settings = (GlobalSettings)MemberwiseClone();
+            settings.SettingsPath = path;
+            settings.CharacterProfiles = new ObservableCollection<CharacterProfile>();
+            foreach (var characterProfile in CharacterProfiles)
+            {
+                var newProfile = characterProfile.ShadowCopy();
+
+                if (!string.IsNullOrEmpty(newProfile.Settings.WowSettings.LoginData))
+                {
+                    newProfile.Settings.WowSettings.LoginData = Utility.EncryptAes(Utility.DecrptDpapi(characterProfile.Settings.WowSettings.LoginData), Key, Iv);
+                }
+
+                if (!string.IsNullOrEmpty(newProfile.Settings.WowSettings.PasswordData))
+                {
+                    newProfile.Settings.WowSettings.PasswordData = Utility.EncryptAes(
+                        Utility.DecrptDpapi(characterProfile.Settings.WowSettings.PasswordData), Key, Iv);
+                }
+                if (!string.IsNullOrEmpty(newProfile.Settings.HonorbuddySettings.HonorbuddyKeyData))
+                {
+                    newProfile.Settings.HonorbuddySettings.HonorbuddyKeyData =
+                        Utility.EncryptAes(Utility.DecrptDpapi(characterProfile.Settings.HonorbuddySettings.HonorbuddyKeyData), Key, Iv);
+                }
+                settings.CharacterProfiles.Add(newProfile);
+            }
+            return settings;
+        }
+
+        public GlobalSettings ShadowCopy()
+        {
+            var settings = (GlobalSettings)MemberwiseClone();
+            settings.CharacterProfiles = new ObservableCollection<CharacterProfile>();
+            foreach (var characterProfile in CharacterProfiles)
+            {
+                settings.CharacterProfiles.Add(characterProfile.ShadowCopy());
+            }
+            return settings;
+        }
+
         private static T GetElementValue<T>(XElement element, T defaultValue = default(T))
         {
             if (element != null)
@@ -373,8 +490,6 @@ namespace HighVoltz.HBRelog.Settings
             return defaultValue;
         }
 
-        private Timer _autoSaveTimer;
-        private DateTime _lastSaveTimeStamp;
         public void QueueSave()
         {
             if (DateTime.Now - _lastSaveTimeStamp >= TimeSpan.FromSeconds(5) && _autoSaveTimer == null)
@@ -386,11 +501,11 @@ namespace HighVoltz.HBRelog.Settings
 
                 _autoSaveTimer = new Timer(
                     state =>
-                        {
-                            Save();
-                            _autoSaveTimer.Dispose();
-                            _autoSaveTimer = null;
-                        },
+                    {
+                        Save();
+                        _autoSaveTimer.Dispose();
+                        _autoSaveTimer = null;
+                    },
                     null,
                     5000,
                     -1);
@@ -398,25 +513,6 @@ namespace HighVoltz.HBRelog.Settings
             _lastSaveTimeStamp = DateTime.Now;
         }
 
-        public TimeSpan SaveCompleteTimeSpan
-        {
-            get
-            {
-                var timeSinceLastSave = DateTime.Now - _lastSaveTimeStamp;
-                // check if a save queue is in process
-                if (_autoSaveTimer != null && timeSinceLastSave < TimeSpan.FromSeconds(7))
-                {
-                    return TimeSpan.FromSeconds(7) - timeSinceLastSave;
-                }
-                else if (timeSinceLastSave < TimeSpan.FromSeconds(2))
-                {
-                    return TimeSpan.FromSeconds(2) - timeSinceLastSave;
-                }
-                return TimeSpan.FromSeconds(0);
-            }
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
         private void NotifyPropertyChanged(string name)
         {
             if (PropertyChanged != null)
@@ -426,6 +522,5 @@ namespace HighVoltz.HBRelog.Settings
             if (HbRelogManager.Settings != null)
                 HbRelogManager.Settings.QueueSave();
         }
-
     }
 }

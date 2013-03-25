@@ -14,6 +14,7 @@ Copyright 2012 HighVoltz
    limitations under the License.
 */
 using System;
+using System.Security.Cryptography;
 using System.Text;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
@@ -34,7 +35,7 @@ namespace HighVoltz.HBRelog
 
         public static string EncodeToUTF8(this string text)
         {
-            var buffer = new StringBuilder(Encoding.UTF8.GetByteCount(text)*2);
+            var buffer = new StringBuilder(Encoding.UTF8.GetByteCount(text) * 2);
             byte[] utf8Encoded = Encoding.UTF8.GetBytes(text);
             foreach (byte b in utf8Encoded)
             {
@@ -91,5 +92,75 @@ namespace HighVoltz.HBRelog
         {
             return proc.MainModule.FileVersionInfo.FileVersion;
         }
+
+        /// <summary>
+        /// Encrpts the string using dpapi and returns a base64 string of encrypted data
+        /// </summary>
+        /// <param name="clearData">The clear data.</param>
+        /// <returns></returns>
+        static public string EncrptDpapi(string clearData)
+        {
+            byte[] data = Encoding.Unicode.GetBytes(clearData);
+            data = ProtectedData.Protect(data, null, DataProtectionScope.CurrentUser);
+            return Convert.ToBase64String(data);
+        }
+
+        /// <summary>
+        /// Decrypts the base64 string using dpapi and returns the unencrpyted text.
+        /// </summary>
+        /// <param name="base64Data">The clear data.</param>
+        /// <returns></returns>
+        static public string DecrptDpapi(string base64Data)
+        {
+            byte[] data = Convert.FromBase64String(base64Data);
+            data = ProtectedData.Unprotect(data, null, DataProtectionScope.CurrentUser);
+            return Encoding.Unicode.GetString(data);
+        }
+
+        public static string DecryptAes(string clearText, byte[] key, byte[] iv)
+        {
+            byte[] cipherBytes = Convert.FromBase64String(clearText);
+            using (Aes algorithm = Aes.Create())
+            {
+              //  algorithm.Padding = PaddingMode.None;
+                using (ICryptoTransform decryptor = algorithm.CreateDecryptor(key, iv))
+                {
+                    using (var m = new MemoryStream())
+                    {
+                        using (var c = new CryptoStream(m, decryptor, CryptoStreamMode.Write))
+                        {
+                            c.Write(cipherBytes, 0, cipherBytes.Length);
+                            c.FlushFinalBlock();
+                        }
+                        var a = m.ToArray();
+                        return Encoding.Unicode.GetString(a);
+                    }
+                }
+            }
+        }
+
+        public static string EncryptAes(string clearText, byte[] key, byte[] iv)
+        {
+            byte[] cipherBytes = Encoding.Unicode.GetBytes(clearText);
+
+            using (Aes algorithm = Aes.Create())
+            {
+               // algorithm.Padding = PaddingMode.None;
+                using (ICryptoTransform decryptor = algorithm.CreateEncryptor(key, iv))
+                {
+                    using (var m = new MemoryStream())
+                    {
+                        using (var c = new CryptoStream(m, decryptor, CryptoStreamMode.Write))
+                        {
+                            c.Write(cipherBytes, 0, cipherBytes.Length);
+                            c.FlushFinalBlock();
+                        }
+                        var a = m.ToArray();
+                        return Convert.ToBase64String(a);
+                    }
+                }
+            }
+        }
+
     }
 }

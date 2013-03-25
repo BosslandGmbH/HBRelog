@@ -14,7 +14,11 @@ Copyright 2012 HighVoltz
    limitations under the License.
 */
 
+using System;
 using System.ComponentModel;
+using System.Security.Cryptography;
+using System.Text;
+using System.Windows;
 
 namespace HighVoltz.HBRelog.Settings
 {
@@ -46,7 +50,34 @@ namespace HighVoltz.HBRelog.Settings
             get { return _botBase; }
             set { _botBase = value; NotifyPropertyChanged("BotBase"); }
         }
+
+        public string HonorbuddyKeyData { get; set; }
+        /// <summary>
+        /// The Honorbuddy Key to use. It can be left empty
+        /// </summary>
+        public string HonorbuddyKey
+        {
+            get
+            {
+                try
+                {
+                    return !string.IsNullOrEmpty(HonorbuddyKeyData) ? Utility.DecrptDpapi(HonorbuddyKeyData) : "";
+                }
+                catch
+                {
+                    // this error can occur if the Windows password was changed or profile was copied to another computer
+                    MessageBox.Show(string.Format("Error decrypting Honrobuddy key. Try setting Honrobuddy key again."));
+                    return "";
+                }
+            }
+            set
+            {
+                HonorbuddyKeyData = Utility.EncrptDpapi(value);
+                NotifyPropertyChanged("HonorbuddyKey");
+            }
+        }
         private string _honorbuddyProfile;
+
         /// <summary>
         /// The Honorbuddy CustomClass to use. It can be left empty
         /// </summary>

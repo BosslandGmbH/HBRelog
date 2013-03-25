@@ -219,7 +219,7 @@
                     <TabItem.Header>
                         <TextBlock Text="Options" Margin="-10" Padding="15,0"/>
                     </TabItem.Header>
-                    <Controls:OptionsUserControl DataContext="{x:Static local:HbRelogManager.Settings}"/>
+                    <Controls:OptionsUserControl x:Name="HbrelogOptions" DataContext="{x:Static local:HbRelogManager.Settings}"/>
                 </TabItem>
                 <TabItem PreviewMouseLeftButtonDown="TabItem_PreviewMouseLeftButtonDown"
                          VerticalContentAlignment="Stretch">
