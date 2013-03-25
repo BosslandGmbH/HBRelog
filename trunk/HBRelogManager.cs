@@ -27,7 +27,7 @@ namespace HighVoltz.HBRelog
 {
     class HbRelogManager
     {
-        public static GlobalSettings Settings { get; private set; }
+        public static GlobalSettings Settings { get; internal set; }
         static public Thread WorkerThread { get; private set; }
         public static bool IsInitialized { get; private set; }
         private static DateTime _killWowErrsTimeStamp = DateTime.Now;

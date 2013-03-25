@@ -217,6 +217,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
                             string hbArgs = string.Format("/noupdate /pid={0} /autostart {1}{2}{3}",
                             //string hbArgs = string.Format("/pid={0} /autostart {1}{2}{3}",
                                 Profile.TaskManager.WowManager.GameProcess.Id,
+                                !string.IsNullOrEmpty(Settings.HonorbuddyKey) ? string.Format("/hbkey=\"{0}\" ", Settings.HonorbuddyKey) : string.Empty,
                                 !string.IsNullOrEmpty(Settings.CustomClass) ? string.Format("/customclass=\"{0}\" ", Settings.CustomClass) : string.Empty,
                                 !string.IsNullOrEmpty(Settings.HonorbuddyProfile) ? string.Format("/loadprofile=\"{0}\" ", Settings.HonorbuddyProfile) : string.Empty,
                                 !string.IsNullOrEmpty(Settings.BotBase) ? string.Format("/botname=\"{0}\" ", Settings.BotBase) : string.Empty

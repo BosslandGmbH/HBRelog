@@ -338,7 +338,7 @@ namespace HighVoltz.HBRelog.WoW
                     {
                         WowHook = new Hook(GameProcess);
                     }
-                    if (!StartupSequenceIsComplete )
+                    if (!StartupSequenceIsComplete)
                     {
                         if (string.IsNullOrEmpty(HbRelogManager.Settings.WowVersion) || !HbRelogManager.Settings.WowVersion.Equals(GameProcess.VersionString()))
                         {
@@ -598,7 +598,8 @@ namespace HighVoltz.HBRelog.WoW
         {
             string bnetLogin = Settings.Login.EncodeToUTF8();
             string accountName = Settings.AcountName;
-            string password = Settings.Password.EncodeToUTF8();
+            // can only use up to 16 byte passwords.
+            string password = Settings.Password.Length > 16 ? Settings.Password.Substring(0, 16).EncodeToUTF8() : Settings.Password.EncodeToUTF8();
             string server = Settings.ServerName;
             string character = Settings.CharacterName;
             // indexes are 0=BnetEmail, 1=password, 2=accountName, 3=character, 4=server

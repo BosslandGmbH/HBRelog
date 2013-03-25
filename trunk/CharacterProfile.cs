@@ -148,6 +148,18 @@ namespace HighVoltz.HBRelog
                                         Settings.ProfileName + ": ", Colors.Red, format, args);
         }
 
+        public CharacterProfile ShadowCopy()
+        {
+            var cp = (CharacterProfile)MemberwiseClone();
+            cp.Tasks = new ObservableCollection<BMTask>();
+            foreach (var bmTask in Tasks)
+            {
+                cp.Tasks.Add(bmTask.ShadowCopy());
+            }
+            cp.Settings = Settings.ShadowCopy();
+            return cp;
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
         private void NotifyPropertyChanged(string name)
         {

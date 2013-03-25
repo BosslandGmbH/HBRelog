@@ -122,6 +122,11 @@ namespace HighVoltz.HBRelog.Tasks
 
         abstract public string ToolTip { get; set; }
 
+        public BMTask ShadowCopy()
+        {
+            return (BMTask)MemberwiseClone();
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged(string name)
         {

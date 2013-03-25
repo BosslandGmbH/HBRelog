@@ -43,9 +43,7 @@ namespace HighVoltz.HBRelog.Settings
             {
                 try
                 {
-                    byte[] data = Convert.FromBase64String(LoginData);
-                    data = ProtectedData.Unprotect(data, null, DataProtectionScope.CurrentUser);
-                    return Encoding.Unicode.GetString(data);
+                    return Utility.DecrptDpapi(LoginData);
                 }
                 catch
                 {
@@ -57,12 +55,11 @@ namespace HighVoltz.HBRelog.Settings
             }
             set
             {
-                byte[] data = Encoding.Unicode.GetBytes(value);
-                data = ProtectedData.Protect(data, null, DataProtectionScope.CurrentUser);
-                LoginData = Convert.ToBase64String(data);
+                LoginData = Utility.EncrptDpapi(value);
                 NotifyPropertyChanged("Login");
             }
         }
+
 
         public string PasswordData { get; set; }
         public string Password
@@ -71,9 +68,7 @@ namespace HighVoltz.HBRelog.Settings
             {
                 try
                 {
-                    byte[] data = Convert.FromBase64String(PasswordData);
-                    data = ProtectedData.Unprotect(data, null, DataProtectionScope.CurrentUser);
-                    return Encoding.Unicode.GetString(data);
+                    return Utility.DecrptDpapi(PasswordData);
                 }
                 catch
                 {
@@ -83,9 +78,8 @@ namespace HighVoltz.HBRelog.Settings
             }
             set
             {
-                byte[] data = Encoding.Unicode.GetBytes(value.Substring(0, value.Length > 16 ? 16 : value.Length));
-                data = ProtectedData.Protect(data, null, DataProtectionScope.CurrentUser);
-                PasswordData = Convert.ToBase64String(data);
+                PasswordData = Utility.EncrptDpapi(value);
+                NotifyPropertyChanged("Password");
             }
         }
 
