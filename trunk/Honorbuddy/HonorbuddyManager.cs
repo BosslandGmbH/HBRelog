@@ -214,7 +214,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
                             Profile.Log("starting {0}", Profile.Settings.HonorbuddySettings.HonorbuddyPath);
                             Profile.Status = "Starting Honorbuddy";
                             StartupSequenceIsComplete = false;
-                            string hbArgs = string.Format("/noupdate /pid={0} /autostart {1}{2}{3}",
+                            string hbArgs = string.Format("/noupdate /pid={0} /autostart {1}{2}{3}{4}",
                             //string hbArgs = string.Format("/pid={0} /autostart {1}{2}{3}",
                                 Profile.TaskManager.WowManager.GameProcess.Id,
                                 !string.IsNullOrEmpty(Settings.HonorbuddyKey) ? string.Format("/hbkey=\"{0}\" ", Settings.HonorbuddyKey) : string.Empty,
