@@ -224,7 +224,14 @@ namespace HighVoltz.HBRelog.WoW
             }
         }
 
+        private bool IsUsingLauncher
+        {
+            get { return !Path.GetFileName(Settings.WowPath).Equals("Wow.exe", StringComparison.CurrentCultureIgnoreCase); }
+        }
+
         #region IGameManager Members
+
+        private Process _launcherProc;
 
         public CharacterProfile Profile
         {
@@ -292,12 +299,12 @@ namespace HighVoltz.HBRelog.WoW
                 WowHook = null;
                 CloseGameProcess();
                 IsRunning = false;
+                _launcherProc = null;
                 StartupSequenceIsComplete = false;
             }
             if (lockAquried)
                 Monitor.Exit(_lockObject);
         }
-
 
         public void Pulse()
         {
@@ -322,10 +329,27 @@ namespace HighVoltz.HBRelog.WoW
                     if (WowHook == null)
                     {
                         // check if a batch file or any .exe besides WoW.exe is used and try to get the child WoW process started by this process.
-                        if (!Path.GetFileName(Settings.WowPath).Equals("Wow.exe", StringComparison.CurrentCultureIgnoreCase) &&
-                            !Path.GetFileName(GameProcess.MainModule.FileName).Equals("Wow.exe", StringComparison.CurrentCultureIgnoreCase))
+                        if (IsUsingLauncher && !Path.GetFileName(GameProcess.MainModule.FileName).Equals("Wow.exe", StringComparison.CurrentCultureIgnoreCase))
                         {
-                            var wowProcess = Utility.GetChildProcessByName(GameProcess, "Wow");
+                            Process wowProcess = null;
+                            if (_launcherProc != null && !_launcherProc.HasExited)
+                            {
+                                wowProcess = Utility.GetChildProcessByName(_launcherProc, "Wow");
+                            }
+                            else
+                            {
+                                // seems like the launcher process terminated early before we could grab the Game process that it started.. 
+                                // so we just find the 1st game process that's not monitor by HBRelog.
+                                var processes = Process.GetProcessesByName("Wow");
+                                foreach (var characterProfile in HbRelogManager.Settings.CharacterProfiles.Where(c => c.IsRunning && !c.IsPaused))
+                                {
+                                    var proc = characterProfile.TaskManager.WowManager.GameProcess;
+                                    if (proc == null || proc.HasExited || processes.Any(p => p.Id == proc.Id)) 
+                                        continue;
+                                    wowProcess = proc;
+                                    break;
+                                }
+                            }
 
                             if (wowProcess == null)
                             {
@@ -438,6 +462,12 @@ namespace HighVoltz.HBRelog.WoW
             Lua = null;
             GameProcess = Process.Start(Settings.WowPath);
             _wowLoginTimer = new Timer(WowLoginTimerCallBack, null, 0, 10000);
+            if (IsUsingLauncher)
+            {
+                _launcherProc = GameProcess;
+                // set GameProcess temporarily to HBRelog because laucher can exit before wow starts 
+                GameProcess = Process.GetCurrentProcess();
+            }
         }
 
         private void WowLoginTimerCallBack(object state)

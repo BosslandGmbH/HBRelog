@@ -369,6 +369,7 @@ namespace HighVoltz.HBRelog
                 return GetParentProcess(process.Handle);
             }
 
+
             /// <summary>
             /// Gets the parent process of a specified process.
             /// </summary>
