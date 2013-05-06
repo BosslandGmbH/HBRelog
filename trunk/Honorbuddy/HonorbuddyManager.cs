@@ -94,6 +94,15 @@ namespace HighVoltz.HBRelog.Honorbuddy
             }
         }
 
+        string[] _dllNames = new[]
+                             {
+                               "fasmdll_managed.dll",
+                               "RemoteASMNative.dll",
+                               "System.Data.SQLite.dll",
+                               "Tripper.RecastManaged.dll",
+                               "Tripper.Tools.dll",
+                             };
+
         bool _pluginIsUptodate;
         private DateTime _lastUpdateCheck;
         public void Start()
@@ -101,14 +110,14 @@ namespace HighVoltz.HBRelog.Honorbuddy
             if (File.Exists(Settings.HonorbuddyPath))
             {
                 // check if there is a new version available.
-                if (HbRelogManager.Settings.AutoUpdateHB &&  DateTime.Now - _lastUpdateCheck >= TimeSpan.FromMinutes(30))
+                if (HbRelogManager.Settings.AutoUpdateHB && DateTime.Now - _lastUpdateCheck >= TimeSpan.FromMinutes(30))
                 {
                     Log.Write("Checking for new  Honorbuddy update");
                     // get local honorbuddy file version.
                     FileVersionInfo localFileVersionInfo = FileVersionInfo.GetVersionInfo(Settings.HonorbuddyPath);
                     // download the latest Honorbuddy version string from server
                     var client = new WebClient { Proxy = null };
-                    string latestHbVersion = client.DownloadString(Profile.Settings.HonorbuddySettings.UseHBBeta ? HbBetaVersionUrl: HbVersionUrl);
+                    string latestHbVersion = client.DownloadString(Profile.Settings.HonorbuddySettings.UseHBBeta ? HbBetaVersionUrl : HbVersionUrl);
                     // check if local version is different from remote honorbuddy version.
                     if (localFileVersionInfo.FileVersion != latestHbVersion)
                     {
@@ -116,7 +125,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
                         var originalFileName = Path.GetFileName(Settings.HonorbuddyPath);
                         // close all instances of Honorbuddy
                         Log.Write("Closing all instances of Honorbuddy");
-                        var psi = new ProcessStartInfo("taskKill", "/IM " + originalFileName) {WindowStyle = ProcessWindowStyle.Hidden};
+                        var psi = new ProcessStartInfo("taskKill", "/IM " + originalFileName) { WindowStyle = ProcessWindowStyle.Hidden };
 
                         Process.Start(psi);
                         // download the new honorbuddy zip
@@ -125,13 +134,29 @@ namespace HighVoltz.HBRelog.Honorbuddy
                         string tempFileName = Path.GetTempFileName();
 
                         client.DownloadFile(Profile.Settings.HonorbuddySettings.UseHBBeta ? HbBetaUpdateUrl : HbUpdateUrl, tempFileName);
+                        //Log.Write("Deleting old .exe and .dll files");
+
+                        //var assembliesToDelete = new List<string>(_dllNames);
+                        //assembliesToDelete.Add(originalFileName);
+                        //foreach (var fileName in assembliesToDelete)
+                        //{
+                        //    var fullPath = Path.Combine(Settings.HonorbuddyPath, fileName);
+                        //    if (File.Exists(fullPath))
+                        //    {
+                        //        try
+                        //        {
+                        //            File.Delete(fullPath);
+                        //        }
+                        //        catch { }
+                        //    }
+                        //}
 
                         // extract the downloaded zip
                         var hbFolder = Path.GetDirectoryName(Settings.HonorbuddyPath);
                         Log.Write("Extracting Honorbuddy to {0}", hbFolder);
                         Profile.Status = "Extracting Honorbuddy";
                         var zip = new FastZip();
-                        zip.ExtractZip(tempFileName, hbFolder, FastZip.Overwrite.Always, s => true, ".*", ".*", true);
+                        zip.ExtractZip(tempFileName, hbFolder, FastZip.Overwrite.Always, s => true, ".*", ".*", false);
 
                         // delete the downloaded zip
                         Log.Write("Deleting temporary file");
@@ -215,7 +240,6 @@ namespace HighVoltz.HBRelog.Honorbuddy
                             Profile.Status = "Starting Honorbuddy";
                             StartupSequenceIsComplete = false;
                             string hbArgs = string.Format("/noupdate /pid={0} /autostart {1}{2}{3}{4}",
-                            //string hbArgs = string.Format("/pid={0} /autostart {1}{2}{3}",
                                 Profile.TaskManager.WowManager.GameProcess.Id,
                                 !string.IsNullOrEmpty(Settings.HonorbuddyKey) ? string.Format("/hbkey=\"{0}\" ", Settings.HonorbuddyKey) : string.Empty,
                                 !string.IsNullOrEmpty(Settings.CustomClass) ? string.Format("/customclass=\"{0}\" ", Settings.CustomClass) : string.Empty,
