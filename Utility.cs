@@ -83,13 +83,12 @@ namespace HighVoltz.HBRelog
                 !(NativeMethods.IsWow64Process(proc.Handle, out retVal) && retVal);
         }
 
-        public static Process GetChildProcessByName(Process parent, string processName)
+        
+
+        public static Process GetChildProcessByName(Process parrent, string processName)
         {
-            return (from proc in Process.GetProcessesByName(processName)
-                              where IsChildProcessOf(parent, proc)
-                              let parentProc = NativeMethods.ParentProcessUtilities.GetParentProcess(proc.Handle)
-                              where parentProc != null && parentProc.Id == parent.Id
-                              select proc).FirstOrDefault();
+            var processes = Process.GetProcessesByName(processName);
+            return processes.FirstOrDefault(process => IsChildProcessOf(parrent, process));
         }
 
         public static bool IsChildProcessOf(Process parent, Process child)
@@ -97,7 +96,7 @@ namespace HighVoltz.HBRelog
             while (true)
             {
                 var childParrent = NativeMethods.ParentProcessUtilities.GetParentProcess(child.Handle);
-                if (childParrent == null) return false;
+                if (childParrent  == null) return false;
                 if (childParrent.Id == parent.Id) return true;
                 child = childParrent;
             }
