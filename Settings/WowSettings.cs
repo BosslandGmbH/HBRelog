@@ -30,6 +30,7 @@ namespace HighVoltz.HBRelog.Settings
             Password = string.Empty;
             ServerName = string.Empty;
             WowPath = string.Empty;
+            WowArgs = string.Empty;
             AcountName = "WoW1";
             Region = WowRegion.Auto;
         }
@@ -121,6 +122,17 @@ namespace HighVoltz.HBRelog.Settings
             get { return _wowPath; }
             set { _wowPath = value; NotifyPropertyChanged("WowPath"); }
         }
+
+        private string _wowArgs;
+        /// <summary>
+        /// Command-line arguments to pass to WoW or launcher (Advanced)
+        /// </summary>
+        public string WowArgs
+        {
+            get { return _wowArgs; }
+            set { _wowArgs = value; NotifyPropertyChanged("WowArgs"); }
+        }
+
         private int _wowWindowWidth;
         public int WowWindowWidth
         {
