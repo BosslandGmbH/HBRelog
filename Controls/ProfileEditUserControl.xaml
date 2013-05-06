@@ -73,7 +73,7 @@
                                                        FileNameChanged="WoWFileInputFileNameChanged"
                                                        Title="Browse to and select your WoW.exe file"
                                                        DefaultExt=".exe" Filter=".exe|*.exe"
-                                                       ToolTip="The path to Wow.exe. click the '...' button on the right to browse to it."/>
+                                                       ToolTip="The path to Wow.exe. click the '...' button on the right to browse to it. This can also be a batch file that launches WoW.exe"/>
 
                         </Grid>
                     </ScrollViewer>

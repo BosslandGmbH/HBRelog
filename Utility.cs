@@ -82,6 +82,27 @@ namespace HighVoltz.HBRelog
             return Environment.Is64BitOperatingSystem &&
                 !(NativeMethods.IsWow64Process(proc.Handle, out retVal) && retVal);
         }
+
+        public static Process GetChildProcessByName(Process parent, string processName)
+        {
+            return (from proc in Process.GetProcessesByName(processName)
+                              where IsChildProcessOf(parent, proc)
+                              let parentProc = NativeMethods.ParentProcessUtilities.GetParentProcess(proc.Handle)
+                              where parentProc != null && parentProc.Id == parent.Id
+                              select proc).FirstOrDefault();
+        }
+
+        public static bool IsChildProcessOf(Process parent, Process child)
+        {
+            while (true)
+            {
+                var childParrent = NativeMethods.ParentProcessUtilities.GetParentProcess(child.Handle);
+                if (childParrent == null) return false;
+                if (childParrent.Id == parent.Id) return true;
+                child = childParrent;
+            }
+        }
+
         // returns base offset for main module
         static public uint BaseOffset(this Process proc)
         {
