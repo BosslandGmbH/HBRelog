@@ -129,7 +129,7 @@ namespace HighVoltz.HBRelog.WoW
             {
                 try
                 {
-                    return WowHook != null && Memory.Read<byte>(true, ((IntPtr) HbRelogManager.Settings.GameStateOffset + 1)) == 1;
+                    return WowHook != null && Memory.Read<byte>(true, ((IntPtr)HbRelogManager.Settings.GameStateOffset + 1)) == 1;
                 }
                 catch
                 {
@@ -140,7 +140,7 @@ namespace HighVoltz.HBRelog.WoW
 
         public GlueState GlueStatus
         {
-            get { return WowHook != null ? Memory.Read<GlueState>(true, (IntPtr) HbRelogManager.Settings.GlueStateOffset) : GlueState.Disconnected; }
+            get { return WowHook != null ? Memory.Read<GlueState>(true, (IntPtr)HbRelogManager.Settings.GlueStateOffset) : GlueState.Disconnected; }
         }
 
         /// <summary>
@@ -231,7 +231,7 @@ namespace HighVoltz.HBRelog.WoW
 
         #region IGameManager Members
 
-        private Process _launcherProc;
+        private int _launcherPid;
 
         public CharacterProfile Profile
         {
@@ -259,7 +259,7 @@ namespace HighVoltz.HBRelog.WoW
             {
                 try
                 {
-                    return WowHook != null && Memory.Read<byte>(true, (IntPtr) HbRelogManager.Settings.GameStateOffset) == 1;
+                    return WowHook != null && Memory.Read<byte>(true, (IntPtr)HbRelogManager.Settings.GameStateOffset) == 1;
                 }
                 catch
                 {
@@ -299,7 +299,7 @@ namespace HighVoltz.HBRelog.WoW
                 WowHook = null;
                 CloseGameProcess();
                 IsRunning = false;
-                _launcherProc = null;
+                _launcherPid = 0;
                 StartupSequenceIsComplete = false;
             }
             if (lockAquried)
@@ -332,9 +332,9 @@ namespace HighVoltz.HBRelog.WoW
                         if (IsUsingLauncher && !Path.GetFileName(GameProcess.MainModule.FileName).Equals("Wow.exe", StringComparison.CurrentCultureIgnoreCase))
                         {
                             Process wowProcess = null;
-                            if (_launcherProc != null && !_launcherProc.HasExited)
+                            if (_launcherPid > 0)
                             {
-                                wowProcess = Utility.GetChildProcessByName(_launcherProc, "Wow");
+                                wowProcess = Utility.GetChildProcessByName(_launcherPid, "Wow");
                             }
                             else
                             {
@@ -344,7 +344,7 @@ namespace HighVoltz.HBRelog.WoW
                                 foreach (var characterProfile in HbRelogManager.Settings.CharacterProfiles.Where(c => c.IsRunning && !c.IsPaused))
                                 {
                                     var proc = characterProfile.TaskManager.WowManager.GameProcess;
-                                    if (proc == null || proc.HasExited || processes.Any(p => p.Id == proc.Id)) 
+                                    if (proc == null || proc.HasExited || processes.Any(p => p.Id == proc.Id))
                                         continue;
                                     wowProcess = proc;
                                     break;
@@ -382,7 +382,7 @@ namespace HighVoltz.HBRelog.WoW
                                 Lua = new Lua(WowHook);
                                 UpdateLoginString();
                             }
-                                // hook is installed so lets assume proces is ready for input.
+                            // hook is installed so lets assume proces is ready for input.
                             else if (!_processIsReadyForInput)
                             {
                                 // change window title
@@ -460,11 +460,11 @@ namespace HighVoltz.HBRelog.WoW
             _processIsReadyForInput = StartupSequenceIsComplete = false;
             WowHook = null;
             Lua = null;
-            GameProcess = Process.Start(Settings.WowPath);
+            GameProcess = Process.Start(Settings.WowPath, Settings.WowArgs);
             _wowLoginTimer = new Timer(WowLoginTimerCallBack, null, 0, 10000);
             if (IsUsingLauncher)
             {
-                _launcherProc = GameProcess;
+                _launcherPid = GameProcess.Id;
                 // set GameProcess temporarily to HBRelog because laucher can exit before wow starts 
                 GameProcess = Process.GetCurrentProcess();
             }
@@ -505,7 +505,7 @@ namespace HighVoltz.HBRelog.WoW
             {
                 CloseGameProcess(GameProcess);
             }
-                // handle the "No process is associated with this object' exception while wow process is still 'active'
+            // handle the "No process is associated with this object' exception while wow process is still 'active'
             catch (InvalidOperationException ex)
             {
                 Log.Err(ex.ToString());
@@ -526,25 +526,25 @@ namespace HighVoltz.HBRelog.WoW
                 _windowCloseAttempt++;
                 _wowCloseTimer = new Timer(
                     state =>
+                    {
+                        if (!((Process)state).HasExited)
                         {
-                            if (!((Process) state).HasExited)
-                            {
-                                if (_windowCloseAttempt++ < 6)
-                                    proc.CloseMainWindow();
-                                else
-                                {
-                                    Profile.Log("Killing Wow");
-                                    ((Process) state).Kill();
-                                }
-                            }
+                            if (_windowCloseAttempt++ < 6)
+                                proc.CloseMainWindow();
                             else
                             {
-                                _isExiting = false;
-                                Profile.Log("Successfully closed Wow");
-                                _wowCloseTimer.Dispose();
-                                _windowCloseAttempt = 0;
+                                Profile.Log("Killing Wow");
+                                ((Process)state).Kill();
                             }
-                        },
+                        }
+                        else
+                        {
+                            _isExiting = false;
+                            Profile.Log("Successfully closed Wow");
+                            _wowCloseTimer.Dispose();
+                            _windowCloseAttempt = 0;
+                        }
+                    },
                     proc,
                     1000,
                     1000);
@@ -618,7 +618,7 @@ namespace HighVoltz.HBRelog.WoW
         private void AntiAfk()
         {
             if (WowHook != null)
-                WowHook.Memory.Write(true, Environment.TickCount, (IntPtr) HbRelogManager.Settings.LastHardwareEventOffset);
+                WowHook.Memory.Write(true, Environment.TickCount, (IntPtr)HbRelogManager.Settings.LastHardwareEventOffset);
         }
 
         // credits mnbvc for original version. modified to work with Cata
@@ -650,13 +650,13 @@ namespace HighVoltz.HBRelog.WoW
         {
             if (Memory != null)
             {
-                HbRelogManager.Settings.GameStateOffset = (uint) WoWPatterns.GameStatePattern.Find(Memory);
+                HbRelogManager.Settings.GameStateOffset = (uint)WoWPatterns.GameStatePattern.Find(Memory);
                 Log.Debug("GameState Offset found at 0x{0:X}", HbRelogManager.Settings.GameStateOffset);
-                HbRelogManager.Settings.FrameScriptExecuteOffset = (uint) WoWPatterns.FrameScriptExecutePattern.Find(Memory);
+                HbRelogManager.Settings.FrameScriptExecuteOffset = (uint)WoWPatterns.FrameScriptExecutePattern.Find(Memory);
                 Log.Debug("FrameScriptExecute Offset found at 0x{0:X}", HbRelogManager.Settings.FrameScriptExecuteOffset);
-                HbRelogManager.Settings.LastHardwareEventOffset = (uint) WoWPatterns.LastHardwareEventPattern.Find(Memory);
+                HbRelogManager.Settings.LastHardwareEventOffset = (uint)WoWPatterns.LastHardwareEventPattern.Find(Memory);
                 Log.Debug("LastHardwareEvent Offset found at 0x{0:X}", HbRelogManager.Settings.LastHardwareEventOffset);
-                HbRelogManager.Settings.GlueStateOffset = (uint) WoWPatterns.GlueStatePattern.Find(Memory);
+                HbRelogManager.Settings.GlueStateOffset = (uint)WoWPatterns.GlueStatePattern.Find(Memory);
                 Log.Debug("GlueStateOffset Offset found at 0x{0:X}", HbRelogManager.Settings.GlueStateOffset);
                 HbRelogManager.Settings.WowVersion = GameProcess.VersionString();
                 HbRelogManager.Settings.Save();

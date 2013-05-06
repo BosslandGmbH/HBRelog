@@ -83,22 +83,30 @@ namespace HighVoltz.HBRelog
                 !(NativeMethods.IsWow64Process(proc.Handle, out retVal) && retVal);
         }
 
-        
 
-        public static Process GetChildProcessByName(Process parrent, string processName)
+
+        public static Process GetChildProcessByName(int parentPid, string processName)
         {
             var processes = Process.GetProcessesByName(processName);
-            return processes.FirstOrDefault(process => IsChildProcessOf(parrent, process));
+            return processes.FirstOrDefault(process => IsChildProcessOf(parentPid, process));
         }
 
-        public static bool IsChildProcessOf(Process parent, Process child)
+        public static bool IsChildProcessOf(int parentPid, Process child)
         {
-            while (true)
+            var childPid = child.Id;
+            try
             {
-                var childParrent = NativeMethods.ParentProcessUtilities.GetParentProcess(child.Handle);
-                if (childParrent  == null) return false;
-                if (childParrent.Id == parent.Id) return true;
-                child = childParrent;
+                while (true)
+                {
+                    var childParrentPid = NativeMethods.ParentProcessUtilities.GetParentProcessId(childPid);
+                    if (childParrentPid <= 0) return false;
+                    if (childParrentPid == parentPid) return true;
+                    childPid = childParrentPid;
+                }
+            }
+            catch (Exception)
+            {
+                return false;
             }
         }
 
@@ -142,7 +150,7 @@ namespace HighVoltz.HBRelog
             byte[] cipherBytes = Convert.FromBase64String(clearText);
             using (Aes algorithm = Aes.Create())
             {
-              //  algorithm.Padding = PaddingMode.None;
+                //  algorithm.Padding = PaddingMode.None;
                 using (ICryptoTransform decryptor = algorithm.CreateDecryptor(key, iv))
                 {
                     using (var m = new MemoryStream())
@@ -165,7 +173,7 @@ namespace HighVoltz.HBRelog
 
             using (Aes algorithm = Aes.Create())
             {
-               // algorithm.Padding = PaddingMode.None;
+                // algorithm.Padding = PaddingMode.None;
                 using (ICryptoTransform decryptor = algorithm.CreateEncryptor(key, iv))
                 {
                     using (var m = new MemoryStream())

@@ -246,6 +246,7 @@ namespace HighVoltz.HBRelog.Settings
                     wowSettingsElement.Add(new XElement("ServerName", profile.Settings.WowSettings.ServerName));
                     wowSettingsElement.Add(new XElement("Region", profile.Settings.WowSettings.Region));
                     wowSettingsElement.Add(new XElement("WowPath", profile.Settings.WowSettings.WowPath));
+                    wowSettingsElement.Add(new XElement("WowArgs", profile.Settings.WowSettings.WowArgs));
                     wowSettingsElement.Add(new XElement("WowWindowWidth", profile.Settings.WowSettings.WowWindowWidth));
                     wowSettingsElement.Add(new XElement("WowWindowHeight", profile.Settings.WowSettings.WowWindowHeight));
                     wowSettingsElement.Add(new XElement("WowWindowX", profile.Settings.WowSettings.WowWindowX));
@@ -343,6 +344,7 @@ namespace HighVoltz.HBRelog.Settings
                             profile.Settings.WowSettings.ServerName = GetElementValue<string>(wowSettingsElement.Element("ServerName"));
                             profile.Settings.WowSettings.Region = GetElementValue<WowSettings.WowRegion>(wowSettingsElement.Element("Region"));
                             profile.Settings.WowSettings.WowPath = GetElementValue<string>(wowSettingsElement.Element("WowPath"));
+                            profile.Settings.WowSettings.WowArgs = GetElementValue<string>(wowSettingsElement.Element("WowArgs"));
                             profile.Settings.WowSettings.WowWindowWidth = GetElementValue<int>(wowSettingsElement.Element("WowWindowWidth"));
                             profile.Settings.WowSettings.WowWindowHeight = GetElementValue<int>(wowSettingsElement.Element("WowWindowHeight"));
                             profile.Settings.WowSettings.WowWindowX = GetElementValue<int>(wowSettingsElement.Element("WowWindowX"));

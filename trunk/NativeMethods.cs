@@ -369,6 +369,38 @@ namespace HighVoltz.HBRelog
                 return GetParentProcess(process.Handle);
             }
 
+            public static int GetParentProcessId(int id)
+            {
+                Process process = Process.GetProcessById(id);
+                return GetParentProcessId(process.Handle);
+            }
+            /// <summary>
+            /// Gets the parent process of a specified process.
+            /// </summary>
+            /// <param name="handle">The process handle.</param>
+            /// <returns>An instance of the Process class.</returns>
+            public static int GetParentProcessId(IntPtr handle)
+            {
+                var pbi = new ParentProcessUtilities();
+                int returnLength;
+                int status = NtQueryInformationProcess(handle, 0, ref pbi, Marshal.SizeOf(pbi), out returnLength);
+
+                if (status != 0) // fail silently...
+                    return -1;
+                //throw new Win32Exception(status);
+
+
+                try
+                {
+                    return pbi.InheritedFromUniqueProcessId.ToInt32();
+                }
+                catch (ArgumentException)
+                {
+                    // not found
+                    return -1;
+                }
+            }
+
 
             /// <summary>
             /// Gets the parent process of a specified process.
@@ -377,24 +409,8 @@ namespace HighVoltz.HBRelog
             /// <returns>An instance of the Process class.</returns>
             public static Process GetParentProcess(IntPtr handle)
             {
-                var pbi = new ParentProcessUtilities();
-                int returnLength;
-                int status = NtQueryInformationProcess(handle, 0, ref pbi, Marshal.SizeOf(pbi), out returnLength);
-
-                if (status != 0) // fail silently...
-                    return null;
-                    //throw new Win32Exception(status);
-                    
-
-                try
-                {
-                    return Process.GetProcessById(pbi.InheritedFromUniqueProcessId.ToInt32());
-                }
-                catch (ArgumentException)
-                {
-                    // not found
-                    return null;
-                }
+                var pid = GetParentProcessId(handle);
+                return pid != -1 ? Process.GetProcessById(pid) : null;
             }
         }
 

@@ -32,6 +32,7 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
@@ -67,14 +68,18 @@
                             <ComboBox x:Name="RegionCombo" Grid.Column="1" Grid.Row="6" 
                                       SelectionChanged="RegionCombo_SelectionChanged"
                                       ToolTip="The Wow regional area"/>
-                            <!--WoW Path-->
-                            <TextBlock Text="WoW Path" Grid.Row="7" HorizontalAlignment="Left" Height="20" Margin="5,0,5,0" />
+                            <!--WoW Exe-->
+                            <TextBlock Text="WoW Exe Path" Grid.Row="7" HorizontalAlignment="Left" Height="20" Margin="5,0,5,0" />
                             <Controls:FileInputBox x:Name="WoWFileInput" Grid.Row="7" Grid.Column="1" 
                                                        FileNameChanged="WoWFileInputFileNameChanged"
                                                        Title="Browse to and select your WoW.exe file"
                                                        DefaultExt=".exe" Filter=".exe|*.exe"
                                                        ToolTip="The path to Wow.exe. click the '...' button on the right to browse to it. This can also be a batch file that launches WoW.exe"/>
 
+                            <!--Server Name-->
+                            <TextBlock Text="WoW Args" Grid.Row="8" HorizontalAlignment="Left" Height="20" Margin="5,0,5,0" />
+                            <TextBox x:Name="WoWParms" Grid.Column="1" Grid.Row="8" Text="{Binding Path=WowSettings.WowArgs}"
+                                     ToolTip="Command-line arguments to pass to WoW or launcher (Advanced)"/>
                         </Grid>
                     </ScrollViewer>
                 </Border>
