@@ -30,8 +30,8 @@ namespace HighVoltz.HBRelog.Honorbuddy
 {
     public class HonorbuddyManager : IBotManager
     {
-        private const string HbUpdateUrl = "http://updates.buddywing.com/GetNewest?filter=Honorbuddy";
-        private const string HbBetaUpdateUrl = "http://updates.buddywing.com/GetNewest?filter=HonorbuddyBeta";
+        private const string HbUpdateUrl = "http://updates.buddyauth.com/GetNewest?filter=Honorbuddy";
+        private const string HbBetaUpdateUrl = "http://updates.buddyauth.com/GetNewest?filter=HonorbuddyBeta";
         private const string HbVersionUrl = "http://updates.buddyauth.com/GetVersion?filter=Honorbuddy";
         private const string HbBetaVersionUrl = "http://updates.buddyauth.com/GetVersion?filter=HonorbuddyBeta";
 
