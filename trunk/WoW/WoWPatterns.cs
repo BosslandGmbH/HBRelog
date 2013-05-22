@@ -4,23 +4,15 @@ namespace HighVoltz.HBRelog.WoW
 {
     static public class WoWPatterns
     {
-        static public readonly Pattern GlueStatePattern = Pattern.FromTextstyle("GlueState", "83 3D ? ? ? ? 00 75 11 E8 ? ? ? ? 8B 10 8B C8 8B 82 88 00 00 00 FF E0 C3",
+        static public readonly Pattern GlueStatePattern = Pattern.FromTextstyle("GlueState", "83 3d ?? ?? ?? ?? ?? 75 ?? e8 ?? ?? ?? ?? 8b 10 8b c8 ff a2 88 00 00 00 c3",
             new AddModifier(2), new LeaModifier());
 
-        static public readonly Pattern GameStatePattern = Pattern.FromTextstyle("GameState", "80 3d ?? ?? ?? ?? ?? 0f 85 ?? ?? ?? ?? 56 57 c6 05 ?? ?? ?? ?? ?? e8 ?? ?? ?? ?? 68 ?? ?? ?? ?? 68 ?? ?? ?? ?? 6a 10 52 50 e8 ?? ?? ?? ?? 8b f0 8b 06",
+        static public readonly Pattern GameStatePattern = Pattern.FromTextstyle("GameState", "38 1d ?? ?? ?? ?? 0f 85 ?? ?? ?? ?? 56 57 c6 05 ?? ?? ?? ?? ?? e8 ?? ?? ?? ?? 8b f0 8b 06 8b ce ff 90 2c 01 00 00 3b c3 74",
             new AddModifier(2), new LeaModifier());
 
-        static public readonly Pattern FrameScriptExecutePattern = Pattern.FromTextstyle("FrameScriptExecute", "55 8b ec 83 ec 08 ff 05 ?? ?? ?? ?? a1 ?? ?? ?? ?? 56 8b 35 ?? ?? ?? ?? 57 8b fe 89 7d f8 89 45 fc 74 ?? 83 3d ?? ?? ?? ?? ?? 75 ?? 8b 45 10 a3");
+        static public readonly Pattern FrameScriptExecutePattern = Pattern.FromTextstyle("FrameScriptExecute", "55 8b ec 51 ff 05 ?? ?? ?? ?? a1 ?? ?? ?? ?? 53 56 57 8b 3d ?? ?? ?? ?? 6a 00 89 45 fc be ?? ?? ?? ?? 5b 74 ?? 39 1d ?? ?? ?? ?? 75 ?? 8b 4d 10 89 0d");
 
-        static public readonly Pattern Dx9DevicePattern = Pattern.FromTextstyle("Dx9Device", "55 8B EC 8B 55 0C 8B 0D ? ? ? ? 8B 01 8B 80 ? ? ? ? 52 8B 55 08 52 FF D0 5D C3",
-            new AddModifier(8), new LeaModifier());
-
-        static public readonly Pattern Dx9DeviceInxPattern = Pattern.FromTextstyle("Dx9DeviceInx", "? ? ? ? 8B 08 8B 51 14 50 FF D2 85 C0 ? ? 3D 27 08 76 88 75 24 68 11 11 11 11 6A 00 6A 01");
-
-        static public readonly Pattern LastHardwareEventPattern = Pattern.FromTextstyle("LastHardwareEvent", "A3 ? ? ? ? 8B 87 ? ? ? ? 89 5D E0 89 5D E8 C7 45 DC ? ? ? ? 89 55 F0 89 4D F4 C7 45",
-            new AddModifier(1), new LeaModifier());
-
-        static public readonly Pattern PerformanceCounterPattern = Pattern.FromTextstyle("PerformanceCounter", "2B 15 ? ? ? ? 83 3D ? ? ? ? 00 A3 ? ? ? ? 74 13 8B 0D ? ? ? ? 8B 01 52 8B 50 10",
+        static public readonly Pattern LastHardwareEventPattern = Pattern.FromTextstyle("LastHardwareEvent", "89 0d ?? ?? ?? ?? 85 ff 74 ?? 56 8d 4d d8 e8 ?? ?? ?? ?? 8b 07 8d 4d d8 51 8b cf c7 45 e0 66 00 06 40 ff 90 a4 00 00 00 33 c0 40 eb",
             new AddModifier(2), new LeaModifier());
         
     }
