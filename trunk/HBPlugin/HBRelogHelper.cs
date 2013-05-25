@@ -192,7 +192,7 @@ namespace HighVoltz.HBRelogHelper
             }
             catch ( Exception ex)
             {
-                Logging.WriteException(ex);
+               // Logging.WriteException(ex);
             }
         }
 
