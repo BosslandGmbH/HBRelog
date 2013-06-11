@@ -93,7 +93,7 @@ namespace HighVoltz.HBRelog
                             if (Settings.CheckRealmStatus)
                                 WowRealmStatus.Update();
                             // check for wow error windows
-                            foreach (var process in Process.GetProcessesByName("WowError"))
+                            foreach (var process in Process.GetProcessesByName("BlizzardError"))
                             {
                                 process.Kill();
                                 Log.Write("Killing WowError process");
