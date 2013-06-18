@@ -12,7 +12,6 @@ using HighVoltz.HBRelog.FiniteStateMachine.FiniteStateMachine;
 using HighVoltz.HBRelog.Settings;
 using HighVoltz.HBRelog.WoW.FrameXml;
 using HighVoltz.HBRelog.WoW.States;
-using Test.FrameXml;
 using Test.Lua;
 using Region = HighVoltz.HBRelog.WoW.FrameXml.Region;
 
@@ -101,34 +100,31 @@ namespace HighVoltz.HBRelog.WoW
             States = new List<State> 
             {
                 new StartWowState(this),
-                new InitializeMemoryState(this),
                 new ScanOffsetsState(this),
                 new WowWindowPlacementState(this),
                 new LoginWowState(this),
+                new RealmSelectState(this),
+                new CharacterSelectState(this),
+                new CharacterCreationState(this),
+                new MonitorState(this),
             };
         }
 
         #region Fields
 
         private readonly object _lockObject = new object();
-        private readonly Stopwatch _loggedOutSw = new Stopwatch();
         internal readonly Stopwatch LoginTimer = new Stopwatch();
-        private readonly Stopwatch _wowRespondingSw = new Stopwatch();
 
-        private DateTime _crashTimeStamp = DateTime.Now;
         private bool _isExiting;
         private GlueState _lastGlueStatus = GlueState.None;
-        private DateTime _loggedoutTimeStamp = DateTime.Now;
         private DateTime _throttleTimeStamp = DateTime.Now;
         internal bool ProcessIsReadyForInput;
         private CharacterProfile _profile;
 
         private int _windowCloseAttempt;
         private Timer _wowCloseTimer;
-        private bool _wowIsLoggedOutForTooLong;
 
         internal const int LuaStateGlobalsOffset = 0x50;
-        internal int LauncherPid;
 
         #endregion
 
@@ -141,6 +137,8 @@ namespace HighVoltz.HBRelog.WoW
         public Process GameProcess { get; internal set; }
 
         public LuaTable Globals { get; internal set; }
+
+        public WowLockToken LockToken { get; internal set; }
 
         public IntPtr FocusedWidgetPtr
         {
@@ -177,87 +175,6 @@ namespace HighVoltz.HBRelog.WoW
         public GlueState GlueStatus
         {
             get { return Memory != null ? Memory.Read<GlueState>(true, (IntPtr)HbRelogManager.Settings.GlueStateOffset) : GlueState.Disconnected; }
-        }
-
-        /// <summary>
-        ///     returns false if the WoW user interface is not responsive for 10+ seconds.
-        /// </summary>
-        public bool WoWIsResponding
-        {
-            get
-            {
-                try
-                {
-                    bool isResponding = GameProcess.Responding;
-                    if (GameProcess != null && !GameProcess.HasExited && !GameProcess.Responding)
-                    {
-                        if (!_wowRespondingSw.IsRunning)
-                            _wowRespondingSw.Start();
-                        if (_wowRespondingSw.ElapsedMilliseconds >= 20000)
-                            return false;
-                    }
-                    else if (isResponding && _wowRespondingSw.IsRunning)
-                        _wowRespondingSw.Reset();
-                }
-                catch (InvalidOperationException)
-                {
-                    if (ProcessIsReadyForInput)
-                        return false;
-                }
-                return true;
-            }
-        }
-
-        public bool WowHasCrashed
-        {
-            get
-            {
-                // check for crash every 10 seconds and cache the result
-                if (DateTime.Now - _crashTimeStamp >= TimeSpan.FromSeconds(10))
-                {
-                    try
-                    {
-                        if (GameProcess.HasExited)
-                            return true;
-                        _crashTimeStamp = DateTime.Now;
-                        List<IntPtr> childWinHandles = NativeMethods.EnumerateProcessWindowHandles(GameProcess.Id);
-                        if (childWinHandles.Select(NativeMethods.GetWindowText).Any(caption => caption == "Wow"))
-                        {
-                            return true;
-                        }
-                    }
-                    catch (InvalidOperationException)
-                    {
-                        if (ProcessIsReadyForInput)
-                            return true;
-                    }
-                }
-                return false;
-            }
-        }
-
-        public bool WowIsLoggedOutForTooLong
-        {
-            get
-            {
-                // check for crash every 10 seconds and cache the result
-                if (DateTime.Now - _loggedoutTimeStamp >= TimeSpan.FromSeconds(10))
-                {
-                    if (!InGame)
-                    {
-                        if (!_loggedOutSw.IsRunning)
-                            _loggedOutSw.Start();
-                        _wowIsLoggedOutForTooLong = _loggedOutSw.ElapsedMilliseconds >= 120000;
-                        // reset the timer so it doesn't trigger until 120 more seconds has elapsed while not in game.
-                        if (_wowIsLoggedOutForTooLong)
-                            _loggedOutSw.Reset();
-                    }
-                    else if (_loggedOutSw.IsRunning)
-                        _loggedOutSw.Reset();
-                    _loggedoutTimeStamp = DateTime.Now;
-                }
-                return _wowIsLoggedOutForTooLong;
-            }
         }
 
         internal bool IsUsingLauncher
@@ -300,11 +217,11 @@ namespace HighVoltz.HBRelog.WoW
                     {
                         if (!LoginTimer.IsRunning)
                             LoginTimer.Start();
-                        
+
                         // check once every 40 seconds
                         if (LoginTimer.ElapsedMilliseconds > 40000 && !ServerHasQueue)
-                        {                            
-                            _lastGlueStatus = GlueState.None;                            
+                        {
+                            _lastGlueStatus = GlueState.None;
                             return true;
                         }
                     }
@@ -359,7 +276,7 @@ namespace HighVoltz.HBRelog.WoW
             }
         }
 
-        public bool StartupSequenceIsComplete { get; private set; }
+        public bool StartupSequenceIsComplete { get; internal set; }
         public event EventHandler<ProfileEventArgs> OnStartupSequenceIsComplete;
 
         public void Start()
@@ -384,8 +301,12 @@ namespace HighVoltz.HBRelog.WoW
                 Memory = null;
                 CloseGameProcess();
                 IsRunning = false;
-                LauncherPid = 0;
                 StartupSequenceIsComplete = false;
+                if (LockToken != null)
+                {
+                    LockToken.Dispose();
+                    LockToken = null;
+                }
             }
             if (lockAquried)
                 Monitor.Exit(_lockObject);
@@ -396,58 +317,21 @@ namespace HighVoltz.HBRelog.WoW
             lock (_lockObject)
             {
                 base.Pulse();
-                return;
-                // restart WoW if it has exited
-
-                if (!StartupSequenceIsComplete)
-                {
-                    if (!InGame && !IsConnectiongOrLoading)
-                    {
-                        LoginWoW();
-                    }
-                    // remove hook since its nolonger needed.
-                    if (InGame || IsConnectiongOrLoading)
-                    {
-                        Profile.Log("Login sequence complete");
-                        Profile.Status = "Logged into WoW";
-                        StartupSequenceIsComplete = true;
-                        if (OnStartupSequenceIsComplete != null)
-                            OnStartupSequenceIsComplete(this, new ProfileEventArgs(Profile));
-                    }
-                }
-
-                // if WoW has disconnected or crashed close wow and start the login sequence again.
-
-                if ((StartupSequenceIsComplete && (GlueStatus == GlueState.Disconnected || WowIsLoggedOutForTooLong)) || !WoWIsResponding || WowHasCrashed)
-                {
-                    if (!WoWIsResponding)
-                    {
-                        Profile.Status = "WoW is not responding. restarting";
-                        Profile.Log("WoW is not responding.. So lets restart WoW");
-                    }
-                    else if (WowHasCrashed)
-                    {
-                        Profile.Status = "WoW has crashed. restarting";
-                        Profile.Log("WoW has crashed.. So lets restart WoW");
-                    }
-                    else if (WowIsLoggedOutForTooLong)
-                    {
-                        Profile.Log("Restarting wow because it was logged out for more than 40 seconds");
-                        Profile.Status = "WoW was logged out for too long. restarting";
-                    }
-                    else
-                    {
-                        Profile.Log("WoW has disconnected.. So lets restart WoW");
-                        Profile.Status = "WoW has DCed. restarting";
-                    }
-                    CloseGameProcess();
-                }
             }
         }
 
         #endregion
 
         #region Functions
+
+        public void SetStartupSequenceToComplete()
+        {
+            StartupSequenceIsComplete = true;
+            Profile.Log("Login sequence complete");
+            Profile.Status = "Logged into WoW";
+            if (OnStartupSequenceIsComplete != null)
+                OnStartupSequenceIsComplete(this, new ProfileEventArgs(Profile));
+        }
 
         public void CloseGameProcess()
         {
@@ -501,7 +385,7 @@ namespace HighVoltz.HBRelog.WoW
             }
         }
 
-        internal PointF ConvertWidgetCenterToWin32Coord (Region widget)
+        internal PointF ConvertWidgetCenterToWin32Coord(Region widget)
         {
             var ret = new PointF();
             var gameFullScreenFrame = UIObject.GetUIObjectByName<Frame>(this, "GlueParent") ?? UIObject.GetUIObjectByName<Frame>(this, "UIParent");
@@ -602,27 +486,8 @@ namespace HighVoltz.HBRelog.WoW
             ServerSelection = 6,
             Credits = 7,
             RegionalSelection = 8
-        }
+        }        
 
-        public static class WowStartupManager
-        {
-            private static readonly object LockObject = new object();
-            private static readonly Dictionary<string, DateTime> TimeStamps = new Dictionary<string, DateTime>();
-
-            public static bool CanStart(string path)
-            {
-                string key = path.ToUpper();
-                lock (LockObject)
-                {
-                    if (TimeStamps.ContainsKey(key) && DateTime.Now - TimeStamps[key] < TimeSpan.FromSeconds(HbRelogManager.Settings.WowDelay))
-                    {
-                        return false;
-                    }
-                    TimeStamps[key] = DateTime.Now;
-                }
-                return true;
-            }
-        }
 
         #endregion
     }

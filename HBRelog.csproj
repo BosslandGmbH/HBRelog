@@ -84,6 +84,12 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="WoW\States\CharacterCreationState.cs" />
+    <Compile Include="WoW\States\CharacterSelectState.cs" />
+    <Compile Include="WoW\States\MonitorState.cs" />
+    <Compile Include="WoW\States\RealmSelectState.cs" />
+    <Compile Include="WoW\WowLockToken.cs" />
+    <Compile Include="WoW\ConfigWtf.cs" />
     <EmbeddedResource Include="HBPlugin\HBRelogHelper.cs" />
     <Compile Include="Converters\SpacifierConverter.cs" />
     <Compile Include="Converters\TaskIsRunningConverter.cs" />
@@ -190,13 +196,12 @@
     <Compile Include="WoW\Lua\LuaTValue.cs" />
     <Compile Include="WoW\Lua\LuaType.cs" />
     <Compile Include="WoW\Lua\LuaValue.cs" />
-    <Compile Include="WoW\States\InitializeMemoryState.cs" />
     <Compile Include="WoW\States\LoginWowState.cs" />
     <Compile Include="WoW\States\ScanOffsetsState.cs" />
     <Compile Include="WoW\States\StartWowState.cs" />
     <Compile Include="WoW\States\WowWindowPlacementState.cs" />
-    <Compile Include="WoW\WoWManager.cs" />
-    <Compile Include="WoW\WoWPatterns.cs" />
+    <Compile Include="WoW\WowManager.cs" />
+    <Compile Include="WoW\WowPatterns.cs" />
     <Compile Include="Log.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>

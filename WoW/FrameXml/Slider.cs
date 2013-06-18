@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Windows.Forms;
-using Test.FrameXml;
 
 namespace HighVoltz.HBRelog.WoW.FrameXml
 {

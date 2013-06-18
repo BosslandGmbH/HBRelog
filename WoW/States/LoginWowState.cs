@@ -5,7 +5,6 @@ using System.Text;
 using System.Windows.Forms;
 using HighVoltz.HBRelog.FiniteStateMachine;
 using HighVoltz.HBRelog.WoW.FrameXml;
-using Test.FrameXml;
 using Button = HighVoltz.HBRelog.WoW.FrameXml.Button;
 
 namespace HighVoltz.HBRelog.WoW.States
@@ -21,7 +20,7 @@ namespace HighVoltz.HBRelog.WoW.States
 
         public override int Priority
         {
-            get { return 600; }
+            get { return 700; }
         }
 
         public override bool NeedToRun
@@ -113,7 +112,7 @@ namespace HighVoltz.HBRelog.WoW.States
         bool HandleAccountSelectionDialog()
         {
             const string buttonGroupName = "WoWAccountSelectDialogBackgroundContainerButton";
-            var accountButtons = UIObject.GetUIObjectsOfType<Button>(_wowManager).Where(b => b.IsVisible && b.Name.Contains("WoWAccountSelectDialogBackgroundContainerButton")).ToList();
+            var accountButtons = UIObject.GetUIObjectsOfType<Button>(_wowManager).Where(b => b.IsVisible && b.Name.Contains(buttonGroupName)).ToList();
             if (accountButtons.Any())
             {
                 var wantedAccountButton =

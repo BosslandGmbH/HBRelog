@@ -114,6 +114,11 @@ namespace HighVoltz.HBRelog
         public void Pause()
         {
             Status = "Paused";
+            if (TaskManager.WowManager.LockToken != null && TaskManager.WowManager.LockToken.IsValid)
+            {
+                TaskManager.WowManager.LockToken.ReleaseLock();
+            }
+
             IsPaused = true;
         }
 

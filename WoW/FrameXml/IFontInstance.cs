@@ -1,6 +1,4 @@
-﻿using Test.FrameXml;
-
-namespace HighVoltz.HBRelog.WoW.FrameXml
+﻿namespace HighVoltz.HBRelog.WoW.FrameXml
 {
     public interface IFontInstance
     {

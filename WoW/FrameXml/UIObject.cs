@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using GreyMagic;
-using Test.FrameXml;
 using Test.Lua;
 
 namespace HighVoltz.HBRelog.WoW.FrameXml
