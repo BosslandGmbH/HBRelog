@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Linq;
+using System.Windows.Forms;
 using HighVoltz.HBRelog;
 using System.Collections.Generic;
 using System.Windows.Controls;
@@ -14,6 +16,9 @@ using HighVoltz.HBRelog.Settings;
 using System.Windows.Input;
 using HighVoltz.HBRelog.Converters;
 using System.Collections;
+using DataObject = System.Windows.DataObject;
+using DragDropEffects = System.Windows.DragDropEffects;
+using DragEventArgs = System.Windows.DragEventArgs;
 
 
 namespace HighVoltz.HBRelog.Controls
@@ -103,7 +108,7 @@ namespace HighVoltz.HBRelog.Controls
             if (MainWindow.Instance.AccountGrid.SelectedItem != null)
             {
                 CharacterProfile profile = (CharacterProfile)MainWindow.Instance.AccountGrid.SelectedItem;
-                if (profile.TaskManager.WowManager.WowHook != null)
+                if (profile.TaskManager.WowManager.Memory != null)
                 {
                     var Rect = Utility.GetWindowRect(profile.TaskManager.WowManager.GameProcess.MainWindowHandle);
                     profile.Settings.WowSettings.WowWindowX = Rect.Left;
@@ -194,28 +199,19 @@ namespace HighVoltz.HBRelog.Controls
             if (MainWindow.Instance.AccountGrid.SelectedItem != null)
             {
                 CharacterProfile profile = (CharacterProfile)MainWindow.Instance.AccountGrid.SelectedItem;
-                if (profile.TaskManager.WowManager.WowHook != null)
+                if (profile.TaskManager.WowManager.Memory != null)
                 {
-                    var Rect = Utility.GetWindowRect(profile.TaskManager.WowManager.GameProcess.MainWindowHandle);
-                    int centerX = (Rect.Left + Rect.Right) / 2;
-                    int centerY = (Rect.Top + Rect.Bottom) / 2;
-                    foreach (var screen in System.Windows.Forms.Screen.AllScreens)
+                    var screen = Screen.FromHandle(profile.TaskManager.WowManager.GameProcess.MainWindowHandle);
+                    try
                     {
-                        // Find the monitor that WoW is on.
-                        if (centerX >= screen.Bounds.Left && centerX <= screen.Bounds.Right && centerY >= screen.Bounds.Top && centerY <= screen.Bounds.Bottom)
-                        {
-                            try
-                            {
-                                int denominator = int.Parse(WowWindowRatioText.Text);
-                                profile.Settings.WowSettings.WowWindowWidth = screen.Bounds.Width / denominator;
-                                profile.Settings.WowSettings.WowWindowHeight = screen.Bounds.Height / denominator;
-                                Utility.ResizeAndMoveWindow(profile.TaskManager.WowManager.GameProcess.MainWindowHandle, profile.Settings.WowSettings.WowWindowX,
-                                    profile.Settings.WowSettings.WowWindowY, profile.Settings.WowSettings.WowWindowWidth, profile.Settings.WowSettings.WowWindowHeight);
-                            }
-                            catch { }
-                            break;
-                        }
+                        int denominator = int.Parse(WowWindowRatioText.Text);
+                        profile.Settings.WowSettings.WowWindowWidth = screen.Bounds.Width / denominator;
+                        profile.Settings.WowSettings.WowWindowHeight = screen.Bounds.Height / denominator;
+                        Utility.ResizeAndMoveWindow(profile.TaskManager.WowManager.GameProcess.MainWindowHandle, profile.Settings.WowSettings.WowWindowX,
+                            profile.Settings.WowSettings.WowWindowY, profile.Settings.WowSettings.WowWindowWidth, profile.Settings.WowSettings.WowWindowHeight);
                     }
+                    catch { }
+                   
                 }
             }
         }

@@ -1,17 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows;
 using GreyMagic;
+using HighVoltz.HBRelog.FiniteStateMachine;
+using HighVoltz.HBRelog.FiniteStateMachine.FiniteStateMachine;
 using HighVoltz.HBRelog.Settings;
+using HighVoltz.HBRelog.WoW.FrameXml;
+using HighVoltz.HBRelog.WoW.States;
+using Test.FrameXml;
+using Test.Lua;
+using Region = HighVoltz.HBRelog.WoW.FrameXml.Region;
 
 namespace HighVoltz.HBRelog.WoW
 {
-    public sealed class WowManager : IGameManager
+    public sealed class WowManager : Engine, IGameManager
     {
+        /* 
         private const string AcceptTosEulaLua = @"if TOSFrame and TOSFrame:IsShown() then
             AcceptTOS();
             AcceptEULA();
@@ -84,41 +93,68 @@ namespace HighVoltz.HBRelog.WoW
                      end    
                  end    
              end";
-
-        private readonly object _lockObject = new object();
-        private readonly Stopwatch _loggedOutSw = new Stopwatch();
-        private readonly Stopwatch _serverSelectionSw = new Stopwatch();
-        private readonly Stopwatch _wowRespondingSw = new Stopwatch();
-        private string _charSelectLua;
-        private DateTime _crashTimeStamp = DateTime.Now;
-        private bool _isExiting;
-        private GlueState _lastGlueStatus = GlueState.None;
-        private DateTime _loggedoutTimeStamp = DateTime.Now;
-        private string _loginLua;
-        private DateTime _luaThrottleTimeStamp = DateTime.Now;
-        private bool _processIsReadyForInput;
-        private CharacterProfile _profile;
-        private string _realmSelectLua;
-        private bool _waitingToStart;
-        private int _windowCloseAttempt;
-        private Timer _wowCloseTimer;
-        private bool _wowIsLoggedOutForTooLong;
-        private Timer _wowLoginTimer;
+        */
 
         public WowManager(CharacterProfile profile)
         {
             Profile = profile;
+            States = new List<State> 
+            {
+                new StartWowState(this),
+                new InitializeMemoryState(this),
+                new ScanOffsetsState(this),
+                new WowWindowPlacementState(this),
+                new LoginWowState(this),
+            };
         }
+
+        #region Fields
+
+        private readonly object _lockObject = new object();
+        private readonly Stopwatch _loggedOutSw = new Stopwatch();
+        internal readonly Stopwatch LoginTimer = new Stopwatch();
+        private readonly Stopwatch _wowRespondingSw = new Stopwatch();
+
+        private DateTime _crashTimeStamp = DateTime.Now;
+        private bool _isExiting;
+        private GlueState _lastGlueStatus = GlueState.None;
+        private DateTime _loggedoutTimeStamp = DateTime.Now;
+        private DateTime _throttleTimeStamp = DateTime.Now;
+        internal bool ProcessIsReadyForInput;
+        private CharacterProfile _profile;
+
+        private int _windowCloseAttempt;
+        private Timer _wowCloseTimer;
+        private bool _wowIsLoggedOutForTooLong;
+
+        internal const int LuaStateGlobalsOffset = 0x50;
+        internal int LauncherPid;
+
+        #endregion
+
+        #region Properties
 
         public WowSettings Settings { get; private set; }
 
-        public ExternalProcessReader Memory
+        public ExternalProcessReader Memory { get; internal set; }
+
+        public Process GameProcess { get; internal set; }
+
+        public LuaTable Globals { get; internal set; }
+
+        public IntPtr FocusedWidgetPtr
         {
-            get { return WowHook != null ? WowHook.Memory : null; }
+            get { return Memory == null ? IntPtr.Zero : Memory.Read<IntPtr>((IntPtr)HbRelogManager.Settings.FocusedWidgetOffset, true); }
         }
 
-        public Lua Lua { get; set; }
-        public Hook WowHook { get; private set; }
+        public UIObject FocusedWidget
+        {
+            get
+            {
+                IntPtr widgetAddress = FocusedWidgetPtr;
+                return widgetAddress != IntPtr.Zero ? UIObject.GetUIObjectFromPointer(this, widgetAddress) : null;
+            }
+        }
 
         /// <summary>
         ///     WoW is at the connecting or loading screen
@@ -129,7 +165,7 @@ namespace HighVoltz.HBRelog.WoW
             {
                 try
                 {
-                    return WowHook != null && Memory.Read<byte>(true, ((IntPtr)HbRelogManager.Settings.GameStateOffset + 1)) == 1;
+                    return Memory != null && Memory.Read<byte>(true, ((IntPtr)HbRelogManager.Settings.GameStateOffset + 1)) == 1;
                 }
                 catch
                 {
@@ -140,7 +176,7 @@ namespace HighVoltz.HBRelog.WoW
 
         public GlueState GlueStatus
         {
-            get { return WowHook != null ? Memory.Read<GlueState>(true, (IntPtr)HbRelogManager.Settings.GlueStateOffset) : GlueState.Disconnected; }
+            get { return Memory != null ? Memory.Read<GlueState>(true, (IntPtr)HbRelogManager.Settings.GlueStateOffset) : GlueState.Disconnected; }
         }
 
         /// <summary>
@@ -165,7 +201,7 @@ namespace HighVoltz.HBRelog.WoW
                 }
                 catch (InvalidOperationException)
                 {
-                    if (_processIsReadyForInput)
+                    if (ProcessIsReadyForInput)
                         return false;
                 }
                 return true;
@@ -192,7 +228,7 @@ namespace HighVoltz.HBRelog.WoW
                     }
                     catch (InvalidOperationException)
                     {
-                        if (_processIsReadyForInput)
+                        if (ProcessIsReadyForInput)
                             return true;
                     }
                 }
@@ -224,14 +260,71 @@ namespace HighVoltz.HBRelog.WoW
             }
         }
 
-        private bool IsUsingLauncher
+        internal bool IsUsingLauncher
         {
-            get { return !Path.GetFileName(Settings.WowPath).Equals("Wow.exe", StringComparison.CurrentCultureIgnoreCase); }
+            get
+            {
+                var fileName = Path.GetFileName(Settings.WowPath);
+                return fileName != null && !fileName.Equals("Wow.exe", StringComparison.CurrentCultureIgnoreCase);
+            }
         }
 
-        #region IGameManager Members
+        public bool ServerIsOnline
+        {
+            get { return !HbRelogManager.Settings.CheckRealmStatus || HbRelogManager.WowRealmStatus.RealmIsOnline(Settings.ServerName, Settings.Region); }
+        }
 
-        private int _launcherPid;
+        public bool Throttled
+        {
+            get
+            {
+                var time = DateTime.Now;
+                var ret = time - _throttleTimeStamp < TimeSpan.FromSeconds(HbRelogManager.Settings.LoginDelay);
+                if (!ret)
+                    _throttleTimeStamp = time;
+                return ret;
+            }
+        }
+
+        public bool StalledLogin
+        {
+            get
+            {
+                if (Memory == null)
+                    return false;
+                if (ServerIsOnline)
+                {
+                    GlueState glueStatus = GlueStatus;
+                    // check if at server selection for tooo long.
+                    if (glueStatus == _lastGlueStatus)
+                    {
+                        if (!LoginTimer.IsRunning)
+                            LoginTimer.Start();
+                        
+                        // check once every 40 seconds
+                        if (LoginTimer.ElapsedMilliseconds > 40000 && !ServerHasQueue)
+                        {                            
+                            _lastGlueStatus = GlueState.None;                            
+                            return true;
+                        }
+                    }
+                    else if (LoginTimer.IsRunning)
+                        LoginTimer.Reset();
+                    _lastGlueStatus = glueStatus;
+                }
+                return false;
+            }
+        }
+
+        // todo: implement
+        public bool ServerHasQueue
+        {
+            get { return false; }
+        }
+
+        #endregion
+
+        #region IGameManager Members
 
         public CharacterProfile Profile
         {
@@ -242,8 +335,6 @@ namespace HighVoltz.HBRelog.WoW
                 Settings = value.Settings.WowSettings;
             }
         }
-
-        public Process GameProcess { get; private set; }
 
         public void SetSettings(WowSettings settings)
         {
@@ -259,7 +350,7 @@ namespace HighVoltz.HBRelog.WoW
             {
                 try
                 {
-                    return WowHook != null && Memory.Read<byte>(true, (IntPtr)HbRelogManager.Settings.GameStateOffset) == 1;
+                    return Memory != null && Memory.Read<byte>(true, (IntPtr)HbRelogManager.Settings.GameStateOffset) == 1;
                 }
                 catch
                 {
@@ -268,7 +359,6 @@ namespace HighVoltz.HBRelog.WoW
             }
         }
 
-        public bool IsRunning { get; private set; }
         public bool StartupSequenceIsComplete { get; private set; }
         public event EventHandler<ProfileEventArgs> OnStartupSequenceIsComplete;
 
@@ -279,7 +369,6 @@ namespace HighVoltz.HBRelog.WoW
                 if (File.Exists(Settings.WowPath))
                 {
                     IsRunning = true;
-                    StartWoW();
                 }
                 else
                     MessageBox.Show(string.Format("path to WoW.exe does not exist: {0}", Settings.WowPath));
@@ -292,192 +381,44 @@ namespace HighVoltz.HBRelog.WoW
             bool lockAquried = Monitor.TryEnter(_lockObject, 500);
             if (IsRunning)
             {
-                if (WowHook != null && WowHook.Installed)
-                    WowHook.DisposeHooking();
-                if (_wowLoginTimer != null)
-                    _wowLoginTimer.Dispose();
-                WowHook = null;
+                Memory = null;
                 CloseGameProcess();
                 IsRunning = false;
-                _launcherPid = 0;
+                LauncherPid = 0;
                 StartupSequenceIsComplete = false;
             }
             if (lockAquried)
                 Monitor.Exit(_lockObject);
         }
 
-        public void Pulse()
+        override public void Pulse()
         {
             lock (_lockObject)
             {
-                if (IsRunning)
+                base.Pulse();
+                return;
+                // restart WoW if it has exited
+
+                if (!StartupSequenceIsComplete)
                 {
-                    // restart wow WoW if it has exited
-                    if (GameProcess == null || GameProcess.HasExited)
+                    if (!InGame && !IsConnectiongOrLoading)
                     {
-                        if (_waitingToStart)
-                            Profile.Status = "Waiting to start";
-                        else
-                        {
-                            Profile.Log("WoW process was terminated. Restarting");
-                            Profile.Status = "WoW process was terminated. Restarting";
-                        }
-                        StartWoW();
-                        return;
-                    }
-
-                    if (WowHook == null)
-                    {
-                        // check if a batch file or any .exe besides WoW.exe is used and try to get the child WoW process started by this process.
-                        if (IsUsingLauncher && !Path.GetFileName(GameProcess.MainModule.FileName).Equals("Wow.exe", StringComparison.CurrentCultureIgnoreCase))
-                        {
-                            Process wowProcess = null;
-                            if (_launcherPid > 0)
-                            {
-                                wowProcess = Utility.GetChildProcessByName(_launcherPid, "Wow");
-                            }
-                            else
-                            {
-                                // seems like the launcher process terminated early before we could grab the Game process that it started.. 
-                                // so we just find the 1st game process that's not monitor by HBRelog.
-                                var processes = Process.GetProcessesByName("Wow");
-                                foreach (var characterProfile in HbRelogManager.Settings.CharacterProfiles.Where(c => c.IsRunning && !c.IsPaused))
-                                {
-                                    var proc = characterProfile.TaskManager.WowManager.GameProcess;
-                                    if (proc == null || proc.HasExited || processes.Any(p => p.Id == proc.Id))
-                                        continue;
-                                    wowProcess = proc;
-                                    break;
-                                }
-                            }
-
-                            if (wowProcess == null)
-                            {
-                                Profile.Log("Waiting on external application to start WoW");
-                                Profile.Status = "Waiting on external application to start WoW";
-                                return;
-                            }
-                            GameProcess = wowProcess;
-                        }
-                        // return if wow isn't ready for input.
-                        if (!GameProcess.WaitForInputIdle(0))
-                            return;
-                        WowHook = new Hook(GameProcess);
-                    }
-                    if (!StartupSequenceIsComplete)
-                    {
-                        if (string.IsNullOrEmpty(HbRelogManager.Settings.WowVersion) || !HbRelogManager.Settings.WowVersion.Equals(GameProcess.VersionString()))
-                        {
-                            ScanForOffset();
-                        }
-                        if (!InGame && !IsConnectiongOrLoading)
-                        {
-                            if (!WowHook.Installed)
-                            {
-                                Profile.Log("Installing Endscene hook");
-                                Profile.Status = "Logging into WoW";
-                                // check if we need to scan for offsets
-
-                                WowHook.InstallHook();
-                                Lua = new Lua(WowHook);
-                                UpdateLoginString();
-                            }
-                            // hook is installed so lets assume proces is ready for input.
-                            else if (!_processIsReadyForInput)
-                            {
-                                // change window title
-                                NativeMethods.SetWindowText(GameProcess.MainWindowHandle, string.Format("{0} - ProcID: {1}", Profile.Settings.ProfileName, GameProcess.Id));
-                                // resize and position window.
-                                if (Settings.WowWindowWidth > 0 && Settings.WowWindowHeight > 0)
-                                {
-                                    Profile.Log(
-                                        "Setting Window location to X:{0}, Y:{1} and Size to Width {2}, Height:{3}",
-                                        Settings.WowWindowX,
-                                        Settings.WowWindowY,
-                                        Settings.WowWindowWidth,
-                                        Settings.WowWindowHeight);
-
-                                    Utility.ResizeAndMoveWindow(
-                                        GameProcess.MainWindowHandle, Settings.WowWindowX, Settings.WowWindowY, Settings.WowWindowWidth, Settings.WowWindowHeight);
-                                }
-                                _processIsReadyForInput = true;
-                            }
-                            LoginWoW();
-                        }
+                        LoginWoW();
                     }
                     // remove hook since its nolonger needed.
-                    if (WowHook.Installed && (InGame || IsConnectiongOrLoading) && WowHook != null)
+                    if (InGame || IsConnectiongOrLoading)
                     {
-                        Profile.Log("Login sequence complete. Removing hook");
+                        Profile.Log("Login sequence complete");
                         Profile.Status = "Logged into WoW";
-                        WowHook.DisposeHooking();
                         StartupSequenceIsComplete = true;
                         if (OnStartupSequenceIsComplete != null)
                             OnStartupSequenceIsComplete(this, new ProfileEventArgs(Profile));
                     }
-                    // if WoW has disconnected or crashed close wow and start the login sequence again.
-
-                    if ((StartupSequenceIsComplete && (GlueStatus == GlueState.Disconnected || WowIsLoggedOutForTooLong)) || !WoWIsResponding || WowHasCrashed)
-                    {
-                        if (!WoWIsResponding)
-                        {
-                            Profile.Status = "WoW is not responding. restarting";
-                            Profile.Log("WoW is not responding.. So lets restart WoW");
-                        }
-                        else if (WowHasCrashed)
-                        {
-                            Profile.Status = "WoW has crashed. restarting";
-                            Profile.Log("WoW has crashed.. So lets restart WoW");
-                        }
-                        else if (WowIsLoggedOutForTooLong)
-                        {
-                            Profile.Log("Restarting wow because it was logged out for more than 40 seconds");
-                            Profile.Status = "WoW was logged out for too long. restarting";
-                        }
-                        else
-                        {
-                            Profile.Log("WoW has disconnected.. So lets restart WoW");
-                            Profile.Status = "WoW has DCed. restarting";
-                        }
-                        CloseGameProcess();
-                    }
                 }
-            }
-        }
 
-        #endregion
+                // if WoW has disconnected or crashed close wow and start the login sequence again.
 
-        /// <summary>
-        ///     Starts the WoW process
-        /// </summary>
-        private void StartWoW()
-        {
-            _waitingToStart = !WowStartupManager.CanStart(Settings.WowPath);
-            if (_waitingToStart)
-                return;
-            Profile.Log("starting {0}", Settings.WowPath);
-            Profile.Status = "Starting WoW";
-            _processIsReadyForInput = StartupSequenceIsComplete = false;
-            WowHook = null;
-            Lua = null;
-            GameProcess = Process.Start(Settings.WowPath, Settings.WowArgs);
-            _wowLoginTimer = new Timer(WowLoginTimerCallBack, null, 0, 10000);
-            if (IsUsingLauncher)
-            {
-                _launcherPid = GameProcess.Id;
-                // set GameProcess temporarily to HBRelog because laucher can exit before wow starts 
-                GameProcess = Process.GetCurrentProcess();
-            }
-        }
-
-        private void WowLoginTimerCallBack(object state)
-        {
-            try
-            {
-                // once hook to endscene is removed then we can dispose this timer and check for crashes from the main thread.
-                if (!IsRunning || StartupSequenceIsComplete)
-                    _wowLoginTimer.Dispose();
-                else if (!Profile.IsPaused && (!WoWIsResponding || WowHasCrashed))
+                if ((StartupSequenceIsComplete && (GlueStatus == GlueState.Disconnected || WowIsLoggedOutForTooLong)) || !WoWIsResponding || WowHasCrashed)
                 {
                     if (!WoWIsResponding)
                     {
@@ -489,15 +430,24 @@ namespace HighVoltz.HBRelog.WoW
                         Profile.Status = "WoW has crashed. restarting";
                         Profile.Log("WoW has crashed.. So lets restart WoW");
                     }
+                    else if (WowIsLoggedOutForTooLong)
+                    {
+                        Profile.Log("Restarting wow because it was logged out for more than 40 seconds");
+                        Profile.Status = "WoW was logged out for too long. restarting";
+                    }
+                    else
+                    {
+                        Profile.Log("WoW has disconnected.. So lets restart WoW");
+                        Profile.Status = "WoW has DCed. restarting";
+                    }
                     CloseGameProcess();
-                    _wowLoginTimer.Dispose();
                 }
             }
-            catch (Exception ex)
-            {
-                Log.Err(ex.ToString());
-            }
         }
+
+        #endregion
+
+        #region Functions
 
         public void CloseGameProcess()
         {
@@ -509,8 +459,8 @@ namespace HighVoltz.HBRelog.WoW
             catch (InvalidOperationException ex)
             {
                 Log.Err(ex.ToString());
-                if (WowHook != null)
-                    CloseGameProcess(Process.GetProcessById(WowHook.ProcessId));
+                if (Memory != null)
+                    CloseGameProcess(Process.GetProcessById(Memory.Process.Id));
             }
             //Profile.TaskManager.HonorbuddyManager.CloseBotProcess();
             GameProcess = null;
@@ -551,10 +501,33 @@ namespace HighVoltz.HBRelog.WoW
             }
         }
 
+        internal PointF ConvertWidgetCenterToWin32Coord (Region widget)
+        {
+            var ret = new PointF();
+            var gameFullScreenFrame = UIObject.GetUIObjectByName<Frame>(this, "GlueParent") ?? UIObject.GetUIObjectByName<Frame>(this, "UIParent");
+            if (gameFullScreenFrame == null)
+                return ret;
+            var gameFullScreenFrameRect = gameFullScreenFrame.Rect;
+            var widgetCenter = widget.Center;
+            var windowInfo = Utility.GetWindowInfo(GameProcess.MainWindowHandle);
+            var leftBorderWidth = windowInfo.rcClient.Left - windowInfo.rcWindow.Left;
+            var bottomBorderWidth = windowInfo.rcWindow.Bottom - windowInfo.rcClient.Bottom;
+            var winClientWidth = windowInfo.rcClient.Right - windowInfo.rcClient.Left;
+            var winClientHeight = windowInfo.rcClient.Bottom - windowInfo.rcClient.Top;
+            var xCo = winClientWidth / gameFullScreenFrameRect.Width;
+            var yCo = winClientHeight / gameFullScreenFrameRect.Height;
+
+            ret.X = widgetCenter.X * xCo + leftBorderWidth;
+            ret.Y = widgetCenter.Y * yCo + bottomBorderWidth;
+            // flip the Y coord around because in WoW's UI coord space the Y goes up where as in windows it goes down.
+            ret.Y = windowInfo.rcWindow.Bottom - windowInfo.rcWindow.Top - ret.Y;
+            return ret;
+        }
+
         private void LoginWoW()
         {
             // throttle lua calls.
-            if (DateTime.Now - _luaThrottleTimeStamp >= TimeSpan.FromSeconds(HbRelogManager.Settings.LoginDelay))
+            if (DateTime.Now - _throttleTimeStamp >= TimeSpan.FromSeconds(HbRelogManager.Settings.LoginDelay))
             {
                 bool serverIsOnline = !HbRelogManager.Settings.CheckRealmStatus ||
                                       (HbRelogManager.Settings.CheckRealmStatus && HbRelogManager.WowRealmStatus.RealmIsOnline(Settings.ServerName, Settings.Region));
@@ -565,41 +538,39 @@ namespace HighVoltz.HBRelog.WoW
                     // check if at server selection for tooo long.
                     if (glueStatus == _lastGlueStatus)
                     {
-                        if (!_serverSelectionSw.IsRunning)
-                            _serverSelectionSw.Start();
+                        if (!LoginTimer.IsRunning)
+                            LoginTimer.Start();
                         WowRealmStatus.WowRealmStatusEntry status = HbRelogManager.WowRealmStatus[Settings.ServerName, Settings.Region];
                         bool serverHasQueue = HbRelogManager.Settings.CheckRealmStatus && status != null && status.InQueue;
                         // check once every 40 seconds
-                        if (_serverSelectionSw.ElapsedMilliseconds > 40000 && !serverHasQueue)
+                        if (LoginTimer.ElapsedMilliseconds > 40000 && !serverHasQueue)
                         {
                             Profile.Log("Failed to login wow, lets restart");
                             GameProcess.Kill();
-                            StartWoW();
                             // set to 'None' to prevent an infinite loop if set to 'Disconnected'
                             _lastGlueStatus = GlueState.None;
                             return;
                         }
                     }
-                    else if (_serverSelectionSw.IsRunning)
-                        _serverSelectionSw.Reset();
+                    else if (LoginTimer.IsRunning)
+                        LoginTimer.Reset();
 
-                    AntiAfk();
                     switch (glueStatus)
                     {
                         case GlueState.Disconnected:
                             Profile.Status = "Logging in";
-                            Lua.DoString(_loginLua);
+
                             break;
                         case GlueState.CharacterSelection:
                             Profile.Status = "At Character Selection";
-                            Lua.DoString(_charSelectLua);
+                            //  Lua.DoString(_charSelectLua);
                             break;
                         case GlueState.ServerSelection:
                             Profile.Status = "At Server Selection";
-                            Lua.DoString(_realmSelectLua);
+                            // Lua.DoString(_realmSelectLua);
                             break;
                         case GlueState.CharacterCreation:
-                            Lua.DoString("CharacterCreate_Back()");
+                            // Lua.DoString("CharacterCreate_Back()");
                             break;
                         case GlueState.Updater:
                             Profile.Pause();
@@ -611,59 +582,12 @@ namespace HighVoltz.HBRelog.WoW
                 }
                 else
                     Profile.Status = "Waiting for server to come back online";
-                _luaThrottleTimeStamp = DateTime.Now;
+                _throttleTimeStamp = DateTime.Now;
             }
         }
 
-        private void AntiAfk()
-        {
-            if (WowHook != null)
-                WowHook.Memory.Write(true, Environment.TickCount, (IntPtr)HbRelogManager.Settings.LastHardwareEventOffset);
-        }
 
-        // credits mnbvc for original version. modified to work with Cata
-        // http://www.ownedcore.com/forums/world-of-warcraft/world-of-warcraft-bots-programs/wow-memory-editing/302552-lua-auto-login-final-solution.html
-        // indexes are {0}=BnetEmail, {1}=password, {2}=accountName
-
-        private void UpdateLoginString()
-        {
-            string bnetLogin = Settings.Login.EncodeToUTF8();
-            string accountName = Settings.AcountName;
-            // can only use up to 16 byte passwords.
-            string password = Settings.Password.Length > 16 ? Settings.Password.Substring(0, 16).EncodeToUTF8() : Settings.Password.EncodeToUTF8();
-            string server = Settings.ServerName;
-            string character = Settings.CharacterName;
-            // indexes are 0=BnetEmail, 1=password, 2=accountName, 3=character, 4=server
-            _loginLua = string.Format(LoginLuaFormat, bnetLogin, password, accountName);
-            if (HbRelogManager.Settings.AutoAcceptTosEula)
-                _loginLua = AcceptTosEulaLua + _loginLua;
-            // indexes are {0}=character, {1}=server
-            _charSelectLua = string.Format(CharSelectLuaFormat, character, server);
-            // indexes are {0}=server
-            _realmSelectLua = string.Format(RealmSelectLuaFormat, server);
-        }
-
-        /// <summary>
-        ///     Scans for new memory offsets and saves them in WoWSettings.
-        /// </summary>
-        private void ScanForOffset()
-        {
-            if (Memory != null)
-            {
-                HbRelogManager.Settings.GameStateOffset = (uint)WoWPatterns.GameStatePattern.Find(Memory);
-                Log.Debug("GameState Offset found at 0x{0:X}", HbRelogManager.Settings.GameStateOffset);
-                HbRelogManager.Settings.FrameScriptExecuteOffset = (uint)WoWPatterns.FrameScriptExecutePattern.Find(Memory);
-                Log.Debug("FrameScriptExecute Offset found at 0x{0:X}", HbRelogManager.Settings.FrameScriptExecuteOffset);
-                HbRelogManager.Settings.LastHardwareEventOffset = (uint)WoWPatterns.LastHardwareEventPattern.Find(Memory);
-                Log.Debug("LastHardwareEvent Offset found at 0x{0:X}", HbRelogManager.Settings.LastHardwareEventOffset);
-                HbRelogManager.Settings.GlueStateOffset = (uint)WoWPatterns.GlueStatePattern.Find(Memory);
-                Log.Debug("GlueStateOffset Offset found at 0x{0:X}", HbRelogManager.Settings.GlueStateOffset);
-                HbRelogManager.Settings.WowVersion = GameProcess.VersionString();
-                HbRelogManager.Settings.Save();
-            }
-            else
-                MessageBox.Show("Can not scan for offsets before attaching to process");
-        }
+        #endregion
 
         #region Embeded Types
 

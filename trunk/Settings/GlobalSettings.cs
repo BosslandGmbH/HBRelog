@@ -183,8 +183,10 @@ namespace HighVoltz.HBRelog.Settings
 
         // offsets
         public uint GameStateOffset { get; set; }
-        public uint FrameScriptExecuteOffset { get; set; }
-        public uint LastHardwareEventOffset { get; set; }
+        //public uint FrameScriptExecuteOffset { get; set; }
+        public uint FocusedWidgetOffset { get; set; }
+        public uint LuaStateOffset { get; set; }
+        //public uint LastHardwareEventOffset { get; set; }
         public uint GlueStateOffset { get; set; }
 
         public TimeSpan SaveCompleteTimeSpan
@@ -226,8 +228,10 @@ namespace HighVoltz.HBRelog.Settings
                 root.Add(new XElement("WowVersion", WowVersion));
 
                 root.Add(new XElement("GameStateOffset", GameStateOffset));
-                root.Add(new XElement("FrameScriptExecuteOffset", FrameScriptExecuteOffset));
-                root.Add(new XElement("LastHardwareEventOffset", LastHardwareEventOffset));
+                //root.Add(new XElement("FrameScriptExecuteOffset", FrameScriptExecuteOffset));
+                root.Add(new XElement("FocusedWidgetOffset", FocusedWidgetOffset));
+                root.Add(new XElement("LuaStateOffset", LuaStateOffset));
+                //root.Add(new XElement("LastHardwareEventOffset", LastHardwareEventOffset));
                 root.Add(new XElement("GlueStateOffset", GlueStateOffset));
 
                 var characterProfilesElement = new XElement("CharacterProfiles");
@@ -321,10 +325,13 @@ namespace HighVoltz.HBRelog.Settings
                     settings.MinimizeHbOnStart = GetElementValue(root.Element("MinimizeHbOnStart"), false);
                     settings.AutoAcceptTosEula = GetElementValue(root.Element("AutoAcceptTosEula"), false);
 
-                    settings.GameStateOffset = uint.Parse(root.Element("GameStateOffset").Value);
-                    settings.FrameScriptExecuteOffset = uint.Parse(root.Element("FrameScriptExecuteOffset").Value);
-                    settings.LastHardwareEventOffset = uint.Parse(root.Element("LastHardwareEventOffset").Value);
-                    settings.GlueStateOffset = uint.Parse(root.Element("GlueStateOffset").Value);
+                    settings.GameStateOffset = GetElementValue(root.Element("GameStateOffset"), 0u);
+                    // settings.FrameScriptExecuteOffset = GetElementValue(root.Element("FrameScriptExecuteOffset"), 0u);
+                    settings.FocusedWidgetOffset = GetElementValue(root.Element("FocusedWidgetOffset"), 0u);
+                    settings.LuaStateOffset = GetElementValue(root.Element("LuaStateOffset"), 0u);
+                    //settings.LastHardwareEventOffset = GetElementValue(root.Element("LastHardwareEventOffset"), 0u);
+                    settings.GlueStateOffset = GetElementValue(root.Element("GlueStateOffset"), 0u);
+
                     XElement characterProfilesElement = root.Element("CharacterProfiles");
                     foreach (XElement profileElement in characterProfilesElement.Elements("CharacterProfile"))
                     {
@@ -412,7 +419,7 @@ namespace HighVoltz.HBRelog.Settings
         }
 
         static readonly byte[] Key = new byte[] { 230, 123, 245, 78, 43, 229, 126, 109, 126, 10, 134, 61, 167, 2, 138, 142 };
-        static  readonly byte[] Iv = new byte[] { 113, 110, 177, 211, 193, 101, 36, 36, 52, 12, 51, 73, 61, 42, 239, 236 }; 
+        static readonly byte[] Iv = new byte[] { 113, 110, 177, 211, 193, 101, 36, 36, 52, 12, 51, 73, 61, 42, 239, 236 };
 
         public static GlobalSettings Import(string path)
         {
