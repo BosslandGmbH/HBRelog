@@ -14,9 +14,11 @@ Copyright 2012 HighVoltz
    limitations under the License.
 */
 using System;
+using System.Drawing;
 using System.Security.Cryptography;
 using System.Text;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows.Forms;
 using System.IO;
 using System.Diagnostics;
@@ -83,7 +85,12 @@ namespace HighVoltz.HBRelog
                 !(NativeMethods.IsWow64Process(proc.Handle, out retVal) && retVal);
         }
 
-
+        static public NativeMethods.WindowInfo GetWindowInfo(IntPtr hWnd)
+        {
+            var wi = new NativeMethods.WindowInfo(true);
+            NativeMethods.GetWindowInfo(hWnd, ref wi);
+            return wi;
+        }
 
         public static Process GetChildProcessByName(int parentPid, string processName)
         {
@@ -189,6 +196,172 @@ namespace HighVoltz.HBRelog
                 }
             }
         }
+
+        #region Key and Mouse sending utility functions.
+
+        public static bool SendBackgroundKey(IntPtr hWnd, char key, bool useVmChar = true)
+        {
+            var scanCode = NativeMethods.MapVirtualKey(key, 0);
+            var lParam = (UIntPtr)(0x00000001 | (scanCode << 16));
+            if (useVmChar)
+                return SendMessage(hWnd, NativeMethods.Message.VM_CHAR, key, lParam);
+            return SendMessage(hWnd, NativeMethods.Message.KEY_DOWN, key, lParam) && SendMessage(hWnd, NativeMethods.Message.KEY_UP, key, lParam);
+        }
+
+        public static void SendBackgroundString(IntPtr hWnd, string str, bool downUp = true)
+        {
+            foreach (var chr in str)
+            {
+                SendBackgroundKey(hWnd, chr, downUp);
+            }
+        }
+
+        public static void PostBackgroundKey(IntPtr hWnd, char key, bool useVmChar = true)
+        {
+            var scanCode = NativeMethods.MapVirtualKey(key, 0);
+            var lParam = (UIntPtr)(0x00000001 | (scanCode << 16));
+            if (useVmChar)
+            {
+                PostMessage(hWnd, NativeMethods.Message.VM_CHAR, key, lParam);
+            }
+            else
+            {
+                PostMessage(hWnd, NativeMethods.Message.KEY_DOWN, key, lParam);
+                PostMessage(hWnd, NativeMethods.Message.KEY_UP, key, lParam);
+            }
+        }
+
+        public static void PostBackgroundString(IntPtr hWnd, string str, bool downUp = true)
+        {
+            foreach (var chr in str)
+            {
+                PostBackgroundKey(hWnd, chr);
+            }
+        }
+
+        private static bool SendMessage(IntPtr hWnd, NativeMethods.Message msg, char key, UIntPtr lParam)
+        {
+            for (int cnt = 0; cnt < 4; cnt++)
+            {
+                if (NativeMethods.SendMessage(hWnd, (uint)msg, (IntPtr)key, lParam) != IntPtr.Zero)
+                    continue;
+                return true;
+            }
+            return false;
+        }
+
+        private static void PostMessage(IntPtr hWnd, NativeMethods.Message msg, char key, UIntPtr lParam)
+        {
+            NativeMethods.PostMessage(hWnd, (uint)msg, (IntPtr)key, lParam);
+        }
+
+        private const int SizeOfInput = 28;
+
+        public static void LeftClickAtPos(
+            IntPtr hWnd, int x, int y, bool doubleClick = false, bool restore = true, Func<bool> restoreCondition = null)
+        {
+            var wndBounds = GetWindowRect(hWnd);
+            double fScreenWidth = NativeMethods.GetSystemMetrics(NativeMethods.SystemMetric.SM_CXSCREEN) - 1;
+            double fScreenHeight = NativeMethods.GetSystemMetrics(NativeMethods.SystemMetric.SM_CYSCREEN) - 1;
+            double fx = (wndBounds.Left + x) * (65535.0f / fScreenWidth);
+            double fy = (wndBounds.Top + y) * (65535.0f / fScreenHeight);
+
+            var structInput = new NativeMethods.Input { type = NativeMethods.SendInputEventType.InputMouse };
+            structInput.mkhi.mi.dwFlags = NativeMethods.MouseEventFlags.ABSOLUTE | NativeMethods.MouseEventFlags.MOVE | NativeMethods.MouseEventFlags.LEFTDOWN |
+                                          NativeMethods.MouseEventFlags.LEFTUP;
+            structInput.mkhi.mi.dx = (int)fx;
+            structInput.mkhi.mi.dy = (int)fy;
+
+            var forefroundWindow = NativeMethods.GetForegroundWindow();
+
+            if (restore)
+                SaveForegroundWindowAndMouse();
+            try
+            {
+                NativeMethods.BlockInput(true);
+
+                for (int num = 0; forefroundWindow != hWnd && num < 1000; num++)
+                {
+                    NativeMethods.SetForegroundWindow(hWnd);
+                    Thread.Sleep(1);
+                    forefroundWindow = NativeMethods.GetForegroundWindow();
+                }
+
+                NativeMethods.SendInput(1, ref structInput, SizeOfInput);
+                if (doubleClick)
+                {
+                    Thread.Sleep(100);
+                    NativeMethods.SendInput(1, ref structInput, SizeOfInput);
+                }
+            }
+            finally
+            {
+                if (restore)
+                {
+                    try
+                    {
+                        if (restoreCondition != null)
+                        {
+                            while (!restoreCondition())
+                                Thread.Sleep(1);
+                        }
+                        else
+                        {
+                            Thread.Sleep(100);
+                        }
+                        RestoreForegroundWindowAndMouse();
+                    }
+                    catch { }
+                }
+                NativeMethods.BlockInput(false);
+            }
+        }
+
+        /// <summary>
+        /// Sleeps until condition becomes true or after timeout has been reached.
+        /// </summary>
+        /// <param name="condition">The until condition.</param>
+        /// <param name="maxSleepTime">The max sleep time.</param>
+        /// <returns>returns true if condition returned true before reaching timeout</returns>
+        public static bool SleepUntil(Func<bool> condition, TimeSpan maxSleepTime)
+        {
+            var sleepStart = DateTime.Now;
+            bool timeOut = false;
+            while (!condition() && (timeOut = DateTime.Now - sleepStart >= maxSleepTime) == false )
+                Thread.Sleep(10);
+            return !timeOut;
+        }
+
+        private static IntPtr _originalForegroundWindow;
+        private static Point _originalMousePos;
+        public static void SaveForegroundWindowAndMouse()
+        {
+            _originalForegroundWindow = NativeMethods.GetForegroundWindow();
+            NativeMethods.GetCursorPos(out _originalMousePos);
+        }
+
+        public static void RestoreForegroundWindowAndMouse()
+        {
+            var forefroundWindow = NativeMethods.GetForegroundWindow();
+            for (int num = 0; forefroundWindow != _originalForegroundWindow && num < 1000; num++)
+            {
+                if (!NativeMethods.SetForegroundWindow(_originalForegroundWindow))
+                    break;
+                Thread.Sleep(1);
+                forefroundWindow = NativeMethods.GetForegroundWindow();
+            }
+
+            var structInput = new NativeMethods.Input { type = NativeMethods.SendInputEventType.InputMouse };
+            double fScreenWidth = NativeMethods.GetSystemMetrics(NativeMethods.SystemMetric.SM_CXSCREEN) - 1;
+            double fScreenHeight = NativeMethods.GetSystemMetrics(NativeMethods.SystemMetric.SM_CYSCREEN) - 1;
+
+            structInput.mkhi.mi.dwFlags = NativeMethods.MouseEventFlags.ABSOLUTE | NativeMethods.MouseEventFlags.MOVE;
+            structInput.mkhi.mi.dx = (int)(_originalMousePos.X * (65535.0f / fScreenWidth));
+            structInput.mkhi.mi.dy = (int)(_originalMousePos.Y * (65535.0f / fScreenHeight));
+            NativeMethods.SendInput(1, ref structInput, SizeOfInput);
+        }
+
+        #endregion
 
     }
 }
