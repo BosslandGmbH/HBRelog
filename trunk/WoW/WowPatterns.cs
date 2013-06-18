@@ -2,7 +2,7 @@
 
 namespace HighVoltz.HBRelog.WoW
 {
-    public static class WoWPatterns
+    public static class WowPatterns
     {
         public static readonly Pattern GlueStatePattern = Pattern.FromTextstyle(
             "GlueState", "83 3d ?? ?? ?? ?? ?? 75 ?? e8 ?? ?? ?? ?? 8b 10 8b c8 ff a2 88 00 00 00 c3", new AddModifier(2), new LeaModifier());

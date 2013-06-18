@@ -1,5 +1,4 @@
 ﻿using System;
-using Test.FrameXml;
 
 namespace HighVoltz.HBRelog.WoW.FrameXml
 {

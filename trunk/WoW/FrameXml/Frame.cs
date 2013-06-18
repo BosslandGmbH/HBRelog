@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Test.FrameXml;
 
 namespace HighVoltz.HBRelog.WoW.FrameXml
 {

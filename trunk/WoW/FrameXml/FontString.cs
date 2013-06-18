@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using HighVoltz.HBRelog.WoW;
-using HighVoltz.HBRelog.WoW.FrameXml;
 
-namespace Test.FrameXml
+namespace HighVoltz.HBRelog.WoW.FrameXml
 {
     public class FontString : VisibleRegion, IFontInstance
     {

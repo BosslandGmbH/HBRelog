@@ -2,7 +2,6 @@
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using Test.FrameXml;
 
 namespace HighVoltz.HBRelog.WoW.FrameXml
 {
