@@ -27,6 +27,8 @@ namespace HighVoltz.HBRelog.WoW.States
 
         public override void Run()
         {
+            if (_wowManager.Throttled)
+                return;
         }
     }
 }

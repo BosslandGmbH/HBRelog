@@ -31,6 +31,8 @@ namespace HighVoltz.HBRelog.WoW.States
 
         public override void Run()
         {
+            if (_wowManager.Throttled)
+                return;
             if (ShouldChangeRealm)
             {
                 ChangeRealm();
@@ -53,7 +55,7 @@ namespace HighVoltz.HBRelog.WoW.States
             if (!characterNames.Any())
                 return false;
 
-            var charName = _wowManager.Profile.Settings.WowSettings.CharacterName;
+            var charName = _wowManager.Settings.CharacterName;
             var wantedCharIndex =
                 characterNames.FindIndex(n => string.Equals(n, charName, StringComparison.InvariantCultureIgnoreCase)) + 1;
 
@@ -92,7 +94,7 @@ namespace HighVoltz.HBRelog.WoW.States
                 var realmName = UIObject.GetUIObjectByName<FontString>(_wowManager, "AccountLoginRealmName");
                 if (realmName == null || !realmName.IsVisible)
                     return false;
-                return !string.Equals(realmName.Text, _wowManager.Profile.Settings.WowSettings.ServerName, StringComparison.InvariantCultureIgnoreCase);
+                return !string.Equals(realmName.Text, _wowManager.Settings.ServerName, StringComparison.InvariantCultureIgnoreCase);
             }
         }
 

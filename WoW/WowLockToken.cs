@@ -134,7 +134,7 @@ namespace HighVoltz.HBRelog.WoW
 
         private void AdjustWoWConfig()
         {
-            var wowFolder = Path.GetDirectoryName(_lockOwner.Profile.Settings.WowSettings.WowPath);
+            var wowFolder = Path.GetDirectoryName(_lockOwner.Settings.WowPath);
             var configPath = Path.Combine(wowFolder, @"Wtf\Config.wtf");
             if (!File.Exists(configPath))
             {
@@ -142,14 +142,14 @@ namespace HighVoltz.HBRelog.WoW
                 return;
             }
             var config = new ConfigWtf(_lockOwner, configPath);
-            config.EnsureValue("realmName", _lockOwner.Profile.Settings.WowSettings.ServerName);
+            config.EnsureValue("realmName", _lockOwner.Settings.ServerName);
             if (HbRelogManager.Settings.AutoAcceptTosEula)
             {
                 config.EnsureValue("readTOS", "1");
                 config.EnsureValue("readEULA", "1");
             }
-            config.EnsureValue("accountName", _lockOwner.Profile.Settings.WowSettings.Login);
-            config.EnsureAccountList(_lockOwner.Profile.Settings.WowSettings.AcountName);
+            config.EnsureValue("accountName", _lockOwner.Settings.Login);
+            config.EnsureAccountList(_lockOwner.Settings.AcountName);
             if (config.Changed)
             {
                 config.Save();
