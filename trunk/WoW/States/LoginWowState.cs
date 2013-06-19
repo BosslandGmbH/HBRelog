@@ -122,8 +122,8 @@ namespace HighVoltz.HBRelog.WoW.States
                     _wowManager.Profile.Log("Account name not found. Double check spelling");
                     return false;
                 }
-                var buttonIndex = int.Parse(wantedAccountButton.Name.Substring(buttonGroupName.Length));
-                // get current selected index from global variable CURRENT_SELECTED_WOW_ACCOUNT
+                var buttonIndex = wantedAccountButton.Id;
+
                 var currentIndex = SelectedAccountIndex;
 
                 if (buttonIndex != currentIndex)
@@ -141,7 +141,18 @@ namespace HighVoltz.HBRelog.WoW.States
 
         int SelectedAccountIndex
         {
-            get { return (int)_wowManager.Globals.GetValue("CURRENT_SELECTED_WOW_ACCOUNT").Value.Number; }
+            get
+            {
+                for (int i = 1; i <= 8; i++)
+                {
+                    var highlightName = string.Format("WoWAccountSelectDialogBackgroundContainerButton{0}BGHighlight", i);
+                    var tex = UIObject.GetUIObjectByName<Texture>(_wowManager, highlightName);
+                    if (tex != null && tex.IsVisible)
+                        return i;
+                }
+                return -1;
+                //return (int)_wowManager.Globals.GetValue("CURRENT_SELECTED_WOW_ACCOUNT").Value.Number;
+            }
         }
 
         bool EnterTextInEditBox(string editBoxName, string text)
