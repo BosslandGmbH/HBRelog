@@ -43,10 +43,12 @@ namespace HighVoltz.HBRelog.WoW.States
         {
             // CharSelectCharacterButton5ButtonTextName
             const string groupName = "ButtonTextName";
-            var characterNames = UIObject.GetUIObjectsOfType<FontString>(_wowManager).Where(b => b.IsVisible && b.Name.Contains(groupName))
-                .OrderBy(fs => fs.Name)
-                .Select(fs => fs.Text)
-                .ToList();
+            var characterNames =
+                UIObject.GetUIObjectsOfType<FontString>(_wowManager)
+                        .Where(b => b.IsVisible && b.Name.Contains(groupName))
+                        .OrderBy(fs => ((Button)((Frame)fs.Parent).Parent).Id)
+                        .Select(fs => fs.Text)
+                        .ToList();
 
             if (!characterNames.Any())
                 return false;

@@ -32,6 +32,8 @@ namespace HighVoltz.HBRelog.WoW.States
             if (!_wowManager.StartupSequenceIsComplete)
             {
                 _wowManager.SetStartupSequenceToComplete();
+                _loggedOutSw.Reset();
+                _wowIsLoggedOutForTooLong = false;
             }
 
             var trouble = FindTrouble();
@@ -125,7 +127,7 @@ namespace HighVoltz.HBRelog.WoW.States
             get
             {
                 // check for crash every 10 seconds and cache the result
-                if (DateTime.Now - _loggedoutTimeStamp >= TimeSpan.FromSeconds(10))
+                if (DateTime.Now - _loggedoutTimeStamp >= TimeSpan.FromSeconds(5))
                 {
                     if (!_wowManager.InGame)
                     {
