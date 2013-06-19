@@ -49,7 +49,7 @@ namespace HighVoltz.HBRelog.Remoting
 
 namespace HighVoltz.HBRelogHelper
 {
-    public class HBRelogHelper 
+    public class HBRelogHelper :HBPlugin
     {
         static public bool IsConnected { get; private set; }
         static internal IRemotingApi HBRelogRemoteApi { get; private set; }
@@ -196,35 +196,35 @@ namespace HighVoltz.HBRelogHelper
             }
         }
 
-        //public override string Author
-        //{
-        //    get { return "HighVoltz"; }
-        //}
+        public override string Author
+        {
+            get { return "HighVoltz"; }
+        }
 
-        //public override string Name
-        //{
-        //    get { return "HBRelogHelper"; }
-        //}
+        public override string Name
+        {
+            get { return "HBRelogHelper"; }
+        }
 
-        //public override void Pulse()
-        //{
-        //}
+        public override void Pulse()
+        {
+        }
 
-        //public override Version Version
-        //{
-        //    get { return new Version(1, 0); }
-        //}
+        public override Version Version
+        {
+            get { return new Version(1, 0); }
+        }
 
-        //public override bool WantButton { get { return false; } }
-        //public override void OnButtonPress()
-        //{
-        //    Logging.Write("IsConnected: {0}", IsConnected);
-        //    foreach (string name in HBRelogRemoteApi.GetProfileNames())
-        //    {
-        //        Logging.Write("{1}: GetProfileStatus: {0}", HBRelogRemoteApi.GetProfileStatus(name), name);
-        //        HBRelogRemoteApi.SetProfileStatusText(HbProcId, TreeRoot.StatusText);
-        //    }
-        //}
+        public override bool WantButton { get { return false; } }
+        public override void OnButtonPress()
+        {
+            Logging.Write("IsConnected: {0}", IsConnected);
+            foreach (string name in HBRelogRemoteApi.GetProfileNames())
+            {
+                Logging.Write("{1}: GetProfileStatus: {0}", HBRelogRemoteApi.GetProfileStatus(name), name);
+                HBRelogRemoteApi.SetProfileStatusText(HbProcId, TreeRoot.StatusText);
+            }
+        }
     }
     static public class HBRelogApi
     {
