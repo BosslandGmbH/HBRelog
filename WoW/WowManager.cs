@@ -61,7 +61,19 @@ namespace HighVoltz.HBRelog.WoW
 
         public Process GameProcess { get; internal set; }
 
-        public LuaTable Globals { get; internal set; }
+        private LuaTable _globals;
+        public LuaTable Globals
+        {
+            get
+            {
+                if (Memory == null)
+                    return null;
+                var globalsOffset = Memory.Read<IntPtr>(true, (IntPtr)HbRelogManager.Settings.LuaStateOffset, (IntPtr)LuaStateGlobalsOffset);
+                if (_globals == null || _globals.Address != globalsOffset)
+                    _globals = new LuaTable(Memory, globalsOffset);
+                return _globals;
+            }
+        }
 
         public WowLockToken LockToken { get; internal set; }
 
@@ -144,7 +156,7 @@ namespace HighVoltz.HBRelog.WoW
                             LoginTimer.Start();
 
                         // check once every 40 seconds
-                        if (LoginTimer.ElapsedMilliseconds > 40000 )
+                        if (LoginTimer.ElapsedMilliseconds > 40000)
                         {
                             _lastGlueStatus = GlueState.None;
                             return true;
@@ -358,7 +370,7 @@ namespace HighVoltz.HBRelog.WoW
             ServerSelection = 6,
             Credits = 7,
             RegionalSelection = 8
-        }        
+        }
 
 
         #endregion

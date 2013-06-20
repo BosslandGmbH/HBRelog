@@ -25,7 +25,7 @@ namespace HighVoltz.HBRelog.WoW.States
 
         public override bool NeedToRun
         {
-            get { return !_wowManager.StartupSequenceIsComplete && !_wowManager.InGame && !_wowManager.IsConnectiongOrLoading && _wowManager.GlueStatus == WowManager.GlueState.Disconnected; }
+            get { return !_wowManager.StartupSequenceIsComplete && !_wowManager.InGame  && _wowManager.GlueStatus == WowManager.GlueState.Disconnected; }
         }
 
         public override void Run()
@@ -52,7 +52,7 @@ namespace HighVoltz.HBRelog.WoW.States
             if (!HandleAccountSelectionDialog())
                 return;
 
-            if (IsConnecting)
+            if (_wowManager.IsConnectiongOrLoading || IsConnecting)
             {
                 _wowManager.Profile.Log("Connecting...");
                 return;
