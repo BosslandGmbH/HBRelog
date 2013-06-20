@@ -134,7 +134,7 @@ namespace HighVoltz.HBRelog.WoW
             {
                 if (Memory == null)
                     return false;
-                if (ServerIsOnline)
+                if (ServerIsOnline && !ServerHasQueue)
                 {
                     GlueState glueStatus = GlueStatus;
                     // check if at server selection for tooo long.
@@ -144,7 +144,7 @@ namespace HighVoltz.HBRelog.WoW
                             LoginTimer.Start();
 
                         // check once every 40 seconds
-                        if (LoginTimer.ElapsedMilliseconds > 40000 && !ServerHasQueue)
+                        if (LoginTimer.ElapsedMilliseconds > 40000 )
                         {
                             _lastGlueStatus = GlueState.None;
                             return true;
@@ -158,10 +158,20 @@ namespace HighVoltz.HBRelog.WoW
             }
         }
 
-        // todo: implement
         public bool ServerHasQueue
         {
-            get { return false; }
+            get
+            {
+                if (InGame)
+                    return false;
+                var button = UIObject.GetUIObjectByName<Button>(this, "GlueDialogButton1");
+                if (button != null && button.IsVisible)
+                {
+                    var localizedChangeRealmText = Globals.GetValue("CHANGE_REALM").String.Value;
+                    return button.Text == localizedChangeRealmText;
+                }
+                return false;
+            }
         }
 
         #endregion

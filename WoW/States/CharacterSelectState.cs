@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using HighVoltz.HBRelog.FiniteStateMachine;
 using HighVoltz.HBRelog.WoW.FrameXml;
@@ -29,10 +30,31 @@ namespace HighVoltz.HBRelog.WoW.States
             get { return !_wowManager.StartupSequenceIsComplete && !_wowManager.InGame && !_wowManager.IsConnectiongOrLoading && _wowManager.GlueStatus == WowManager.GlueState.CharacterSelection; }
         }
 
+        private Regex _exp;
+
         public override void Run()
         {
             if (_wowManager.Throttled)
                 return;
+
+            if (_wowManager.ServerHasQueue)
+            {
+                if (_exp == null)
+                {
+                    var pattern = string.Format("^{0}$", _wowManager.Globals.GetValue("QUEUE_NAME_TIME_LEFT").String.Value);
+                    pattern = pattern.Replace("%d", @"\d*").Replace("%s", @"\w+");
+                    _exp = new Regex(pattern);
+                }
+                var glueDialogTextContol = UIObject.GetUIObjectByName<FontString>(_wowManager, "GlueDialogText");
+                if (glueDialogTextContol != null)
+                {
+                    var match =_exp.Match(glueDialogTextContol.Text);
+                    if (match.Success)
+                        _wowManager.Profile.Status = match.Value.Replace("\n", ". ");
+                }
+                return;
+            }
+
             if (ShouldChangeRealm)
             {
                 ChangeRealm();
@@ -65,7 +87,7 @@ namespace HighVoltz.HBRelog.WoW.States
                 _wowManager.Profile.Log("Character name not found. Double check spelling");
                 return false;
             }
-            
+
             // get current selected index from global variable CURRENT_SELECTED_WOW_ACCOUNT
             var currentIndex = SelectedCharacterIndex;
 
@@ -84,7 +106,7 @@ namespace HighVoltz.HBRelog.WoW.States
         // 1-based.
         int SelectedCharacterIndex
         {
-            get { return (int) _wowManager.Globals.GetValue("CharacterSelect").Table.GetValue("selectedIndex").Number; }
+            get { return (int)_wowManager.Globals.GetValue("CharacterSelect").Table.GetValue("selectedIndex").Number; }
         }
 
         bool ShouldChangeRealm
