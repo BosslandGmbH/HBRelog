@@ -25,9 +25,9 @@ namespace HighVoltz.HBRelog.WoW.States
         {
             get
             {
-                return !_wowManager.StartupSequenceIsComplete &&
-                       (string.IsNullOrEmpty(HbRelogManager.Settings.WowVersion) 
-                       || !HbRelogManager.Settings.WowVersion.Equals(_wowManager.GameProcess.VersionString()) 
+                return !_wowManager.StartupSequenceIsComplete && _wowManager.Memory != null &&
+                       (string.IsNullOrEmpty(HbRelogManager.Settings.WowVersion)
+                       || !HbRelogManager.Settings.WowVersion.Equals(_wowManager.GameProcess.VersionString())
                        || HbRelogManager.Settings.GlueStateOffset == 0
                        || HbRelogManager.Settings.GameStateOffset == 0
                        || HbRelogManager.Settings.FocusedWidgetOffset == 0
@@ -37,25 +37,20 @@ namespace HighVoltz.HBRelog.WoW.States
 
         public override void Run()
         {
-            if (_wowManager.Memory != null)
-            {
-                HbRelogManager.Settings.GameStateOffset = (uint)WowPatterns.GameStatePattern.Find(_wowManager.Memory);
-                Log.Debug("GameState Offset found at 0x{0:X}", HbRelogManager.Settings.GameStateOffset);
+            HbRelogManager.Settings.GameStateOffset = (uint)WowPatterns.GameStatePattern.Find(_wowManager.Memory);
+            Log.Debug("GameState Offset found at 0x{0:X}", HbRelogManager.Settings.GameStateOffset);
 
-                HbRelogManager.Settings.LuaStateOffset = (uint)WowPatterns.LuaStatePattern.Find(_wowManager.Memory);
-                Log.Debug("LuaState Offset found at 0x{0:X}", HbRelogManager.Settings.LuaStateOffset);
+            HbRelogManager.Settings.LuaStateOffset = (uint)WowPatterns.LuaStatePattern.Find(_wowManager.Memory);
+            Log.Debug("LuaState Offset found at 0x{0:X}", HbRelogManager.Settings.LuaStateOffset);
 
-                HbRelogManager.Settings.FocusedWidgetOffset = (uint)WowPatterns.FocusedWidgetPattern.Find(_wowManager.Memory);
-                Log.Debug("FocusedWidget Offset found at 0x{0:X}", HbRelogManager.Settings.FocusedWidgetOffset);
+            HbRelogManager.Settings.FocusedWidgetOffset = (uint)WowPatterns.FocusedWidgetPattern.Find(_wowManager.Memory);
+            Log.Debug("FocusedWidget Offset found at 0x{0:X}", HbRelogManager.Settings.FocusedWidgetOffset);
 
-                HbRelogManager.Settings.GlueStateOffset = (uint)WowPatterns.GlueStatePattern.Find(_wowManager.Memory);
-                Log.Debug("GlueStateOffset Offset found at 0x{0:X}", HbRelogManager.Settings.GlueStateOffset);
+            HbRelogManager.Settings.GlueStateOffset = (uint)WowPatterns.GlueStatePattern.Find(_wowManager.Memory);
+            Log.Debug("GlueStateOffset Offset found at 0x{0:X}", HbRelogManager.Settings.GlueStateOffset);
 
-                HbRelogManager.Settings.WowVersion = _wowManager.GameProcess.VersionString();
-                HbRelogManager.Settings.Save();
-            }
-            else
-                MessageBox.Show("Can not scan for offsets before attaching to process");
+            HbRelogManager.Settings.WowVersion = _wowManager.GameProcess.VersionString();
+            HbRelogManager.Settings.Save();
         }
     }
 }

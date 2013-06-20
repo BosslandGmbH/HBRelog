@@ -33,12 +33,18 @@ namespace HighVoltz.HBRelog.WoW.States
             if (_wowManager.LockToken == null || !_wowManager.LockToken.IsValid)
                 _wowManager.LockToken = WowLockToken.RequestLock(_wowManager, out reason);
 
-            if (_wowManager.LockToken == null )
+            if (_wowManager.LockToken == null)
             {
                 _wowManager.Profile.Status = reason;
                 return;
             }
-            _wowManager.LockToken.StartWoW();
+            if (_wowManager.ServerIsOnline)
+                _wowManager.LockToken.StartWoW();
+            else
+            {
+                _wowManager.Profile.Status = string.Format("{0} is offline", _wowManager.Settings.ServerName);
+                _wowManager.Profile.Log("Server is offline");
+            }
         }
 
     }

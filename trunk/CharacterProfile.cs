@@ -139,12 +139,18 @@ namespace HighVoltz.HBRelog
             IsPaused = false;
         }
 
+        private string _lastLog;
         public void Log(string format, params object[] args)
         {
+            var msg = string.Format(format, args);
+            if (msg == _lastLog)
+                return;
+            _lastLog = msg;
+
             if (HbRelogManager.Settings.UseDarkStyle)
-                HBRelog.Log.Write(Colors.LightBlue, Settings.ProfileName + ": ", Colors.LightGreen, format, args);
+                HBRelog.Log.Write(Colors.LightBlue, Settings.ProfileName + ": ", Colors.LightGreen, "{0}", msg);
             else
-                HBRelog.Log.Write(Colors.DarkSlateBlue, Settings.ProfileName + ": ", Colors.DarkGreen, format, args);
+                HBRelog.Log.Write(Colors.DarkSlateBlue, Settings.ProfileName + ": ", Colors.DarkGreen, "{0}", msg);
         }
 
         public void Err(string format, params object[] args)

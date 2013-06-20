@@ -48,10 +48,11 @@ namespace HighVoltz.HBRelog.WoW.States
                 var glueDialogTextContol = UIObject.GetUIObjectByName<FontString>(_wowManager, "GlueDialogText");
                 if (glueDialogTextContol != null)
                 {
-                    var match =_exp.Match(glueDialogTextContol.Text);
+                    var match = _exp.Match(glueDialogTextContol.Text);
                     if (match.Success)
                         _wowManager.Profile.Status = match.Value.Replace("\n", ". ");
                 }
+                _wowManager.Profile.Log("Waiting in server queue");
                 return;
             }
 
@@ -113,10 +114,19 @@ namespace HighVoltz.HBRelog.WoW.States
         {
             get
             {
-                var realmName = UIObject.GetUIObjectByName<FontString>(_wowManager, "AccountLoginRealmName");
-                if (realmName == null || !realmName.IsVisible)
+                var realmName = CurrentRealmName;
+                if (string.IsNullOrEmpty(realmName))
                     return false;
-                return !string.Equals(realmName.Text, _wowManager.Settings.ServerName, StringComparison.InvariantCultureIgnoreCase);
+                return !string.Equals(realmName, _wowManager.Settings.ServerName, StringComparison.InvariantCultureIgnoreCase);
+            }
+        }
+
+        string CurrentRealmName
+        {
+            get
+            {
+                var realmName = UIObject.GetUIObjectByName<FontString>(_wowManager, "AccountLoginRealmName");
+                return realmName != null && realmName.IsVisible ? realmName.Text : string.Empty;
             }
         }
 
@@ -128,6 +138,7 @@ namespace HighVoltz.HBRelog.WoW.States
             var changeRealmButton = UIObject.GetUIObjectByName<Button>(_wowManager, "CharSelectChangeRealmButton");
             var clickPos = _wowManager.ConvertWidgetCenterToWin32Coord(changeRealmButton);
             Utility.LeftClickAtPos(_wowManager.GameProcess.MainWindowHandle, (int)clickPos.X, (int)clickPos.Y);
+            _wowManager.Profile.Log("Changing server.");
             _realmChangeSw.Restart();
         }
 

@@ -33,6 +33,7 @@ namespace HighVoltz.HBRelog.WoW.States
             if (characterCreateFrame != null && characterCreateFrame.IsVisible)
             {
                 Utility.SendBackgroundKey(_wowManager.GameProcess.MainWindowHandle, (char) Keys.Escape, false);
+                _wowManager.Profile.Log("Pressing 'esc' key to exit character creation screen");
             }
         }
     }

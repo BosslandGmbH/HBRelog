@@ -32,11 +32,7 @@ namespace HighVoltz.HBRelog.WoW.States
         {
             if (_wowManager.Throttled)
                 return;
-            if (!_wowManager.ServerIsOnline)
-            {
-                _wowManager.Profile.Status = "Waiting for server to come back online";
-                return;
-            }
+
             if (_wowManager.StalledLogin)
             {
                 _wowManager.Profile.Log("Failed to login wow, lets restart");
@@ -47,6 +43,7 @@ namespace HighVoltz.HBRelog.WoW.States
             //  press 'Enter' key if popup dialog with an 'Okay' button is visible
             if (IsErrorDialogVisible)
             {
+                _wowManager.Profile.Log("Clicking okay on dialog.");
                 Utility.SendBackgroundKey(_wowManager.GameProcess.MainWindowHandle, (char)Keys.Enter, false);
                 return;
             }
@@ -56,7 +53,10 @@ namespace HighVoltz.HBRelog.WoW.States
                 return;
 
             if (IsConnecting)
+            {
+                _wowManager.Profile.Log("Connecting...");
                 return;
+            }
 
             // enter Battlenet email..
             if (!EnterTextInEditBox("AccountLoginAccountEdit", _wowManager.Settings.Login))
@@ -79,10 +79,10 @@ namespace HighVoltz.HBRelog.WoW.States
                 if (glueDialogButton1 != null && glueDialogButton1.IsVisible)
                 {
                     // get localized 'Cancel' text.
-                    var okayTextValue = _wowManager.Globals.GetValue("CANCEL");
-                    if (okayTextValue != null)
+                    var cancelTextValue = _wowManager.Globals.GetValue("CANCEL");
+                    if (cancelTextValue != null)
                     {
-                        if (glueDialogButton1.Text == okayTextValue.String.Value)
+                        if (glueDialogButton1.Text == cancelTextValue.String.Value)
                             return true;
                     }
                 }
@@ -132,9 +132,13 @@ namespace HighVoltz.HBRelog.WoW.States
                         Utility.SendBackgroundString(_wowManager.GameProcess.MainWindowHandle, new string((char)Keys.Down, buttonIndex - currentIndex), false);
                     else
                         Utility.SendBackgroundString(_wowManager.GameProcess.MainWindowHandle, new string((char)Keys.Up, currentIndex - buttonIndex), false);
+                    _wowManager.Profile.Log("Selecting Account");
                 }
                 if (Utility.SleepUntil(() => SelectedAccountIndex == buttonIndex, TimeSpan.FromSeconds(2)))
+                {
+                    _wowManager.Profile.Log("Accepting current account selection");
                     Utility.SendBackgroundKey(_wowManager.GameProcess.MainWindowHandle, (char)Keys.Enter, false);
+                }
             }
             return true;
         }
@@ -168,6 +172,7 @@ namespace HighVoltz.HBRelog.WoW.States
                 if (!editBox.HasFocus)
                 {
                     Utility.SendBackgroundString(_wowManager.GameProcess.MainWindowHandle, "\t", false);
+                    _wowManager.Profile.Log("Pressing 'tab' key to gain set focus to {0}", editBoxName);
                     if (!Utility.SleepUntil(() => editBox.HasFocus, TimeSpan.FromSeconds(2)))
                         return false;
                 }
@@ -176,8 +181,10 @@ namespace HighVoltz.HBRelog.WoW.States
                 {
                     Utility.SendBackgroundKey(_wowManager.GameProcess.MainWindowHandle, (char)Keys.End, false);
                     Utility.SendBackgroundString(_wowManager.GameProcess.MainWindowHandle, new string('\b', editBoxText.Length * 2), false);
+                    _wowManager.Profile.Log("Pressing 'end' + delete keys to remove contents from {0}", editBoxName);
                 }
                 Utility.SendBackgroundString(_wowManager.GameProcess.MainWindowHandle, text);
+                _wowManager.Profile.Log("Sending text to {0}", editBoxName);
             }
             return true;
         }
