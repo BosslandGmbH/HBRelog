@@ -122,12 +122,16 @@ namespace HighVoltz.HBRelog.WoW
                     }
                     // return if wow isn't ready for input.
                     if (!_wowProcess.WaitForInputIdle(0))
+                    {
+                        _lockOwner.Profile.Status = "Waiting for Wow to start";
+                        _lockOwner.Profile.Log(_lockOwner.Profile.Status);
                         return;
-
+                    }
                     _lockOwner.GameProcess = _wowProcess;
                     _lockOwner.Memory = new ExternalProcessReader(_wowProcess);
                     _wowProcess = null;
                     ReleaseLock();
+                    _lockOwner.Profile.Log("Wow is ready to login.");
                 }
             }
         }

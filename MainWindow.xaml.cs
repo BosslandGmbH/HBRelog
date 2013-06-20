@@ -154,6 +154,16 @@ namespace HighVoltz.HBRelog
             // add one to Revision because it uses current revision and we want this to use the next revision number.
             version = new Version(version.Major, version.Minor, version.Build, version.Revision + 1);
             Log.Write("HBRelog Version {0}", version);
+            Log.Write("******* Settings ******** ");
+            Log.Write("\t{0,-30} {1}", "Auto AcceptTosEula:", HbRelogManager.Settings.AutoAcceptTosEula);
+            Log.Write("\t{0,-30} {1}","Auto Start:", HbRelogManager.Settings.AutoStart);
+            Log.Write("\t{0,-30} {1}", "Auto Update HB:", HbRelogManager.Settings.AutoUpdateHB);
+            Log.Write("\t{0,-30} {1}", "Check Hb's Responsiveness:", HbRelogManager.Settings.CheckHbResponsiveness);
+            Log.Write("\t{0,-30} {1}", "Check Realm Status:", HbRelogManager.Settings.CheckRealmStatus);
+            Log.Write("\t{0,-30} {1}", "HB Delay:", HbRelogManager.Settings.HBDelay);
+            Log.Write("\t{0,-30} {1}", "Login Delay:", HbRelogManager.Settings.LoginDelay);
+            Log.Write("\t{0,-30} {1}", "Minimize Hb On Startup:", HbRelogManager.Settings.MinimizeHbOnStart);
+            Log.Write("\t{0,-30} {1}", "Wow Start Delay:", HbRelogManager.Settings.WowDelay);
             // if autostart is on then start all enabled acounts
             if (HbRelogManager.Settings.AutoStart)
             {
@@ -163,12 +173,6 @@ namespace HighVoltz.HBRelog
                         character.Start();
                 }
             }
-
-            //foreach (CharacterProfile character in AccountGrid.Items)
-            //{
-            //    if (character.Settings.IsEnabled)
-            //        character.Start();
-            //}
         }
 
         private void AccountGridSelectionChanged(object sender, SelectionChangedEventArgs e)

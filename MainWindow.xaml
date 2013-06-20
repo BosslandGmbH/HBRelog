@@ -228,7 +228,7 @@
                     </TabItem.Header>
                     <RichTextBox Grid.Row="2" HorizontalAlignment="Stretch" x:Name="LogTextBox" VerticalAlignment="Stretch" 
                      IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Padding="0"
-                             AcceptsReturn="False" AllowDrop="False" AutoWordSelection="False" />
+                             AcceptsReturn="False" AllowDrop="False" AutoWordSelection="False" FontFamily="Consolas"  />
                 </TabItem>
             </TabControl>
         </Grid>
