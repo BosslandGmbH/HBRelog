@@ -149,7 +149,8 @@ namespace HighVoltz.HBRelog.WoW
                 config.EnsureValue("readEULA", "1");
             }
             config.EnsureValue("accountName", _lockOwner.Settings.Login);
-            config.EnsureAccountList(_lockOwner.Settings.AcountName);
+            if (!string.IsNullOrEmpty(_lockOwner.Settings.AcountName))
+                config.EnsureAccountList(_lockOwner.Settings.AcountName);
             if (config.Changed)
             {
                 config.Save();

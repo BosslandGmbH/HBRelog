@@ -8,7 +8,7 @@ namespace HighVoltz.HBRelog.WoW
 {
     class ConfigWtf
     {
-        private const string ErrorMsg = @"Warning: Possible corrupt \WTF\Config.wtf file at line #:{0}.\n\tReason: {1}";
+        private const string ErrorMsg = @"Warning: Possible corrupt \WTF\Config.wtf file at line #:{0}./n/tReason: {1}";
         private string _path;
         private readonly WowManager _wowManager;
         readonly Dictionary<string, string> _settings = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
@@ -77,11 +77,14 @@ namespace HighVoltz.HBRelog.WoW
             {
                 var line = lines[i];
                 var lineNum = i + 1;
-                var elements = line.Trim().Split(' ');
+                var elements = line.Trim().Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
                 // ensure there are 3 elements
                 if (elements.Length != 3)
                 {
-                    if (elements.Length > 0)
+                    // remove all white space.
+                    var list = elements.Select(t => t.Trim()).ToList();
+                    list.RemoveAll(string.IsNullOrWhiteSpace);
+                    if ( list.Count > 0)
                     {
                         _wowManager.Profile.Log(ErrorMsg, lineNum, "Number of elements does not equal 3");
                     }
