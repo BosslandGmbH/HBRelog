@@ -49,9 +49,6 @@ namespace HighVoltz.HBRelog.WoW.States
                     _wowManager.Settings.WowWindowWidth,
                     _wowManager.Settings.WowWindowHeight);
             }
-            var luaStateOffset = _wowManager.Memory.Read<IntPtr>((IntPtr) HbRelogManager.Settings.LuaStateOffset, true);
-            var globalsOffset = _wowManager.Memory.Read<IntPtr>(luaStateOffset + WowManager.LuaStateGlobalsOffset);
-            _wowManager.Globals = new LuaTable(_wowManager.Memory, globalsOffset);
             _wowManager.ProcessIsReadyForInput = true;
         }
     }
