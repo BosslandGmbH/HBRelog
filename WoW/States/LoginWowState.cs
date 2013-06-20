@@ -25,7 +25,7 @@ namespace HighVoltz.HBRelog.WoW.States
 
         public override bool NeedToRun
         {
-            get { return !_wowManager.StartupSequenceIsComplete && !_wowManager.InGame  && _wowManager.GlueStatus == WowManager.GlueState.Disconnected; }
+            get { return !_wowManager.StartupSequenceIsComplete && !_wowManager.InGame && _wowManager.GlueStatus == WowManager.GlueState.Disconnected; }
         }
 
         public override void Run()
@@ -133,12 +133,11 @@ namespace HighVoltz.HBRelog.WoW.States
                     else
                         Utility.SendBackgroundString(_wowManager.GameProcess.MainWindowHandle, new string((char)Keys.Up, currentIndex - buttonIndex), false);
                     _wowManager.Profile.Log("Selecting Account");
+                    Utility.SleepUntil(() => SelectedAccountIndex == buttonIndex, TimeSpan.FromSeconds(2));
+                    return false;
                 }
-                if (Utility.SleepUntil(() => SelectedAccountIndex == buttonIndex, TimeSpan.FromSeconds(2)))
-                {
-                    _wowManager.Profile.Log("Accepting current account selection");
-                    Utility.SendBackgroundKey(_wowManager.GameProcess.MainWindowHandle, (char)Keys.Enter, false);
-                }
+                _wowManager.Profile.Log("Accepting current account selection");
+                Utility.SendBackgroundKey(_wowManager.GameProcess.MainWindowHandle, (char)Keys.Enter, false);
             }
             return true;
         }
@@ -173,8 +172,8 @@ namespace HighVoltz.HBRelog.WoW.States
                 {
                     Utility.SendBackgroundString(_wowManager.GameProcess.MainWindowHandle, "\t", false);
                     _wowManager.Profile.Log("Pressing 'tab' key to gain set focus to {0}", editBoxName);
-                    if (!Utility.SleepUntil(() => editBox.HasFocus, TimeSpan.FromSeconds(2)))
-                        return false;
+                    Utility.SleepUntil(() => editBox.HasFocus, TimeSpan.FromSeconds(2));
+                    return false;
                 }
                 // check if we need to remove exisiting text.
                 if (!string.IsNullOrEmpty(editBoxText))
