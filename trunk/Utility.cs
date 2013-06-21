@@ -227,6 +227,7 @@ namespace HighVoltz.HBRelog
             else
             {
                 PostMessage(hWnd, NativeMethods.Message.KEY_DOWN, key, lParam);
+                PostMessage(hWnd, NativeMethods.Message.VM_CHAR, key, lParam);
                 PostMessage(hWnd, NativeMethods.Message.KEY_UP, key, lParam);
             }
         }
