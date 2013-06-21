@@ -29,8 +29,6 @@ namespace HighVoltz.HBRelog.WoW.States
             get { return !_wowManager.StartupSequenceIsComplete && !_wowManager.InGame && _wowManager.GlueStatus == WowManager.GlueState.Disconnected; }
         }
 
-        private Regex _exp;
-
         public override void Run()
         {
             if (_wowManager.Throttled)
@@ -110,22 +108,11 @@ namespace HighVoltz.HBRelog.WoW.States
         {
             get
             {
-                if (_exp == null)
-                {
-                    var split = _wowManager.Globals.GetValue("QUEUE_NAME_TIME_LEFT").String.Value.Split('\n');
-                    split[0] = split[0].Replace("%s", @"\w+");
-                    split[1] = split[1].Replace("%d", @"\d+");
-                    split[2] = ".+";
-                    var pattern = string.Format("{0}. {1}. {2}", split[0], split[1], split[2]);
-                    _exp = new Regex(pattern);
-                }
                 var dialogText = GlueDialogText;
                 if (!string.IsNullOrEmpty(dialogText))
                 {
                     var text = dialogText.Replace("\n", ". ");
-                    var match = _exp.Match(text);
-                    if (match.Success)
-                        return match.Value;
+                    return text;
                 }
                 return string.Empty;
             }
