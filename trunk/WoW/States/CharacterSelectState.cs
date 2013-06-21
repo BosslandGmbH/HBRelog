@@ -30,31 +30,10 @@ namespace HighVoltz.HBRelog.WoW.States
             get { return !_wowManager.StartupSequenceIsComplete && !_wowManager.InGame && !_wowManager.IsConnectiongOrLoading && _wowManager.GlueStatus == WowManager.GlueState.CharacterSelection; }
         }
 
-        private Regex _exp;
-
         public override void Run()
         {
             if (_wowManager.Throttled)
                 return;
-
-            if (_wowManager.ServerHasQueue)
-            {
-                if (_exp == null)
-                {
-                    var pattern = string.Format("^{0}$", _wowManager.Globals.GetValue("QUEUE_NAME_TIME_LEFT").String.Value);
-                    pattern = pattern.Replace("%d", @"\d*").Replace("%s", @"\w+");
-                    _exp = new Regex(pattern);
-                }
-                var glueDialogTextContol = UIObject.GetUIObjectByName<FontString>(_wowManager, "GlueDialogText");
-                if (glueDialogTextContol != null)
-                {
-                    var match = _exp.Match(glueDialogTextContol.Text);
-                    if (match.Success)
-                        _wowManager.Profile.Status = match.Value.Replace("\n", ". ");
-                }
-                _wowManager.Profile.Log("Waiting in server queue");
-                return;
-            }
 
             if (ShouldChangeRealm)
             {

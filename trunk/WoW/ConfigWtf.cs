@@ -70,6 +70,18 @@ namespace HighVoltz.HBRelog.WoW
             Changed = true;
         }
 
+
+        /// <summary>
+        /// Deletes the setting.
+        /// </summary>
+        /// <param name="settingName">Name of the setting.</param>
+        public void DeleteSetting(string settingName)
+        {
+            if (!_settings.ContainsKey(settingName)) return;
+            _settings.Remove(settingName);
+            Changed = true;
+        }
+
         private void Load()
         {
             var lines = File.ReadAllLines(_path);
