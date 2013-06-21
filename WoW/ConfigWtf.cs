@@ -8,7 +8,7 @@ namespace HighVoltz.HBRelog.WoW
 {
     class ConfigWtf
     {
-        private const string ErrorMsg = @"Warning: Possible corrupt \WTF\Config.wtf file at line #:{0}./n/tReason: {1}";
+        private const string ErrorMsg = @"Warning: Possible corrupt \WTF\Config.wtf file at line #:{0}.\n\tReason: {1}";
         private string _path;
         private readonly WowManager _wowManager;
         readonly Dictionary<string, string> _settings = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
