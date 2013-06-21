@@ -53,6 +53,7 @@ namespace HighVoltz.HBRelog.WoW
             }
         }
 
+
         /// <summary>
         /// Starts Wow, assigns GameProcess and Memory after lauch and releases lock. Can only call from a valid token
         /// </summary>
@@ -121,8 +122,9 @@ namespace HighVoltz.HBRelog.WoW
                         _wowProcess = wowProcess;
                     }
                     // return if wow isn't ready for input.
-                    if (!_wowProcess.WaitForInputIdle(0))
+                    if (_wowProcess.MainWindowHandle == IntPtr.Zero)
                     {
+                        _wowProcess.Refresh();
                         _lockOwner.Profile.Status = "Waiting for Wow to start";
                         _lockOwner.Profile.Log(_lockOwner.Profile.Status);
                         return;
