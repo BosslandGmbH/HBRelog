@@ -278,7 +278,7 @@ namespace HighVoltz.HBRelog.WoW.States
                     _wowManager.Profile.Log("Pressing 'end' + delete keys to remove contents from {0}", editBoxName);
                 }
                 Utility.SendBackgroundString(_wowManager.GameProcess.MainWindowHandle, text);
-                _wowManager.Profile.Log("Sending text to {0}", editBoxName);
+                _wowManager.Profile.Log("Sending {0} letters to {1}", text.Length, editBoxName);
             }
             return true;
         }
