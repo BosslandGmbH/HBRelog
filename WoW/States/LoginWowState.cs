@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using HighVoltz.HBRelog.FiniteStateMachine;
 using HighVoltz.HBRelog.WoW.FrameXml;
@@ -28,6 +29,8 @@ namespace HighVoltz.HBRelog.WoW.States
             get { return !_wowManager.StartupSequenceIsComplete && !_wowManager.InGame && _wowManager.GlueStatus == WowManager.GlueState.Disconnected; }
         }
 
+        private Regex _exp;
+
         public override void Run()
         {
             if (_wowManager.Throttled)
@@ -40,11 +43,29 @@ namespace HighVoltz.HBRelog.WoW.States
                 return;
             }
 
+            bool isBanned = IsBanned, isSuspended = IsSuspended, isFrozen = IsFrozen;
+
+            if (isBanned || isSuspended || isFrozen)
+            {
+                string reason = isBanned ? "banned" : isSuspended ? "suspended" : "frozen";
+                _wowManager.Profile.Log("Stoping profile because account is {0}.", reason);
+                _wowManager.Profile.Stop();
+                return;
+            }
+
             //  press 'Enter' key if popup dialog with an 'Okay' button is visible
             if (IsErrorDialogVisible)
             {
                 _wowManager.Profile.Log("Clicking okay on dialog.");
                 Utility.SendBackgroundKey(_wowManager.GameProcess.MainWindowHandle, (char)Keys.Enter, false);
+                return;
+            }
+
+            if (_wowManager.ServerHasQueue)
+            {
+                var status = QueueStatus;
+                _wowManager.Profile.Status = string.IsNullOrEmpty(status) ? status : "Waiting in server queue";
+                _wowManager.Profile.Log("Waiting in server queue");
                 return;
             }
 
@@ -66,46 +87,133 @@ namespace HighVoltz.HBRelog.WoW.States
             if (!EnterTextInEditBox("AccountLoginPasswordEdit", _wowManager.Settings.Password))
                 return;
 
-            var accountDropDownButton = UIObject.GetUIObjectByName<Button>(_wowManager, "AccountLoginDropDownButton");
             // everything looks good. Press 'Enter' key to login.
             Utility.SendBackgroundKey(_wowManager.GameProcess.MainWindowHandle, (char)Keys.Enter, false);
         }
 
+
+        private string _cancelText;
         bool IsConnecting
         {
             get
             {
-                var glueDialogButton1 = UIObject.GetUIObjectByName<Button>(_wowManager, "GlueDialogButton1");
-                if (glueDialogButton1 != null && glueDialogButton1.IsVisible)
-                {
-                    // get localized 'Cancel' text.
-                    var cancelTextValue = _wowManager.Globals.GetValue("CANCEL");
-                    if (cancelTextValue != null)
-                    {
-                        if (glueDialogButton1.Text == cancelTextValue.String.Value)
-                            return true;
-                    }
-                }
-                return false;
+                var dialogButtonText = GlueDialogButton1Text;
+                if (string.IsNullOrEmpty(dialogButtonText))
+                    return false;
+                if (_cancelText == null)
+                    _cancelText = _wowManager.Globals.GetValue("CANCEL").String.Value;
+                return _cancelText == dialogButtonText;
             }
         }
 
+        string QueueStatus
+        {
+            get
+            {
+                if (_exp == null)
+                {
+                    var split = _wowManager.Globals.GetValue("QUEUE_NAME_TIME_LEFT").String.Value.Split('\n');
+                    split[0] = split[0].Replace("%s", @"\w+");
+                    split[1] = split[1].Replace("%d", @"\d+");
+                    split[2] = ".+";
+                    var pattern = string.Format("{0}. {1}. {2}", split[0], split[1], split[2]);
+                    _exp = new Regex(pattern);
+                }
+                var dialogText = GlueDialogText;
+                if (!string.IsNullOrEmpty(dialogText))
+                {
+                    var text = dialogText.Replace("\n", ". ");
+                    var match = _exp.Match(text);
+                    if (match.Success)
+                        return match.Value;
+                }
+                return string.Empty;
+            }
+        }
+
+        string GlueDialogTitle
+        {
+            get
+            {
+                var glueDialogTitleFontString = UIObject.GetUIObjectByName<FontString>(_wowManager, "GlueDialogTitle");
+                if (glueDialogTitleFontString != null && glueDialogTitleFontString.IsVisible)
+                    return glueDialogTitleFontString.Text;
+                return string.Empty;
+            }
+        }
+
+        string GlueDialogText
+        {
+            get
+            {
+                var glueDialogTextContol = UIObject.GetUIObjectByName<FontString>(_wowManager, "GlueDialogText");
+                if (glueDialogTextContol != null && glueDialogTextContol.IsVisible)
+                    return glueDialogTextContol.Text;
+                return string.Empty;
+            }
+        }
+
+        string GlueDialogButton1Text
+        {
+            get
+            {
+                var glueDialogButton1Text = UIObject.GetUIObjectByName<Button>(_wowManager, "GlueDialogButton1");
+                if (glueDialogButton1Text != null && glueDialogButton1Text.IsVisible)
+                    return glueDialogButton1Text.Text;
+                return string.Empty;
+            }
+        }
+
+        private const string BannedTitleText = "Battle.net Error #202";
+
+        bool IsBanned
+        {
+            get
+            {
+                var dialogText = GlueDialogTitle;
+                if (string.IsNullOrEmpty(dialogText))
+                    return false;
+                return BannedTitleText == dialogText;
+            }
+        }
+
+        private const string SuspenedText = "Battle.net Error #203";
+
+        bool IsSuspended
+        {
+            get
+            {
+                var dialogText = GlueDialogTitle;
+                if (string.IsNullOrEmpty(dialogText))
+                    return false;
+                return SuspenedText == dialogText;
+            }
+        }
+
+        private const string FrozenText = "Battle.net Error #206";
+
+        bool IsFrozen
+        {
+            get
+            {
+                var dialogText = GlueDialogTitle;
+                if (string.IsNullOrEmpty(dialogText))
+                    return false;
+                return FrozenText == dialogText;
+            }
+        }
+
+        private string _okayText;
         bool IsErrorDialogVisible
         {
             get
             {
-                var glueDialogButton1 = UIObject.GetUIObjectByName<Button>(_wowManager, "GlueDialogButton1");
-                if (glueDialogButton1 != null && glueDialogButton1.IsVisible)
-                {
-                    // get localized 'Okay' text.
-                    var okayTextValue = _wowManager.Globals.GetValue("OKAY");
-                    if (okayTextValue != null)
-                    {
-                        if (glueDialogButton1.Text == okayTextValue.String.Value)
-                            return true;
-                    }
-                }
-                return false;
+                var dialogButtonText = GlueDialogButton1Text;
+                if (string.IsNullOrEmpty(dialogButtonText))
+                    return false;
+                if (_okayText == null)
+                    _okayText = _wowManager.Globals.GetValue("OKAY").String.Value;
+                return _okayText == dialogButtonText;
             }
         }
 
@@ -146,15 +254,15 @@ namespace HighVoltz.HBRelog.WoW.States
         {
             get
             {
-                for (int i = 1; i <= 8; i++)
-                {
-                    var highlightName = string.Format("WoWAccountSelectDialogBackgroundContainerButton{0}BGHighlight", i);
-                    var tex = UIObject.GetUIObjectByName<Texture>(_wowManager, highlightName);
-                    if (tex != null && tex.IsVisible)
-                        return i;
-                }
-                return -1;
-                //return (int)_wowManager.Globals.GetValue("CURRENT_SELECTED_WOW_ACCOUNT").Value.Number;
+                //for (int i = 1; i <= 8; i++)
+                //{
+                //    var highlightName = string.Format("WoWAccountSelectDialogBackgroundContainerButton{0}BGHighlight", i);
+                //    var tex = UIObject.GetUIObjectByName<Texture>(_wowManager, highlightName);
+                //    if (tex != null && tex.IsVisible)
+                //        return i;
+                //}
+                //return -1;
+                return (int)_wowManager.Globals.GetValue("CURRENT_SELECTED_WOW_ACCOUNT").Value.Number;
             }
         }
 
