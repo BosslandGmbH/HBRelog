@@ -46,6 +46,7 @@ namespace HighVoltz.HBRelog.WoW.States
             if (isBanned || isSuspended || isFrozen)
             {
                 string reason = isBanned ? "banned" : isSuspended ? "suspended" : "frozen";
+                _wowManager.Profile.Status = string.Format("Account is {0}", reason);
                 _wowManager.Profile.Log("Stoping profile because account is {0}.", reason);
                 _wowManager.Profile.Stop();
                 return;
@@ -241,14 +242,6 @@ namespace HighVoltz.HBRelog.WoW.States
         {
             get
             {
-                //for (int i = 1; i <= 8; i++)
-                //{
-                //    var highlightName = string.Format("WoWAccountSelectDialogBackgroundContainerButton{0}BGHighlight", i);
-                //    var tex = UIObject.GetUIObjectByName<Texture>(_wowManager, highlightName);
-                //    if (tex != null && tex.IsVisible)
-                //        return i;
-                //}
-                //return -1;
                 return (int)_wowManager.Globals.GetValue("CURRENT_SELECTED_WOW_ACCOUNT").Value.Number;
             }
         }
@@ -278,7 +271,7 @@ namespace HighVoltz.HBRelog.WoW.States
                     _wowManager.Profile.Log("Pressing 'end' + delete keys to remove contents from {0}", editBoxName);
                 }
                 Utility.SendBackgroundString(_wowManager.GameProcess.MainWindowHandle, text);
-                _wowManager.Profile.Log("Sending {0} letters to {1}", text.Length, editBoxName);
+                _wowManager.Profile.Log("Sending {0}letters to {1}", editBox.IsPassword ? "" : text.Length.ToString() + " ", editBoxName);
             }
             return true;
         }
