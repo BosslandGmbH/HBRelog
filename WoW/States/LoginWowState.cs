@@ -52,6 +52,14 @@ namespace HighVoltz.HBRelog.WoW.States
                 return;
             }
 
+            if (IncorrectPassword)
+            {
+                _wowManager.Profile.Status = string.Format("Incorrect login information entered");
+                _wowManager.Profile.Log("Stoping profile because incorrect login information  was entered");
+                _wowManager.Profile.Stop();
+                return;                
+            }
+
             //  press 'Enter' key if popup dialog with an 'Okay' button is visible
             if (IsErrorDialogVisible)
             {
@@ -188,6 +196,18 @@ namespace HighVoltz.HBRelog.WoW.States
                 if (string.IsNullOrEmpty(dialogText))
                     return false;
                 return FrozenText == dialogText;
+            }
+        }
+
+        private const string IncorrectPasswordText = "Battle.net Error #204";
+        bool IncorrectPassword
+        {
+            get
+            {
+                var dialogText = GlueDialogTitle;
+                if (string.IsNullOrEmpty(dialogText))
+                    return false;
+                return IncorrectPasswordText == dialogText;
             }
         }
 
