@@ -199,7 +199,7 @@ namespace HighVoltz.HBRelog.WoW.States
             }
         }
 
-        private const string IncorrectPasswordText = "Battle.net Error #204";
+        private const string IncorrectPasswordText = "Battle.net Error #104";
         bool IncorrectPassword
         {
             get
