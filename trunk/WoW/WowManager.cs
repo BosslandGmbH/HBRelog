@@ -174,15 +174,22 @@ namespace HighVoltz.HBRelog.WoW
         {
             get
             {
-                if (InGame)
-                    return false;
-                var button = UIObject.GetUIObjectByName<Button>(this, "GlueDialogButton1");
-                if (button != null && button.IsVisible)
+                try
                 {
-                    var localizedChangeRealmText = Globals.GetValue("CHANGE_REALM").String.Value;
-                    return button.Text == localizedChangeRealmText;
+                    if (InGame)
+                        return false;
+                    var button = UIObject.GetUIObjectByName<Button>(this, "GlueDialogButton1");
+                    if (button != null && button.IsVisible)
+                    {
+                        var localizedChangeRealmText = Globals.GetValue("CHANGE_REALM").String.Value;
+                        return button.Text == localizedChangeRealmText;
+                    }
+                    return false;
                 }
-                return false;
+                catch (Exception)
+                {
+                    return false;
+                }
             }
         }
 
