@@ -19,7 +19,20 @@ namespace Test.Lua
             _memory = memory;
         }
 
-        public LuaNode Next { get { return _luaTKeyStruct.NextNodePtr != IntPtr.Zero ? new LuaNode(_memory,_luaTKeyStruct.NextNodePtr) : null; } }
+        public LuaNode Next
+        {
+            get
+            {
+                try
+                {
+                    return _luaTKeyStruct.NextNodePtr != IntPtr.Zero ? new LuaNode(_memory, _luaTKeyStruct.NextNodePtr) : null;
+                }
+                catch (System.AccessViolationException)
+                {
+                    return null;
+                }
+            }
+        }
 
         private LuaValue _value;
         public LuaValue Value
