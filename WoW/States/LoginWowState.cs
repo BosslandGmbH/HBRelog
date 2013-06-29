@@ -41,11 +41,11 @@ namespace HighVoltz.HBRelog.WoW.States
                 return;
             }
 
-            bool isBanned = IsBanned, isSuspended = IsSuspended, isFrozen = IsFrozen, isSuspiciousLocked = IsLockedSuspiciousActivity, isLockedLisence = IsLockedLisence;
+            bool isBanned = IsBanned, isSuspended = IsSuspended, isFrozen = IsFrozen, isSuspiciousLocked = IsLockedSuspiciousActivity, isLockedLicense = IsLockedLicense;
 
-            if (isBanned || isSuspended || isFrozen || isSuspiciousLocked || isLockedLisence)
+            if (isBanned || isSuspended || isFrozen || isSuspiciousLocked || isLockedLicense)
             {
-                string reason = isBanned ? "banned" : isSuspended ? "suspended" : isFrozen ? "frozen" : isSuspiciousLocked ? "locked due to suspicious activity" : "locked lisence";
+                string reason = isBanned ? "banned" : isSuspended ? "suspended" : isFrozen ? "frozen" : isSuspiciousLocked ? "locked due to suspicious activity" : "locked license";
                 _wowManager.Profile.Status = string.Format("Account is {0}", reason);
                 _wowManager.Profile.Log("Stoping profile because account is {0}.", reason);
                 _wowManager.Profile.Stop();
@@ -211,15 +211,15 @@ namespace HighVoltz.HBRelog.WoW.States
             }
         }
 
-        private const string IsLockedLisenceText = "Battle.net Error #204";
-        bool IsLockedLisence
+        private const string IsLockedLicenseText = "Battle.net Error #204";
+        bool IsLockedLicense 
         {
             get
             {
                 var dialogText = GlueDialogTitle;
                 if (string.IsNullOrEmpty(dialogText))
                     return false;
-                return IsLockedLisenceText == dialogText;
+                return IsLockedLicenseText == dialogText;
             }
         }
 
