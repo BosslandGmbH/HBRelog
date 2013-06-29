@@ -41,11 +41,11 @@ namespace HighVoltz.HBRelog.WoW.States
                 return;
             }
 
-            bool isBanned = IsBanned, isSuspended = IsSuspended, isFrozen = IsFrozen;
+            bool isBanned = IsBanned, isSuspended = IsSuspended, isFrozen = IsFrozen, isSuspiciousLocked = IsLockedSuspiciousActivity, isLockedLisence = IsLockedLisence;
 
-            if (isBanned || isSuspended || isFrozen)
+            if (isBanned || isSuspended || isFrozen || isSuspiciousLocked || isLockedLisence)
             {
-                string reason = isBanned ? "banned" : isSuspended ? "suspended" : "frozen";
+                string reason = isBanned ? "banned" : isSuspended ? "suspended" : isFrozen ? "frozen" : isSuspiciousLocked ? "locked due to suspicious activity" : "locked lisence";
                 _wowManager.Profile.Status = string.Format("Account is {0}", reason);
                 _wowManager.Profile.Log("Stoping profile because account is {0}.", reason);
                 _wowManager.Profile.Stop();
@@ -208,6 +208,31 @@ namespace HighVoltz.HBRelog.WoW.States
                 if (string.IsNullOrEmpty(dialogText))
                     return false;
                 return IncorrectPasswordText == dialogText;
+            }
+        }
+
+        private const string IsLockedLisenceText = "Battle.net Error #204";
+        bool IsLockedLisence
+        {
+            get
+            {
+                var dialogText = GlueDialogTitle;
+                if (string.IsNullOrEmpty(dialogText))
+                    return false;
+                return IsLockedLisenceText == dialogText;
+            }
+        }
+
+        private const string LockedText1 = "Battle.net Error #42003";
+        private const string LockedText2 = "Battle.net Error #141";
+        bool IsLockedSuspiciousActivity
+        {
+            get
+            {
+                var dialogText = GlueDialogTitle;
+                if (string.IsNullOrEmpty(dialogText))
+                    return false;
+                return LockedText1 == dialogText || LockedText2 == dialogText;
             }
         }
 
