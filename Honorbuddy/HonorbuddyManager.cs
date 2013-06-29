@@ -337,11 +337,11 @@ namespace HighVoltz.HBRelog.Honorbuddy
                 {
                     if (!_hbRespondingSw.IsRunning)
                         _hbRespondingSw.Start();
-                    if (_hbRespondingSw.ElapsedMilliseconds >= 20000)
+                    if (_hbRespondingSw.ElapsedMilliseconds >= 50000)
                         return false;
                 }
                 else if (_hbRespondingSw.IsRunning)
-                    _hbRespondingSw.Start();
+                    _hbRespondingSw.Reset();
                 return true;
             }
         }
