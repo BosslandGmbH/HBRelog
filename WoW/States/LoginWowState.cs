@@ -55,7 +55,7 @@ namespace HighVoltz.HBRelog.WoW.States
             if (IncorrectPassword)
             {
                 _wowManager.Profile.Status = string.Format("Incorrect login information entered");
-                _wowManager.Profile.Log("Stoping profile because incorrect login information  was entered");
+                _wowManager.Profile.Log("Stoping profile because incorrect login information was entered");
                 _wowManager.Profile.Stop();
                 return;                
             }
