@@ -181,8 +181,8 @@ namespace HighVoltz.HBRelog.WoW
                     var button = UIObject.GetUIObjectByName<Button>(this, "GlueDialogButton1");
                     if (button != null && button.IsVisible)
                     {
-                        var localizedChangeRealmText = Globals.GetValue("CHANGE_REALM").String.Value;
-                        return button.Text == localizedChangeRealmText;
+                        var localizedChangeRealmText = Globals.GetValue("CHANGE_REALM");
+                        return localizedChangeRealmText != null && button.Text == localizedChangeRealmText.String.Value;
                     }
                     return false;
                 }
