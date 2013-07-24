@@ -84,6 +84,10 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Honorbuddy\States\CopyPluginToHonorbuddyPathState.cs" />
+    <Compile Include="Honorbuddy\States\MonitorState.cs" />
+    <Compile Include="Honorbuddy\States\StartHonorbuddyState.cs" />
+    <Compile Include="Honorbuddy\States\UpdateHonorbuddyState.cs" />
     <Compile Include="WoW\States\CharacterCreationState.cs" />
     <Compile Include="WoW\States\CharacterSelectState.cs" />
     <Compile Include="WoW\States\MonitorState.cs" />
@@ -298,6 +302,7 @@
       <Name>GreyMagic</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>SubWCRev.exe $(ProjectDir)Properties/ $(ProjectDir)Properties/AssemblyInfo.template $(ProjectDir)Properties/AssemblyInfo.cs</PreBuildEvent>
