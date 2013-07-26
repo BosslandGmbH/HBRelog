@@ -108,7 +108,7 @@ namespace HighVoltz.HBRelog.WoW.States
             get
             {
                 var realmName = UIObject.GetUIObjectByName<FontString>(_wowManager, "CharSelectRealmName");
-                return realmName != null && realmName.IsVisible ? realmName.Text.Trim() : string.Empty;
+                return realmName != null ? realmName.Text.Trim() : string.Empty;
             }
         }
 

@@ -73,7 +73,7 @@ namespace HighVoltz.HBRelog.Honorbuddy.States
                     _hbManager.Profile.Log("Honorbuddy is not responding.. So lets restart it");
                     _hbManager.Profile.Status = "Honorbuddy isn't responding. restarting";
                 }
-                else// otherwise nicely close the window instead so it can logout serverside.
+                else
                 {
                     _hbManager.Profile.Log("Honorbuddy has crashed.. So lets restart it");
                     _hbManager.Profile.Status = "Honorbuddy has crashed. restarting";
