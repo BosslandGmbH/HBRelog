@@ -171,7 +171,7 @@ namespace HighVoltz.HBRelog.WoW
 
         private static readonly object LockObject = new object();
         private static readonly Dictionary<string, WowLockToken> LockInfos = new Dictionary<string, WowLockToken>();
-
+        private static DateTime _lastLockTime ;
         public static WowLockToken RequestLock(WowManager wowManager, out string reason)
         {
             reason = string.Empty;
@@ -179,19 +179,25 @@ namespace HighVoltz.HBRelog.WoW
             string key = wowManager.Settings.WowPath.ToUpper();
             lock (LockObject)
             {
+                var now = DateTime.Now;
+                bool throttled = now - _lastLockTime < TimeSpan.FromSeconds(HbRelogManager.Settings.WowDelay);
+                if (throttled)
+                {
+                    reason = "Waiting to start WoW";
+                    return null;
+                }
+
                 if (LockInfos.ContainsKey(key))
                 {
                     var lockInfo = LockInfos[key];
-                    bool throttled = DateTime.Now - lockInfo._startTime < TimeSpan.FromSeconds(HbRelogManager.Settings.WowDelay);
-                    bool locked = lockInfo._lockOwner != null && lockInfo._lockOwner != wowManager;
-                    if (throttled || locked)
+                    var locked = lockInfo._lockOwner != null && lockInfo._lockOwner != wowManager;
+                    if (locked)
                     {
-                        reason = throttled
-                                     ? "Waiting to start WoW"
-                                     : string.Format("Waiting on profile: {0} to release lock", lockInfo._lockOwner.Profile.Settings.ProfileName);
+                        reason = string.Format("Waiting on profile: {0} to release lock", lockInfo._lockOwner.Profile.Settings.ProfileName);
                         return null;
                     }
                 }
+                _lastLockTime = now;
                 ret = LockInfos[key] = new WowLockToken(key, DateTime.Now, wowManager);
             }
             return ret;
