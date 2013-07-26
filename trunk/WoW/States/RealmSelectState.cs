@@ -52,12 +52,14 @@ namespace HighVoltz.HBRelog.WoW.States
                 return;
             Utility.SaveForegroundWindowAndMouse();
             var tabs = RealmTabs;
+            bool foundServer = false;
             if (tabs.Any())
             {
 
-                while (tabs.Any())
+                while (tabs.Any() && _wowManager.GlueStatus == WowManager.GlueState.ServerSelection)
                 {
-                    if (SelectRealm(_wowManager.Settings.ServerName))
+                    foundServer = SelectRealm(_wowManager.Settings.ServerName);
+                    if (foundServer)
                         break;
                     var currentTab = tabs.FirstOrDefault(t => !t.IsEnabled);
                     tabs.Remove(currentTab);
@@ -65,9 +67,8 @@ namespace HighVoltz.HBRelog.WoW.States
                     if (nextTab != null)
                     {
                         var clickPos = _wowManager.ConvertWidgetCenterToWin32Coord(nextTab);
-                        Utility.LeftClickAtPos(_wowManager.GameProcess.MainWindowHandle, (int) clickPos.X, (int) clickPos.Y, true, false);
+                        Utility.LeftClickAtPos(_wowManager.GameProcess.MainWindowHandle, (int)clickPos.X, (int)clickPos.Y, true, false);
                         // need to wait a little for click to register.
-                        Thread.Sleep(500);
                         try
                         {
                             NativeMethods.BlockInput(true);
@@ -82,9 +83,14 @@ namespace HighVoltz.HBRelog.WoW.States
             }
             else
             {
-                SelectRealm(_wowManager.Settings.ServerName);
+                foundServer = SelectRealm(_wowManager.Settings.ServerName);
             }
             Utility.RestoreForegroundWindowAndMouse();
+            if (!foundServer)
+            {
+                _wowManager.Profile.Log("Unable to find sever. Stoping profile.");
+                _wowManager.Profile.Stop();
+            }
         }
 
         #endregion
@@ -162,7 +168,7 @@ namespace HighVoltz.HBRelog.WoW.States
             var scrollDownButton = ScrollDownButton;
             if (scrollDownButton == null)
                 return false;
-            while (true)
+            for (int i = 0; i < 50; i++)
             {
                 var realmButtons = RealmNameButtons;
                 var wantedButton = realmButtons.FirstOrDefault(b => b.Text.Equals(realm, StringComparison.InvariantCultureIgnoreCase));
@@ -187,11 +193,20 @@ namespace HighVoltz.HBRelog.WoW.States
                     break;
                 clickPos = _wowManager.ConvertWidgetCenterToWin32Coord(scrollDownButton);
                 Utility.LeftClickAtPos(_wowManager.GameProcess.MainWindowHandle, (int)clickPos.X, (int)clickPos.Y, false, false);
+                try
+                {
+                    NativeMethods.BlockInput(true);
+                    Thread.Sleep(50);
+                }
+                finally
+                {
+                    NativeMethods.BlockInput(false);
+                }
             }
             return false;
         }
 
 
-      
+
     }
 }
