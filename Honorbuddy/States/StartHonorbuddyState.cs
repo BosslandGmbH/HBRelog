@@ -35,7 +35,7 @@ namespace HighVoltz.HBRelog.Honorbuddy.States
 
         public override bool NeedToRun
         {
-            get { return _hbManager.IsRunning && (_hbManager.BotProcess == null || _hbManager.BotProcess.HasExited) && _hbManager.Profile.TaskManager.WowManager.GameProcess != null && !_hbManager.Profile.TaskManager.WowManager.GameProcess.HasExited; }
+            get { return _hbManager.IsRunning && _hbManager.BotProcess == null  && _hbManager.Profile.TaskManager.WowManager.GameProcess != null && !_hbManager.Profile.TaskManager.WowManager.GameProcess.HasExited; }
         }
 
         public override void Run()

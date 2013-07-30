@@ -42,7 +42,7 @@ namespace HighVoltz.HBRelog.Remoting
                 profile.Status = "Restarting Honorbuddy";
                 var botProc = profile.TaskManager.HonorbuddyManager.BotProcess;
                 if (botProc != null && !botProc.HasExited)
-                    botProc.CloseMainWindow();
+                    profile.TaskManager.HonorbuddyManager.Stop();
             }
         }
 
