@@ -148,6 +148,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
                 if (BotProcess != null && !BotProcess.HasExited)
                     CloseBotProcess();
                 IsRunning = false;
+                BotProcess = null;
                 StartupSequenceIsComplete = false;
             }
             if (lockAquried) // release lock if it was aquired
