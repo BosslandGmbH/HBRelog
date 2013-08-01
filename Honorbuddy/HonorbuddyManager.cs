@@ -105,7 +105,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
         public void Start()
         {
             IsRunning = true;
-         }
+        }
 
 
         internal void StartHonorbuddy()
@@ -129,7 +129,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
             HbStartupTimeStamp = DateTime.Now;
         }
 
-        public  DateTime HbStartupTimeStamp { get; private set; }
+        public DateTime HbStartupTimeStamp { get; private set; }
 
         public void Pulse()
         {
@@ -145,10 +145,15 @@ namespace HighVoltz.HBRelog.Honorbuddy
             bool lockAquried = Monitor.TryEnter(_lockObject, 500);
             if (IsRunning)
             {
-                if (BotProcess != null && !BotProcess.HasExited)
-                    CloseBotProcess();
+                if (BotProcess != null)
+                {
+                    if (!BotProcess.HasExited)
+                        CloseBotProcess();
+                    else
+                        BotProcess = null;
+                }
+
                 IsRunning = false;
-                BotProcess = null;
                 StartupSequenceIsComplete = false;
             }
             if (lockAquried) // release lock if it was aquired
@@ -169,7 +174,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
         /// <summary>
         /// returns false if the WoW user interface is not responsive for 10+ seconds.
         /// </summary>
-     
+
         static public class HBStartupManager
         {
             static readonly object LockObject = new object();
