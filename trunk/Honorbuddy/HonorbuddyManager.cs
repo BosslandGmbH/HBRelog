@@ -131,7 +131,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
 
         public DateTime HbStartupTimeStamp { get; private set; }
 
-        public void Pulse()
+        public override void Pulse()
         {
             lock (_lockObject)
             {
