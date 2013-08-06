@@ -40,7 +40,6 @@ namespace HighVoltz.HBRelog.WoW.States
             if (_wowManager.Throttled)
                 return;
 
-
             if (_wowManager.ServerHasQueue)
             {
                 var status = QueueStatus;
@@ -175,6 +174,13 @@ namespace HighVoltz.HBRelog.WoW.States
                 PointF clickPos;
                 if (wantedButton != null)
                 {
+                    if (!wantedButton.IsEnabled)
+                    {
+                        _wowManager.Profile.Status = string.Format("Realm is offline");
+                        _wowManager.Profile.Log("Realm is offline");
+                        _wowManager.GameProcess.Kill();
+                        return true;
+                    }
                     clickPos = _wowManager.ConvertWidgetCenterToWin32Coord(wantedButton);
                     Utility.LeftClickAtPos(_wowManager.GameProcess.MainWindowHandle, (int)clickPos.X, (int)clickPos.Y, true, false);
                     // need to wait a little for click to register.
