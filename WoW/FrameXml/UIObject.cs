@@ -172,6 +172,8 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
 
         public static T GetUIObjectByName<T>(WowManager wowManager, string name) where T : UIObject
         {
+            if (wowManager == null) throw new ArgumentException("wowManager is null", "wowManager");
+            if (wowManager.Globals == null) throw new ArgumentException("wowManager.Globals is null", "wowManager.Globals");
             var value = wowManager.Globals.GetValue(name);
             if (value == null || value.Type != LuaType.Table) return null;
             IntPtr ptr;
