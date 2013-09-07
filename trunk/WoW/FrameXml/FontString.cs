@@ -12,7 +12,17 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
             get
             {
                 var ptr = WowManager.Memory.Read<IntPtr>(Address + Offsets.FontString.TextOffset);
-                return ptr != IntPtr.Zero ? WowManager.Memory.ReadString(ptr, Encoding.UTF8, 128) : string.Empty;
+                if (ptr == IntPtr.Zero)
+                    return string.Empty;
+
+                try
+                {
+                    return WowManager.Memory.ReadString(ptr, Encoding.UTF8);
+                }
+                catch (AccessViolationException)
+                {
+                    return WowManager.Memory.ReadUtf8StringSafe(ptr);
+                }
             }
         }
 
