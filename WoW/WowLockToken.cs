@@ -65,8 +65,19 @@ namespace HighVoltz.HBRelog.WoW
                 if (!IsValid)
                     throw new InvalidOperationException("Lock token is not valid");
 
-                if (_wowProcess == null || _wowProcess.HasExited)
+                if (_wowProcess != null && Utility.Is64BitProcess(_wowProcess))
                 {
+                    _lockOwner.Profile.Log("64 bit Wow is not supported. Delete or rename the WoW-64.exe file in your WoW install folder");
+                    _lockOwner.Stop();
+                }
+
+                if (_wowProcess == null || _wowProcess.HasExited )
+                {
+                    // throttle the number of times wow is launched.
+                    if (_wowProcess != null && _wowProcess.HasExited && DateTime.Now - _startTime < TimeSpan.FromSeconds(HbRelogManager.Settings.WowDelay))
+                    {
+                        return;
+                    }
                     AdjustWoWConfig();
                     _lockOwner.Profile.Log("Starting {0}", _lockOwner.Settings.WowPath);
                     _lockOwner.Profile.Status = "Starting WoW";
