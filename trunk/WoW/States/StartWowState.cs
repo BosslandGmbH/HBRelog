@@ -39,7 +39,9 @@ namespace HighVoltz.HBRelog.WoW.States
                 return;
             }
             if (_wowManager.ServerIsOnline)
+            {
                 _wowManager.LockToken.StartWoW();
+            }
             else
             {
                 _wowManager.Profile.Status = string.Format("{0} is offline", _wowManager.Settings.ServerName);
