@@ -73,8 +73,11 @@ namespace HighVoltz.HBRelog
         {
             var ret = string.Empty;
             char chr;
-            while ((chr = (char)memory.Read<byte>(ptr)) != '\0')
+            while ((chr = (char) memory.Read<byte>(ptr)) != '\0')
+            {
                 ret += chr;
+                ptr += 1;
+            }
             return ret;
         }
 
