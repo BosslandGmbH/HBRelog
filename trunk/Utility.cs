@@ -68,19 +68,6 @@ namespace HighVoltz.HBRelog
             }
         }
 
-        // this reads each character one by one to reduce the risk of trying to read memory that doesn't have read permission.
-        public static string ReadUtf8StringSafe(this ExternalProcessReader memory, IntPtr ptr)
-        {
-            var ret = string.Empty;
-            char chr;
-            while ((chr = (char) memory.Read<byte>(ptr)) != '\0')
-            {
-                ret += chr;
-                ptr += 1;
-            }
-            return ret;
-        }
-
         public static void ResizeAndMoveWindow(IntPtr hWnd, int x, int y, int width, int height)
         {
             NativeMethods.SetWindowPos(hWnd, new IntPtr(0), x, y, width, height,

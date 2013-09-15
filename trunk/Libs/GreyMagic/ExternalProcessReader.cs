@@ -220,6 +220,29 @@ namespace GreyMagic
             return ret;
         }
 
+        public override string ReadString(IntPtr address, System.Text.Encoding encoding, int maxLength = 512, bool relative = false)
+        {
+            byte[] bytes = new byte[maxLength];
+            int numRead = bytes.Length;
+            fixed (byte* bytesPtr = bytes)
+            {
+                if (!ReadProcessMemory(ProcessHandle, relative ? GetAbsolute(address) : address, bytesPtr, bytes.Length, out numRead))
+                {
+                    const uint STATUS_PARTIAL_COPY = 299;
+                    int error = Marshal.GetLastWin32Error();
+                    if (error != STATUS_PARTIAL_COPY)
+                        throw new AccessViolationException(string.Format("Could not read bytes from {0} [{1}]!", address.ToString("X8"), error), new Win32Exception());
+                }
+            }
+
+            string str = encoding.GetString(bytes, 0, numRead);
+            int nt = str.IndexOf('\0');
+            if (nt != -1)
+                str = str.Remove(nt);
+
+            return str;
+        }
+
         /// <summary> Writes a value specified to the address in memory. </summary>
         /// <remarks> Created 3/26/2012. </remarks>
         /// <typeparam name="T"> Generic type parameter. </typeparam>
