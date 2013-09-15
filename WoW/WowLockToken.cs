@@ -85,6 +85,15 @@ namespace HighVoltz.HBRelog.WoW
                     _lockOwner.StartupSequenceIsComplete = false;
                     _lockOwner.Memory = null;
 
+                    bool lanchingWoW = _lockOwner.Settings.WowPath.IndexOf("WoW.exe", StringComparison.InvariantCultureIgnoreCase) != -1;
+                    // force 32 bit client to start.
+                    if (lanchingWoW && _lockOwner.Settings.WowArgs.IndexOf("-noautolaunch64bit", StringComparison.InvariantCultureIgnoreCase) == -1)
+                    {
+                        // append a space to WoW arguments to separate multiple arguments if user is already pasing arguments ..
+                        if (!string.IsNullOrEmpty(_lockOwner.Settings.WowArgs))
+                            _lockOwner.Settings.WowArgs += " ";
+                        _lockOwner.Settings.WowArgs +=  "-noautolaunch64bit";
+                    }
                     var pi = new ProcessStartInfo(_lockOwner.Settings.WowPath, _lockOwner.Settings.WowArgs);
 
                     _wowProcess = Process.Start(pi);
