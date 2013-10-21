@@ -163,7 +163,7 @@ namespace HighVoltz.HBRelog.WoW.States
                     {
                         if (!_wowRespondingSw.IsRunning)
                             _wowRespondingSw.Start();
-                        if (_wowRespondingSw.ElapsedMilliseconds >= 20000)
+                        if (_wowRespondingSw.ElapsedMilliseconds >= 40000)
                             return true;
                     }
                     else if (isResponding && _wowRespondingSw.IsRunning)
