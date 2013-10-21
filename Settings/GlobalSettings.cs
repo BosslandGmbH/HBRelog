@@ -36,6 +36,7 @@ namespace HighVoltz.HBRelog.Settings
         private bool _autoStart;
         private bool _autoUpdateHB;
         private bool _checkHbResponsiveness;
+        private bool _checkWowResponsiveness;
         private bool _checkRealmStatus;
         private int _hBDelay;
         private DateTime _lastSaveTimeStamp;
@@ -146,6 +147,16 @@ namespace HighVoltz.HBRelog.Settings
             }
         }
 
+        public bool CheckWowResponsiveness
+        {
+            get { return _checkWowResponsiveness; }
+            set
+            {
+                _checkWowResponsiveness = value;
+                NotifyPropertyChanged("CheckWowResponsiveness");
+            }
+        }
+
         public bool AutoUpdateHB
         {
             get { return _autoUpdateHB; }
@@ -221,6 +232,7 @@ namespace HighVoltz.HBRelog.Settings
                 root.Add(new XElement("UseDarkStyle", UseDarkStyle));
                 root.Add(new XElement("CheckRealmStatus", CheckRealmStatus));
                 root.Add(new XElement("CheckHbResponsiveness", CheckHbResponsiveness));
+                root.Add(new XElement("CheckWowResponsiveness", CheckWowResponsiveness));
                 root.Add(new XElement("MinimizeHbOnStart", MinimizeHbOnStart));
                 root.Add(new XElement("AutoUpdateHB", AutoUpdateHB));
                 root.Add(new XElement("AutoAcceptTosEula", AutoAcceptTosEula));
@@ -321,6 +333,7 @@ namespace HighVoltz.HBRelog.Settings
                     settings.UseDarkStyle = GetElementValue(root.Element("UseDarkStyle"), true);
                     settings.CheckRealmStatus = GetElementValue(root.Element("CheckRealmStatus"), false);
                     settings.CheckHbResponsiveness = GetElementValue(root.Element("CheckHbResponsiveness"), true);
+                    settings.CheckWowResponsiveness = GetElementValue(root.Element("CheckWowResponsiveness"), true);
                     settings.AutoUpdateHB = GetElementValue(root.Element("AutoUpdateHB"), true);
                     settings.MinimizeHbOnStart = GetElementValue(root.Element("MinimizeHbOnStart"), false);
                     settings.AutoAcceptTosEula = GetElementValue(root.Element("AutoAcceptTosEula"), false);

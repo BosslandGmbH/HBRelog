@@ -104,6 +104,8 @@
                     <CheckBox Grid.Column="1" IsChecked="{Binding CheckRealmStatus}" Name="checkBox2" ToolTip="Check if Wow servers are up" />
                     <TextBlock Grid.Row="1" Text="Check HB's Responsiveness" />
                     <CheckBox Grid.Column="1" Grid.Row="1" IsChecked="{Binding CheckHbResponsiveness}" Name="hbResponsivenessCheck" ToolTip="Disable this if you are a developer and like to attach a debugger to HB" />
+                    <TextBlock Grid.Row="2" Text="Check Wow's Responsiveness" />
+                    <CheckBox Grid.Column="1" Grid.Row="2" IsChecked="{Binding CheckWowResponsiveness}" Name="wowResponsivenessCheck" ToolTip="Disable this if you are having problems with Wow being restarted when it's not frozen." />
                 </Grid>
             </GroupBox>
         </StackPanel>
