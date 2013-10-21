@@ -73,7 +73,7 @@ namespace HighVoltz.HBRelog.WoW.States
             if (WowIsLoggedOutForTooLong)
                 return WowProblem.LoggedOutForTooLong;
 
-            if (WowIsUnresponsive)
+            if (HbRelogManager.Settings.CheckWowResponsiveness && WowIsUnresponsive)
                 return WowProblem.Unresponsive;
 
             if (WowHasCrashed)
@@ -163,7 +163,7 @@ namespace HighVoltz.HBRelog.WoW.States
                     {
                         if (!_wowRespondingSw.IsRunning)
                             _wowRespondingSw.Start();
-                        if (_wowRespondingSw.ElapsedMilliseconds >= 40000)
+                        if (_wowRespondingSw.ElapsedMilliseconds >= 20000)
                             return true;
                     }
                     else if (isResponding && _wowRespondingSw.IsRunning)
