@@ -7,6 +7,7 @@ using System.Windows.Threading;
 using HighVoltz.HBRelog.Remoting;
 using Styx;
 using Styx.Common;
+using Styx.Common.Helpers;
 using Styx.CommonBot;
 using Styx.Plugins;
 
@@ -49,13 +50,14 @@ namespace HighVoltz.HBRelog.Remoting
 
 namespace HighVoltz.HBRelogHelper
 {
-    public class HBRelogHelper :HBPlugin
+    public class HBRelogHelper : HBPlugin
     {
         static public bool IsConnected { get; private set; }
         static internal IRemotingApi HBRelogRemoteApi { get; private set; }
         static internal int HbProcId { get; private set; }
         static internal string CurrentProfileName { get; private set; }
         static DispatcherTimer _monitorTimer;
+        static WaitTimer _startupLogActivityTimer = new WaitTimer(TimeSpan.FromMinutes(1));
         //static IpcChannel _ipcChannel;
         static ChannelFactory<IRemotingApi> _pipeFactory;
         static internal HBRelogHelper Instance { get; private set; }
@@ -66,14 +68,15 @@ namespace HighVoltz.HBRelogHelper
             try
             {
                 AppDomain.CurrentDomain.ProcessExit += CurrentDomainProcessExit;
+                _startupLogActivityTimer.Reset();
                 AppDomain.CurrentDomain.UnhandledException += CurrentDomainUnhandledException;
+                Logging.OnLogMessage += Logging_OnLogMessage;
 
                 HbProcId = Process.GetCurrentProcess().Id;
                 _pipeFactory = new ChannelFactory<IRemotingApi>(new NetNamedPipeBinding(),
                         new EndpointAddress("net.pipe://localhost/HBRelog/Server"));
 
                 HBRelogRemoteApi = _pipeFactory.CreateChannel();
-
                 //instead of spawning a new thread use the GUI one.
                 Application.Current.Dispatcher.Invoke(new Action(
                     delegate
@@ -94,7 +97,12 @@ namespace HighVoltz.HBRelogHelper
             }
             // since theres no point of this plugin showing up in plugin list lets just throw an exception.
             // new HB doesn't catch exceptions 
-           //  throw new Exception("Ignore this exception");
+            //  throw new Exception("Ignore this exception");
+        }
+
+        void Logging_OnLogMessage(System.Collections.ObjectModel.ReadOnlyCollection<Logging.LogMessage> messages)
+        {
+            _startupLogActivityTimer.Reset();
         }
 
         void Shutdown()
@@ -131,12 +139,12 @@ namespace HighVoltz.HBRelogHelper
                     return;
                 if (!StyxWoW.IsInGame)
                     return;
-                if (!TreeRoot.IsRunning)
+                if (!TreeRoot.IsRunning && _startupLogActivityTimer.IsFinished)
                 {
                     int profileStatus = HBRelogRemoteApi.GetProfileStatus(CurrentProfileName);
                     // if HB isn't running after 30 seconds 
                     // and the HBRelog profile isn't paused then restart hb
-                    if (profileStatus != 1 && DateTime.Now - _runningTimeStamp >= TimeSpan.FromSeconds(120))
+                    if (profileStatus != 1 && DateTime.Now - _runningTimeStamp >= TimeSpan.FromSeconds(60))
                         HBRelogRemoteApi.RestartHB(HbProcId);
                 }
                 else
@@ -190,9 +198,9 @@ namespace HighVoltz.HBRelogHelper
                     _lastTooltip = tooltip;
                 }
             }
-            catch ( Exception ex)
+            catch (Exception ex)
             {
-               // Logging.WriteException(ex);
+                // Logging.WriteException(ex);
             }
         }
 
