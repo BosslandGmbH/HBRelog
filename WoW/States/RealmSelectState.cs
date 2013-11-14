@@ -87,8 +87,8 @@ namespace HighVoltz.HBRelog.WoW.States
             Utility.RestoreForegroundWindowAndMouse();
             if (!foundServer)
             {
-                _wowManager.Profile.Log("Unable to find sever. Stoping profile.");
-                _wowManager.Profile.Stop();
+                _wowManager.Profile.Log("Unable to find server. Pausing profile.");
+                _wowManager.Profile.Pause();
             }
         }
 
