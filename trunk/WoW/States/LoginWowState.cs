@@ -47,16 +47,16 @@ namespace HighVoltz.HBRelog.WoW.States
             {
                 string reason = isBanned ? "banned" : isSuspended ? "suspended" : isFrozen ? "frozen" : isSuspiciousLocked ? "locked due to suspicious activity" : "locked license";
                 _wowManager.Profile.Status = string.Format("Account is {0}", reason);
-                _wowManager.Profile.Log("Stoping profile because account is {0}.", reason);
-                _wowManager.Profile.Stop();
+                _wowManager.Profile.Log("Pausing profile because account is {0}.", reason);
+                _wowManager.Profile.Pause();
                 return;
             }
 
             if (IncorrectPassword)
             {
                 _wowManager.Profile.Status = string.Format("Incorrect login information entered");
-                _wowManager.Profile.Log("Stoping profile because incorrect login information was entered");
-                _wowManager.Profile.Stop();
+                _wowManager.Profile.Log("Pausing profile because incorrect login information was entered");
+                _wowManager.Profile.Pause();
                 return;                
             }
 
