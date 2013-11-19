@@ -114,9 +114,9 @@ namespace HighVoltz.HBRelog.Honorbuddy.States
                     _crashTimeStamp = DateTime.Now;
                     List<IntPtr> childWinHandles = NativeMethods.EnumerateProcessWindowHandles(_hbManager.BotProcess.Id);
                     string hbName = Path.GetFileNameWithoutExtension(_hbManager.Profile.Settings.HonorbuddySettings.HonorbuddyPath);
-                    return childWinHandles.Select(NativeMethods.GetWindowText).
-                        Count(n => !string.IsNullOrEmpty(n) && (n == "Honorbuddy" ||
-                            (hbName != "Honorbuddy" && n.Contains(hbName)))) > 1;
+                    var windowTitles = childWinHandles.Select(NativeMethods.GetWindowText);
+                    var ret = windowTitles.Count(n => !string.IsNullOrEmpty(n) && (n == "Honorbuddy" ||(hbName != "Honorbuddy" && n.Contains(hbName)))) > 1;
+                    return ret;
                 }
                 return false;
             }
