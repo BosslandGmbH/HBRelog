@@ -49,6 +49,10 @@ namespace HighVoltz.HBRelog.WoW.States
             }
             if (_wowManager.IsConnectiongOrLoading)
                 return;
+            
+            if (!IsRealmListVisible)
+                return;
+
             Utility.SaveForegroundWindowAndMouse();
             var tabs = RealmTabs;
             bool foundServer = false;
@@ -119,6 +123,15 @@ namespace HighVoltz.HBRelog.WoW.States
                 if (glueDialogTextContol != null && glueDialogTextContol.IsVisible)
                     return glueDialogTextContol.Text;
                 return string.Empty;
+            }
+        }
+
+        private bool IsRealmListVisible
+        {
+            get
+            {
+                var realmList = UIObject.GetUIObjectByName<Frame>(_wowManager, "RealmList");
+                return realmList != null && realmList.IsVisible;
             }
         }
 
