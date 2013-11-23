@@ -99,7 +99,7 @@ namespace HighVoltz.HBRelog.WoW.States
                 var realmName = CurrentRealmName;
                 if (string.IsNullOrEmpty(realmName))
                     return false;
-                return !string.Equals(realmName, _wowManager.Settings.ServerName, StringComparison.InvariantCultureIgnoreCase);
+                return !realmName.ToLowerInvariant().Contains(_wowManager.Settings.ServerName.ToLowerInvariant());
             }
         }
 
