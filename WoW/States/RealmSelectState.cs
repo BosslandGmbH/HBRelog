@@ -13,7 +13,6 @@ namespace HighVoltz.HBRelog.WoW.States
 	internal class RealmSelectState : State
 	{
 		private readonly WowManager _wowManager;
-		private int _attempt = 1;
 		public RealmSelectState(WowManager wowManager)
 		{
 			_wowManager = wowManager;
@@ -47,7 +46,7 @@ namespace HighVoltz.HBRelog.WoW.States
 				_wowManager.Profile.Log("Waiting in server queue");
 				return;
 			}
-			if (_wowManager.IsConnectiongOrLoading)
+			if (_wowManager.IsConnectiongOrLoading || IsConnecting)
 				return;
 
 			if (!IsRealmListVisible)
@@ -92,21 +91,8 @@ namespace HighVoltz.HBRelog.WoW.States
 			Utility.RestoreForegroundWindowAndMouse();
 			if (!foundServer)
 			{
-				if (_attempt < 4 && CancelRealmChange())
-				{
-					_wowManager.Profile.Log("Unable to find server on attempt #{0}. Canceling realm change.", _attempt);
-					_attempt++;
-				}
-				else
-				{
-					_wowManager.Profile.Log("Unable to find server after attempt #{0}. Pausing profile.", _attempt);
-					_wowManager.Profile.Pause();
-					_attempt = 1;
-				}
-			}
-			else
-			{
-				_attempt = 1;
+				_wowManager.Profile.Log("Unable to find server after attempt #{0}. Pausing profile.");
+				_wowManager.Profile.Pause();
 			}
 		}
 
@@ -118,6 +104,11 @@ namespace HighVoltz.HBRelog.WoW.States
 		private Button ScrollDownButton
 		{
 			get { return UIObject.GetUIObjectByName<Button>(_wowManager, "RealmListScrollFrameScrollBarScrollDownButton"); }
+		}
+
+		private Button ScrollUpButton
+		{
+			get { return UIObject.GetUIObjectByName<Button>(_wowManager, "RealmListScrollFrameScrollBarScrollUpButton"); }
 		}
 
 		private List<Button> RealmNameButtons
@@ -146,6 +137,31 @@ namespace HighVoltz.HBRelog.WoW.States
 			{
 				var realmList = UIObject.GetUIObjectByName<Frame>(_wowManager, "RealmList");
 				return realmList != null && realmList.IsVisible;
+			}
+		}
+
+		private string _cancelText;
+		bool IsConnecting
+		{
+			get
+			{
+				var dialogButtonText = GlueDialogButton1Text;
+				if (string.IsNullOrEmpty(dialogButtonText))
+					return false;
+				if (_cancelText == null)
+					_cancelText = _wowManager.Globals.GetValue("CANCEL").String.Value;
+				return _cancelText == dialogButtonText;
+			}
+		}
+
+		string GlueDialogButton1Text
+		{
+			get
+			{
+				var glueDialogButton1Text = UIObject.GetUIObjectByName<Button>(_wowManager, "GlueDialogButton1");
+				if (glueDialogButton1Text != null && glueDialogButton1Text.IsVisible)
+					return glueDialogButton1Text.Text;
+				return string.Empty;
 			}
 		}
 
@@ -194,6 +210,13 @@ namespace HighVoltz.HBRelog.WoW.States
 			var scrollDownButton = ScrollDownButton;
 			if (scrollDownButton == null)
 				return false;
+
+			var scrollUpButton = ScrollUpButton;
+			if (scrollUpButton == null)
+				return false;
+
+			bool scrollUp = scrollUpButton.IsEnabled && scrollUpButton.IsVisible;
+
 			for (int i = 0; i < 50; i++)
 			{
 				var realmButtons = RealmNameButtons;
@@ -222,9 +245,14 @@ namespace HighVoltz.HBRelog.WoW.States
 					}
 					return true;
 				}
-				if (!scrollDownButton.IsEnabled || !scrollDownButton.IsVisible)
+				if (scrollUp && !scrollUpButton.IsEnabled)
+					scrollUp = false;
+
+				var scrollButton = scrollUp ? scrollUpButton : scrollDownButton;
+
+				if (!scrollButton.IsEnabled || !scrollButton.IsVisible)
 					break;
-				clickPos = _wowManager.ConvertWidgetCenterToWin32Coord(scrollDownButton);
+				clickPos = _wowManager.ConvertWidgetCenterToWin32Coord(scrollButton);
 				Utility.LeftClickAtPos(_wowManager.GameProcess.MainWindowHandle, (int)clickPos.X, (int)clickPos.Y, false, false);
 				try
 				{
@@ -237,16 +265,6 @@ namespace HighVoltz.HBRelog.WoW.States
 				}
 			}
 			return false;
-		}
-
-		bool CancelRealmChange()
-		{
-			var cancelButton = UIObject.GetUIObjectByName<Button>(_wowManager, "RealmListCancelButton");
-			if (cancelButton == null || !cancelButton.IsVisible)
-				return false;
-			var clickPos = _wowManager.ConvertWidgetCenterToWin32Coord(cancelButton);
-			Utility.LeftClickAtPos(_wowManager.GameProcess.MainWindowHandle, (int)clickPos.X, (int)clickPos.Y);
-			return true;
 		}
 
 	}
