@@ -323,13 +323,19 @@ namespace HighVoltz.HBRelog.WoW
                     {
                         if (!((Process)state).HasExited)
                         {
-                            if (_windowCloseAttempt++ < 6)
-                                proc.CloseMainWindow();
-                            else
-                            {
-                                Profile.Log("Killing Wow");
-                                ((Process)state).Kill();
-                            }
+	                        if (_windowCloseAttempt++ < 6)
+	                        {
+		                        proc.CloseMainWindow();
+	                        }
+	                        else
+	                        {
+		                        try
+		                        {
+			                        Profile.Log("Killing Wow");
+			                        ((Process) state).Kill();
+		                        }
+		                        catch {}
+	                        }
                         }
                         else
                         {
