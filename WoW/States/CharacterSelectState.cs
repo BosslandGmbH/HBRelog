@@ -34,6 +34,12 @@ namespace HighVoltz.HBRelog.WoW.States
         {
             if (_wowManager.Throttled)
                 return;
+	        
+			// trial account will have a promotion frame that requires clicking a 'Play Trial' button to enter game.
+			if (ClickPlayTrial())
+	        {
+		        return;
+	        }
 
             if (ShouldChangeRealm)
             {
@@ -124,5 +130,22 @@ namespace HighVoltz.HBRelog.WoW.States
             _realmChangeSw.Restart();
         }
 
+	    bool ClickPlayTrial()
+	    {
+		    var promotionFrame = UIObject.GetUIObjectByName<Frame>(_wowManager, "PromotionFrame");
+			if (promotionFrame == null || !promotionFrame.IsVisible)
+				return false;
+
+		    var playButton = promotionFrame.Children.LastOrDefault() as Button;
+		    if (playButton == null)
+		    {
+			    Log.Write("Unable to find the 'Play Trial' button! notify developer");
+				_wowManager.Profile.Pause();
+				return false;
+		    }
+			var clickPos = _wowManager.ConvertWidgetCenterToWin32Coord(playButton);
+			Utility.LeftClickAtPos(_wowManager.GameProcess.MainWindowHandle, (int)clickPos.X, (int)clickPos.Y);
+			return true;
+	    }
     }
 }
