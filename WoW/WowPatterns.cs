@@ -24,7 +24,7 @@ namespace HighVoltz.HBRelog.WoW
 
         // ref - FrameXML:EditBox:HasFocus
         public static readonly Pattern FocusedWidgetPattern = Pattern.FromTextstyle(
-            "FocusedWidget", "3b 05 ?? ?? ?? ?? 0f 94 c1 51 57 e8 ?? ?? ?? ?? 83 c4 10 33 c0 40 5f 5d c3", new AddModifier(2), new LeaModifier());
+			"FocusedWidget", "3b 35 ?? ?? ?? ?? 75 ?? 8b b6 50 02 00 00 81 4e 64 00 00 00 02 8d 4e 20 8b 01 6a 00 ff 50 50 eb", new AddModifier(2), new LeaModifier());
 
         // ref - Framescript_ExecuteBuffer.
         public static readonly Pattern LuaStatePattern = Pattern.FromTextstyle(
