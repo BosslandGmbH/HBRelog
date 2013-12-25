@@ -297,6 +297,10 @@
     <Resource Include="License.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Launcher\Launcher.csproj">
+      <Project>{4781ea6c-e946-4b0f-8013-fa04aec24b15}</Project>
+      <Name>Launcher</Name>
+    </ProjectReference>
     <ProjectReference Include="Libs\GreyMagic\GreyMagic.csproj">
       <Project>{29bee34e-8d6a-47bf-96fa-aba46f6e9b66}</Project>
       <Name>GreyMagic</Name>

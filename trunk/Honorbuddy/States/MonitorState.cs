@@ -58,7 +58,7 @@ namespace HighVoltz.HBRelog.Honorbuddy.States
             if (!_hbManager.BotProcess.WaitForInputIdle(0))
                 return;
             // force the mainWindow handle to cache before HB auto minimizes to system tray..
-            if (_hbManager.BotProcess.MainWindowHandle == IntPtr.Zero) ;
+	        if (_hbManager.BotProcess.MainWindowHandle == IntPtr.Zero) ;
 
             // check if it's taking Honorbuddy too long to connect.
             if (!_hbManager.StartupSequenceIsComplete && DateTime.Now - _hbManager.HbStartupTimeStamp > TimeSpan.FromMinutes(2))
