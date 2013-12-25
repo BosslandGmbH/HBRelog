@@ -1,5 +1,5 @@
 ﻿// This file is auto genorated from using SubRCRev.exe and template AssemblyInfo.template
-// Build Date: 2013/12/22 00:34:14
+// Build Date: 2013/12/25 11:30:49
 // SVN url: https://hbrelog.googlecode.com/svn/trunk/Properties
 
 using System.Reflection;
@@ -55,5 +55,5 @@ using System.Windows;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.0.190")]
-[assembly: AssemblyFileVersion("1.0.0.190")]
+[assembly: AssemblyVersion("1.0.0.191")]
+[assembly: AssemblyFileVersion("1.0.0.191")]
