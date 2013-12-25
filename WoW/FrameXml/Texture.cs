@@ -23,6 +23,7 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
                         if (ptr != IntPtr.Zero)
                             _texturePath = WowManager.Memory.ReadString(ptr, Encoding.UTF8, 260);
                     }
+	                triedGetPath = true;
                 }
                 return _texturePath;
             }

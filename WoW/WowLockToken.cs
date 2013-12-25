@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using GreyMagic;
+using HighVoltz.Launcher;
 
 namespace HighVoltz.HBRelog.WoW
 {
@@ -78,11 +79,8 @@ namespace HighVoltz.HBRelog.WoW
 					Process wowProcess = Utility.GetChildProcessByName(_launcherPid, "Wow");
 					if (wowProcess != null)
 					{
-						// Kill the cmd process that was used to start WoW
-						var launcherProc = Process.GetProcessById(_launcherPid);
-						if (launcherProc != null && !launcherProc.HasExited && IsCmdProcess(launcherProc))
-							launcherProc.Kill();
 						_launcherPid = 0;
+						Helpers.ResumeProcess(wowProcess.Id);
 						_wowProcess = wowProcess;
 					}
 					else
@@ -117,8 +115,22 @@ namespace HighVoltz.HBRelog.WoW
 							_lockOwner.Settings.WowArgs += " ";
 						_lockOwner.Settings.WowArgs += "-noautolaunch64bit";
 					}
-					var args = string.Format("/C \"{0} {1}\"", _lockOwner.Settings.WowPath, _lockOwner.Settings.WowArgs);
-					var pi = new ProcessStartInfo("cmd", args) {UseShellExecute = false, CreateNoWindow = true};
+
+					var pi = new ProcessStartInfo() { UseShellExecute = false };
+
+					if (lanchingWoW)
+					{
+						var launcherPath = Path.Combine(Utility.AssemblyDirectory, "Launcher.exe");
+						pi.FileName = launcherPath;
+						var args = string.Format("\"{0}\" \"{1}\"", _lockOwner.Settings.WowPath, _lockOwner.Settings.WowArgs);
+						pi.Arguments = args;
+					}
+					else
+					{
+						pi.FileName = _lockOwner.Settings.WowPath;
+						pi.Arguments = _lockOwner.Settings.WowArgs;
+					}
+
 					_launcherPid = Process.Start(pi).Id;
 					_lockOwner.ProcessIsReadyForInput = false;
 					_lockOwner.LoginTimer.Reset();

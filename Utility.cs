@@ -15,6 +15,7 @@ Copyright 2012 HighVoltz
 */
 using System;
 using System.Drawing;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Runtime.InteropServices;
@@ -35,6 +36,8 @@ namespace HighVoltz.HBRelog
         public const uint WmChar = 0x0102;
         public const uint WmKeyup = 0x0101;
         public readonly static Random Rand = new Random();
+
+		public static readonly string AssemblyDirectory =  Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location); 
 
         public static string EncodeToUTF8(this string text)
         {
