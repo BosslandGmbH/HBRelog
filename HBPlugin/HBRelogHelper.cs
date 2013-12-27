@@ -101,7 +101,7 @@ namespace HighVoltz.HBRelogHelper
             catch (Exception ex)
             {
                 // fail silently.
-                Logging.Write(Color.Red, ex.ToString());
+                Logging.Write(Colors.Red, ex.ToString());
             }
             // since theres no point of this plugin showing up in plugin list lets just throw an exception.
             // new HB doesn't catch exceptions 
