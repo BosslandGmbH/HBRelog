@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 using System.ServiceModel;
 using System.Windows;
+using System.Windows.Media;
 using System.Windows.Threading;
 using HighVoltz.HBRelog.Remoting;
 using Styx;
@@ -87,13 +88,20 @@ namespace HighVoltz.HBRelogHelper
                         _monitorTimer.Start();
                     }));
                 IsConnected = HBRelogRemoteApi.Init(HbProcId);
-                if (IsConnected)
-                    CurrentProfileName = HBRelogRemoteApi.GetCurrentProfileName(HbProcId);
+	            if (IsConnected)
+	            {
+		            Logging.Write("HBRelogHelper: Connected with HBRelog");
+		            CurrentProfileName = HBRelogRemoteApi.GetCurrentProfileName(HbProcId);
+	            }
+	            else
+	            {
+					Logging.Write("HBRelogHelper: Could not connect to HBRelog");
+	            }
             }
             catch (Exception ex)
             {
                 // fail silently.
-                //Logging.Write(Color.Red, ex.ToString());
+                Logging.Write(Color.Red, ex.ToString());
             }
             // since theres no point of this plugin showing up in plugin list lets just throw an exception.
             // new HB doesn't catch exceptions 
