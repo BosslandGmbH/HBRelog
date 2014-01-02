@@ -43,11 +43,37 @@ namespace HighVoltz.HBRelog.Honorbuddy.States
             // remove internet zone restrictions from Honorbuddy.exe if it exists
             Utility.UnblockFileIfZoneRestricted(_hbManager.Settings.HonorbuddyPath);
             // we need to delay starting honorbuddy for a few seconds if another instance from same path was started a few seconds ago
-            if (HonorbuddyManager.HBStartupManager.CanStart(_hbManager.Settings.HonorbuddyPath))
-                _hbManager.StartHonorbuddy();
+	        if (HonorbuddyManager.HBStartupManager.CanStart(_hbManager.Settings.HonorbuddyPath))
+	        {
+		        CopyHBRelogHelperPluginOver();
+				_hbManager.StartHonorbuddy();
+	        }
 
         }
 
+	    void CopyHBRelogHelperPluginOver()
+	    {
+			// remove internet zone restrictions from Honorbuddy.exe if it exists
+			Utility.UnblockFileIfZoneRestricted(_hbManager.Settings.HonorbuddyPath);
+			// check if we need to copy over plugin.
+			using (var reader = new StreamReader(Assembly.GetExecutingAssembly().GetManifestResourceStream("HighVoltz.HBRelog.HBPlugin.HBRelogHelper.cs")))
+			{
+				string pluginString = reader.ReadToEnd();
+				// copy the HBPlugin over to the Honorbuddy plugin folder if it doesn't exist.
+				// or length doesn't match with the version in resource.
+				string pluginFolder = Path.Combine(Path.GetDirectoryName(_hbManager.Settings.HonorbuddyPath), "Plugins\\HBRelogHelper");
+				if (!Directory.Exists(pluginFolder))
+					Directory.CreateDirectory(pluginFolder);
+
+				string pluginPath = Path.Combine(pluginFolder, "HBRelogHelper.cs");
+
+				var fi = new FileInfo(pluginPath);
+				if (!fi.Exists || fi.Length != pluginString.Length)
+				{
+					File.WriteAllText(pluginPath, pluginString);
+				}
+			}
+	    }
         #endregion
     }
 }
