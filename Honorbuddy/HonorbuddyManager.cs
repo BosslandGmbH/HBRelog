@@ -55,7 +55,6 @@ namespace HighVoltz.HBRelog.Honorbuddy
             States = new List<State> 
             {
                 new UpdateHonorbuddyState(this),
-                new CopyPluginToHonorbuddyPathState(this),
                 new StartHonorbuddyState(this),
                 new MonitorState(this),
             };

@@ -84,7 +84,6 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Honorbuddy\States\CopyPluginToHonorbuddyPathState.cs" />
     <Compile Include="Honorbuddy\States\MonitorState.cs" />
     <Compile Include="Honorbuddy\States\StartHonorbuddyState.cs" />
     <Compile Include="Honorbuddy\States\UpdateHonorbuddyState.cs" />
