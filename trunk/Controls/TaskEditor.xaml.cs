@@ -43,13 +43,13 @@ namespace HighVoltz.HBRelog.Controls
             BMTask task = (BMTask)source;
 
             List<PropertyInfo> propertyList = task.GetType().GetProperties().
-                Where(pi => !pi.GetCustomAttributesData().Any(cad => cad.Constructor.DeclaringType == typeof(XmlIgnoreAttribute))).ToList();
+                Where(pi => pi.GetCustomAttributesData().All(cad => cad.Constructor.DeclaringType != typeof(XmlIgnoreAttribute))).ToList();
             PropertyGrid.Children.Clear();
             PropertyGrid.RowDefinitions.Clear();
             for (int index = 0; index < propertyList.Count; index++)
             {
                 PropertyGrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(22) });
-                TextBlock propNameText = new TextBlock()
+                var propNameText = new TextBlock()
                 {
                     Text = SpacifierConverter.GetSpaciousString(propertyList[index].Name),
                     Margin = new Thickness(2, 0, 2, 0)

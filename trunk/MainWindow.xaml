@@ -237,7 +237,7 @@
               MinHeight="300" VerticalAlignment="Top" Width="0" HorizontalAlignment="Right">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
-                <ColumnDefinition Width="255" MinWidth="255" />
+                <ColumnDefinition Name="AccountConfigGridColumn" Width="275" MinWidth="275" />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition/>

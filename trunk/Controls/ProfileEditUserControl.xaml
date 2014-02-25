@@ -215,7 +215,7 @@
                                 <!-- Insert spaces into the listbox item text.-->
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding Path=Name, Converter={StaticResource SpaceConverter}}"
+                                        <TextBlock Text="{Binding Path=Name}"
                                                    ToolTip="{Binding Path=ToolTip}" ToolTipService.InitialShowDelay="0"
                                                    FontWeight="{Binding Path=IsRunning, Converter={StaticResource TaskIsRunningConverter}}"
                                                    TextDecorations="{Binding Path=IsRunning, Converter={StaticResource TaskIsRunningConverter}}"/>

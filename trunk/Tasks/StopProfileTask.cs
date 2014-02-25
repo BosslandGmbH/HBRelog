@@ -30,10 +30,10 @@ namespace HighVoltz.HBRelog.Tasks
 	    }
 
         [XmlIgnore]
-        public override string Name { get { return "StopProfile"; } }
+        public override string Name { get { return "Stop HBRelog Profile"; } }
 
         [XmlIgnore]
-        override public string Help { get { return "Stops a profle"; } }
+        override public string Help { get { return "Stops a HBReog profle"; } }
 
         string _toolTip;
         [XmlIgnore]
@@ -41,7 +41,7 @@ namespace HighVoltz.HBRelog.Tasks
         {
             get
             {
-                return _toolTip ?? (ToolTip = string.Format("Stop profile: {0}", ProfileName));
+                return _toolTip ?? (ToolTip = string.Format("Stop HBRelog profile: {0}", ProfileName));
             }
             set
             {
@@ -61,12 +61,12 @@ namespace HighVoltz.HBRelog.Tasks
                 .FirstOrDefault(p => p.Settings.ProfileName.Equals(ProfileName, StringComparison.InvariantCultureIgnoreCase));
             if (profile != null)
             {
-                Profile.Log("Stopping profile: {0}", ProfileName);
+                Profile.Log("Stopping HBRelog profile: {0}", ProfileName);
                 profile.Stop();
             }
             else
             {
-                Profile.Err("Could not find a profile named {0}", ProfileName);
+                Profile.Err("Could not find a HBRelog profile named {0}", ProfileName);
             }
             IsDone = true;
         }

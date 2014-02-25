@@ -31,10 +31,10 @@ namespace HighVoltz.HBRelog.Tasks
         [XmlIgnore]
         public override string Name
         {
-            get { return "ChangeProfile"; }
+            get { return "Change HB Profile"; }
         }
         [XmlIgnore]
-        override public string Help { get { return "Loads a Honorbuddy/Professionbuddy profile"; } }
+        override public string Help { get { return "Loads a Honorbuddy profile"; } }
 
         string _toolTip;
         [XmlIgnore]
@@ -62,9 +62,9 @@ namespace HighVoltz.HBRelog.Tasks
         {
             if (File.Exists(ProfilePath))
             {
-                Profile.Log("Loading profile: {0} and {1}",
+                Profile.Log("Loading Honorbuddy profile: {0} and {1}",
                     Profile.Settings.ProfileName, ProfilePath, !string.IsNullOrEmpty(Bot) ? "switching to bot " + Bot : "using current bot");
-                Profile.Status = "Changing to profile: " + Path.GetFileNameWithoutExtension(ProfilePath);
+				Profile.Status = "Changing to Honorbuddy profile: " + Path.GetFileNameWithoutExtension(ProfilePath);
                 Profile.TaskManager.HonorbuddyManager.Stop();
                 var hbSettings = Profile.Settings.HonorbuddySettings.ShadowCopy();
                 hbSettings.HonorbuddyProfile = ProfilePath;
@@ -75,7 +75,7 @@ namespace HighVoltz.HBRelog.Tasks
             }
             else
             {
-                Profile.Err("Unable to find profile {0}", ProfilePath);
+				Profile.Err("Unable to find Honorbuddy profile {0}", ProfilePath);
             }
             IsDone = true;
         }
@@ -85,7 +85,7 @@ namespace HighVoltz.HBRelog.Tasks
             ChangeProfileTask _task;
             public ProfilePathEditControl()
             {
-                Title = "Browse to and select your profile";
+				Title = "Browse to and select your Honorbuddy profile";
                 DefaultExt = ".xml";
                 Filter = ".xml|*.xml";
             }
