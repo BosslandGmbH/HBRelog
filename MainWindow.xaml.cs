@@ -109,7 +109,8 @@ namespace HighVoltz.HBRelog
         {
             if (charSettings != null)
             {
-                var ani = new DoubleAnimation(255, new Duration(TimeSpan.Parse("0:0:0.4"))) { DecelerationRatio = 0.7 };
+	            var width = AccountConfigGridColumn.ActualWidth ;
+				var ani = new DoubleAnimation(width, new Duration(TimeSpan.Parse("0:0:0.4"))) { DecelerationRatio = 0.7 };
                 AccountConfigGrid.BeginAnimation(WidthProperty, ani);
                 AccountConfig.EditAccount(charSettings);
             }

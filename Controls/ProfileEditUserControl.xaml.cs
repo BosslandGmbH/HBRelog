@@ -39,7 +39,7 @@ namespace HighVoltz.HBRelog.Controls
             {
                 ListBoxItem item = new ListBoxItem();
                 BMTask task = (BMTask)Activator.CreateInstance(type);
-                item.Content = SpacifierConverter.GetSpaciousString(task.Name);
+                item.Content = task.Name;
                 item.Tag = type;
                 item.ToolTip = task.Help;
                 TaskList.Items.Add(item);

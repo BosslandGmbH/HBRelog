@@ -32,7 +32,7 @@ namespace HighVoltz.HBRelog.Tasks
 	    }
 
         [XmlIgnore]
-        public override string Name { get { return "StartProfile"; } }
+        public override string Name { get { return "Start HBRelog Profile"; } }
 
         [XmlIgnore]
         override public string Help { get { return "Starts a profle"; } }
@@ -43,7 +43,7 @@ namespace HighVoltz.HBRelog.Tasks
         {
             get
             {
-                return _toolTip ?? (ToolTip = string.Format("Start profile: {0}", ProfileName));
+                return _toolTip ?? (ToolTip = string.Format("Start HBRelog profile: {0}", ProfileName));
             }
             set
             {
@@ -63,12 +63,12 @@ namespace HighVoltz.HBRelog.Tasks
                 .FirstOrDefault(p => p.Settings.ProfileName.Equals(ProfileName, StringComparison.InvariantCultureIgnoreCase));
             if (profile != null)
             {
-                Profile.Log("Starting profile: {0}", ProfileName);
+                Profile.Log("Starting HBRelog profile: {0}", ProfileName);
                 profile.Start();
             }
             else
             {
-                Profile.Err("Could not find a profile named {0}", ProfileName);
+                Profile.Err("Could not find a HBRelog profile named {0}", ProfileName);
             }
             IsDone = true;
         }
