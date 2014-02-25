@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -292,7 +293,9 @@ namespace HighVoltz.HBRelog.Settings
                                 .ToList();
                         foreach (PropertyInfo property in propertyList)
                         {
-                            taskElement.Add(new XAttribute(property.Name, property.GetValue(task, null)));
+	                        var value = property.GetValue(task, null);
+							Debug.Assert(value != null, string.Format("value for {0} != null", property.Name));
+							taskElement.Add(new XAttribute(property.Name, value));
                         }
                         tasksElement.Add(taskElement);
                     }
