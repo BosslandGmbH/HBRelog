@@ -20,63 +20,100 @@ namespace HighVoltz.HBRelog.Tasks
 {
     public class WaitTask : BMTask
     {
-        public int Minutes { get; set; }
-        public int RandomMinutes { get; set; }
-        [XmlIgnore]
-        public override string Name
-        {
-            get { return "Wait"; }
-        }
+	    #region Overrides
 
-        [XmlIgnore]
-        override public string Help { get { return "Waits for duration before next task is executed"; } }
+	    [XmlIgnore]
+	    public override string Name
+	    {
+		    get { return "Wait"; }
+	    }
 
-        string _toolTip;
-        [XmlIgnore]
-        public override string ToolTip
-        {
-            get
-            {
-                return _toolTip ?? (ToolTip = string.Format("Wait: {0} minutes", Minutes));
-            }
-            set
-            {
-                if (value != _toolTip)
-                {
-                    _toolTip = value;
-                    OnPropertyChanged("ToolTip");
-                }
-            }
-        }
-        TimeSpan _waitTime = new TimeSpan(0);
-        DateTime _timeStamp;
-        public override void Pulse()
-        {
-            if (_waitTime == TimeSpan.FromTicks(0))
-            {
-                _waitTime = TimeSpan.FromMinutes(Minutes + Utility.Rand.Next(-RandomMinutes, RandomMinutes));
-                Profile.Log("Waiting for {0} minutes before executing next task", _waitTime.TotalMinutes);
-                _timeStamp = DateTime.Now;
-            }
+	    [XmlIgnore]
+	    public override string Help
+	    {
+		    get { return "Waits for duration before next task is executed"; }
+	    }
 
-            BMTask nextTask = NextTask;
-            if (nextTask != null)
-                ToolTip = string.Format("Running {0} task in {1} minutes",
-                     nextTask, (int)((_waitTime - (DateTime.Now - _timeStamp)).TotalMinutes));
+	    private string _toolTip;
+
+	    [XmlIgnore]
+	    public override string ToolTip
+	    {
+		    get
+		    {
+			    return _toolTip ?? (_toolTip = string.Format("Wait: {0} minutes", Minutes));
+		    }
+		    set
+		    {
+			    if (value != _toolTip)
+			    {
+				    _toolTip = value;
+				    OnPropertyChanged("ToolTip");
+			    }
+		    }
+	    }
+
+	    private TimeSpan _waitTime = new TimeSpan(0);
+	    private DateTime _timeStamp;
+
+	    public override void Pulse()
+	    {
+		    if (_waitTime == TimeSpan.FromTicks(0))
+		    {
+			    _waitTime = TimeSpan.FromMinutes(Minutes + Utility.Rand.Next(-RandomMinutes, RandomMinutes));
+			    Profile.Log("Waiting for {0} minutes before executing next task", _waitTime.TotalMinutes);
+			    _timeStamp = DateTime.Now;
+		    }
+
+		    BMTask nextTask = NextTask;
+		    if (nextTask != null)
+			    ToolTip = string.Format(
+				    "Running {0} task in {1} minutes",
+				    nextTask,
+				    (int) ((_waitTime - (DateTime.Now - _timeStamp)).TotalMinutes));
 
 
-            if (DateTime.Now - _timeStamp >= _waitTime)
-            {
-                IsDone = true;
-                Profile.Log("Wait complete");
-                ToolTip = string.Format("Wait: {0} minutes", Minutes);
-            }
-        }
+		    if (DateTime.Now - _timeStamp >= _waitTime)
+		    {
+			    IsDone = true;
+			    Profile.Log("Wait complete");
+			    ToolTip = string.Format("Wait: {0} minutes", Minutes);
+		    }
+	    }
 
-        public override void Reset()
-        {
-            base.Reset();
-            _waitTime = new TimeSpan(0);
-        }
+	    public override void Reset()
+	    {
+		    base.Reset();
+		    _waitTime = new TimeSpan(0);
+	    }
+
+	    #endregion
+
+	    private int _minutes;
+	    public int Minutes
+	    {
+		    get { return _minutes; }
+		    set
+		    {
+			    if (value == _minutes) return;
+			    _minutes = value;
+				// invalidate the tooltip.
+			    _toolTip = null;
+		    }
+	    }
+
+	    private int _randomMinutes;
+		public int RandomMinutes
+		{
+			get { return _randomMinutes; }
+			set
+			{
+				if (value == _randomMinutes) return;
+				_randomMinutes = value;
+				// invalidate the tooltip.
+				_toolTip = null;
+			}
+		}
+
     }
 }

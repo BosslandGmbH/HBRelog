@@ -24,6 +24,11 @@ namespace HighVoltz.HBRelog.Tasks
 {
     class StopProfileTask : BMTask
     {
+		public StopProfileTask()
+	    {
+		    ProfileName = "";
+	    }
+
         [XmlIgnore]
         public override string Name { get { return "StopProfile"; } }
 
