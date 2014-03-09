@@ -49,10 +49,20 @@ namespace HighVoltz.HBRelog.Honorbuddy.States
             // restart wow hb if it has exited
             if (_hbManager.BotProcess == null || _hbManager.BotProcess.HasExited)
             {
-                _hbManager.Profile.Log("Honorbuddy process was terminated. Restarting");
-                _hbManager.Profile.Status = "Honorbuddy has exited.";
-                _hbManager.Stop();
-                return;
+				// bot process exit code of 12 is used by HB to signal relogers to not restart the bot.
+	            if (_hbManager.BotProcess != null && _hbManager.BotProcess.ExitCode == 12)
+	            {
+					_hbManager.Profile.Log("Honorbuddy process has exited with code 12, signaling that it should not be restarted");
+					_hbManager.Profile.Status = "Honorbuddy has requested a bot shutdown.";
+					_hbManager.Profile.TaskManager.Stop();
+				}
+	            else
+	            {		            
+					_hbManager.Profile.Log("Honorbuddy process was terminated. Restarting");
+					_hbManager.Profile.Status = "Honorbuddy has exited.";
+					_hbManager.Stop();
+					return;
+				}
             }
             // return if hb isn't ready for input.
             if (!_hbManager.BotProcess.WaitForInputIdle(0))
