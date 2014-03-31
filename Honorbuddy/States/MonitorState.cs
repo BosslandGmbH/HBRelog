@@ -48,7 +48,7 @@ namespace HighVoltz.HBRelog.Honorbuddy.States
 	            {
 					_hbManager.Profile.Log("Honorbuddy process has exited with code 12, signaling that it should not be restarted");
 					_hbManager.Profile.Status = "Honorbuddy has requested a bot shutdown.";
-					_hbManager.Profile.TaskManager.Stop();
+					_hbManager.Profile.Stop();
 				}
 	            else
 	            {		            
