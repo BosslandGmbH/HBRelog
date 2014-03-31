@@ -26,6 +26,7 @@ using HighVoltz.HBRelog.FiniteStateMachine;
 using HighVoltz.HBRelog.FiniteStateMachine.FiniteStateMachine;
 using HighVoltz.HBRelog.Honorbuddy.States;
 using HighVoltz.HBRelog.Settings;
+using HighVoltz.HBRelog.WoW;
 using HighVoltz.HBRelog.WoW.States;
 using ICSharpCode.SharpZipLib.Zip;
 using Microsoft.Win32.SafeHandles;
@@ -35,7 +36,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
 {
     public class HonorbuddyManager : Engine, IBotManager
     {
-
+	    private Stopwatch _botExitTimer;
         readonly object _lockObject = new object();
         public bool StartupSequenceIsComplete { get; private set; }
 
@@ -48,6 +49,20 @@ namespace HighVoltz.HBRelog.Honorbuddy
         }
         public HonorbuddySettings Settings { get; private set; }
         public Process BotProcess { get; private set; }
+
+	    public bool WaitForBotToExit
+	    {
+		    get
+		    {
+				if (Profile.TaskManager.WowManager.GameProcess != null && !Profile.TaskManager.WowManager.GameProcess.HasExited)
+					return false;
+			    if (BotProcess == null || BotProcess.HasExited)
+					return false;
+			    if (_botExitTimer == null)
+				    _botExitTimer = Stopwatch.StartNew();
+			    return _botExitTimer.ElapsedMilliseconds < 20000;
+		    }
+	    }
 
         public HonorbuddyManager(CharacterProfile profile)
         {
@@ -109,6 +124,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
 
         internal void StartHonorbuddy()
         {
+	        _botExitTimer = null;
             Profile.Log("starting {0}", Profile.Settings.HonorbuddySettings.HonorbuddyPath);
             Profile.Status = "Starting Honorbuddy";
             StartupSequenceIsComplete = false;
@@ -169,7 +185,6 @@ namespace HighVoltz.HBRelog.Honorbuddy
                 OnStartupSequenceIsComplete(this, new ProfileEventArgs(Profile));
         }
 
-        readonly Stopwatch _hbRespondingSw = new Stopwatch();
         /// <summary>
         /// returns false if the WoW user interface is not responsive for 10+ seconds.
         /// </summary>

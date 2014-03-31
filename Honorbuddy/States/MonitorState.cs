@@ -40,17 +40,11 @@ namespace HighVoltz.HBRelog.Honorbuddy.States
 
         public override void Run()
         {
-            var gameProc = _hbManager.Profile.TaskManager.WowManager.GameProcess;
-            if (gameProc == null || gameProc.HasExited)
-            {
-                _hbManager.Stop();
-                return;
-            }
             // restart wow hb if it has exited
             if (_hbManager.BotProcess == null || _hbManager.BotProcess.HasExited)
             {
 				// bot process exit code of 12 is used by HB to signal relogers to not restart the bot.
-	            if (_hbManager.BotProcess != null && _hbManager.BotProcess.ExitCode == 12)
+	            if (_hbManager.BotProcess != null && _hbManager.BotProcess.ExitCode == (int)ExitCode.StopMonitoring)
 	            {
 					_hbManager.Profile.Log("Honorbuddy process has exited with code 12, signaling that it should not be restarted");
 					_hbManager.Profile.Status = "Honorbuddy has requested a bot shutdown.";
@@ -64,6 +58,13 @@ namespace HighVoltz.HBRelog.Honorbuddy.States
 					return;
 				}
             }
+			var gameProc = _hbManager.Profile.TaskManager.WowManager.GameProcess;
+			if (gameProc == null || gameProc.HasExited)
+			{
+				if (!_hbManager.WaitForBotToExit)
+					_hbManager.Stop();
+				return;
+			}
             // return if hb isn't ready for input.
             if (!_hbManager.BotProcess.WaitForInputIdle(0))
                 return;
@@ -131,6 +132,11 @@ namespace HighVoltz.HBRelog.Honorbuddy.States
                 return false;
             }
         }
+
+	    enum ExitCode
+	    {
+		    StopMonitoring = 12,
+	    }
 
     }
 }

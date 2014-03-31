@@ -24,11 +24,15 @@ namespace HighVoltz.HBRelog.WoW.States
 
         public override bool NeedToRun
         {
-            get { return _wowManager.StartupSequenceIsComplete || _wowManager.InGame; }
+            get { return (_wowManager.GameProcess != null && !_wowManager.GameProcess.HasExited) 
+				&& (_wowManager.StartupSequenceIsComplete || _wowManager.InGame); }
         }
 
         public override void Run()
         {
+			if (_wowManager.LockToken.IsValid)
+				_wowManager.LockToken.ReleaseLock();
+
             if (!_wowManager.StartupSequenceIsComplete)
             {
                 _wowManager.SetStartupSequenceToComplete();

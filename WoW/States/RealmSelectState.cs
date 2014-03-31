@@ -29,7 +29,8 @@ namespace HighVoltz.HBRelog.WoW.States
 		{
 			get
 			{
-				return !_wowManager.StartupSequenceIsComplete && !_wowManager.InGame && !_wowManager.IsConnectiongOrLoading &&
+				return (_wowManager.GameProcess != null && !_wowManager.GameProcess.HasExited) 
+					&& !_wowManager.StartupSequenceIsComplete && !_wowManager.InGame && !_wowManager.IsConnectiongOrLoading &&
 					   _wowManager.GlueStatus == WowManager.GlueState.ServerSelection;
 			}
 		}

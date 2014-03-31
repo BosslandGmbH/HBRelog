@@ -149,7 +149,6 @@ namespace HighVoltz.HBRelog.WoW
 					_lockOwner.Memory = new ExternalProcessReader(_wowProcess);
 					_wowProcess = null;
 					_lockOwner.Profile.Log("Wow is ready to login.");
-					ReleaseLock();
 				}
 			}
 		}

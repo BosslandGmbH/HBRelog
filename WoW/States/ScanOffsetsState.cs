@@ -25,7 +25,8 @@ namespace HighVoltz.HBRelog.WoW.States
         {
             get
             {
-                return !_wowManager.StartupSequenceIsComplete && _wowManager.Memory != null &&
+                return (_wowManager.GameProcess != null && !_wowManager.GameProcess.HasExited)
+					&& !_wowManager.StartupSequenceIsComplete && _wowManager.Memory != null &&
                        (string.IsNullOrEmpty(HbRelogManager.Settings.WowVersion)
                        || !HbRelogManager.Settings.WowVersion.Equals(_wowManager.GameProcess.VersionString())
                        || HbRelogManager.Settings.GlueStateOffset == 0
