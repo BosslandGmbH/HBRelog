@@ -26,7 +26,12 @@ namespace HighVoltz.HBRelog.WoW.States
 
         public override bool NeedToRun
         {
-            get { return !_wowManager.StartupSequenceIsComplete && !_wowManager.InGame && _wowManager.GlueStatus == WowManager.GlueState.Disconnected; }
+	        get
+	        {
+		        return (_wowManager.GameProcess != null && !_wowManager.GameProcess.HasExited) 
+					&& !_wowManager.StartupSequenceIsComplete && !_wowManager.InGame
+					&& _wowManager.GlueStatus == WowManager.GlueState.Disconnected;
+	        }
         }
 
         public override void Run()
