@@ -164,6 +164,7 @@ namespace HighVoltz.HBRelog
             Log.Write("\t{0,-30} {1}", "HB Delay:", HbRelogManager.Settings.HBDelay);
             Log.Write("\t{0,-30} {1}", "Login Delay:", HbRelogManager.Settings.LoginDelay);
             Log.Write("\t{0,-30} {1}", "Minimize Hb On Startup:", HbRelogManager.Settings.MinimizeHbOnStart);
+			Log.Write("\t{0,-30} {1}", "Set GameWindow Title:", HbRelogManager.Settings.SetGameWindowTitle);
             Log.Write("\t{0,-30} {1}", "Wow Start Delay:", HbRelogManager.Settings.WowDelay);
             // if autostart is on then start all enabled acounts
             if (HbRelogManager.Settings.AutoStart)

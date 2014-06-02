@@ -39,11 +39,13 @@ namespace HighVoltz.HBRelog.Settings
         private bool _checkHbResponsiveness;
         private bool _checkWowResponsiveness;
         private bool _checkRealmStatus;
-        private int _hBDelay;
+		private string _gameWindowTitle;
+		private int _hBDelay;
         private DateTime _lastSaveTimeStamp;
         private int _loginDelay;
         private bool _minimizeHbOnStart;
         private bool _useDarkStyle;
+		private bool _setGameWindowTitle;
         private int _wowDelay;
 
         private GlobalSettings(string path)
@@ -94,6 +96,16 @@ namespace HighVoltz.HBRelog.Settings
             }
         }
 
+		public string GameWindowTitle
+		{
+			get { return _gameWindowTitle; }
+			set
+			{
+				_gameWindowTitle = value;
+				NotifyPropertyChanged("GameWindowTitle");
+			}
+		}
+
         // delay in seconds between starting multiple Honorbuddy instance
 
         public int HBDelay
@@ -127,6 +139,16 @@ namespace HighVoltz.HBRelog.Settings
                 NotifyPropertyChanged("UseDarkStyle");
             }
         }
+
+		public bool SetGameWindowTitle
+		{
+			get { return _setGameWindowTitle; }
+			set
+			{
+				_setGameWindowTitle = value;
+				NotifyPropertyChanged("SetGameWindowTitle");
+			}
+		}
 
         public bool CheckRealmStatus
         {
@@ -237,6 +259,8 @@ namespace HighVoltz.HBRelog.Settings
                 root.Add(new XElement("MinimizeHbOnStart", MinimizeHbOnStart));
                 root.Add(new XElement("AutoUpdateHB", AutoUpdateHB));
                 root.Add(new XElement("AutoAcceptTosEula", AutoAcceptTosEula));
+				root.Add(new XElement("SetGameWindowTitle", SetGameWindowTitle));
+				root.Add(new XElement("GameWindowTitle", GameWindowTitle));
 
                 root.Add(new XElement("WowVersion", WowVersion));
 
@@ -340,6 +364,8 @@ namespace HighVoltz.HBRelog.Settings
                     settings.AutoUpdateHB = GetElementValue(root.Element("AutoUpdateHB"), true);
                     settings.MinimizeHbOnStart = GetElementValue(root.Element("MinimizeHbOnStart"), false);
                     settings.AutoAcceptTosEula = GetElementValue(root.Element("AutoAcceptTosEula"), false);
+					settings.SetGameWindowTitle = GetElementValue(root.Element("SetGameWindowTitle"), true);
+					settings.GameWindowTitle = GetElementValue(root.Element("GameWindowTitle"), "{name} - {pid}");
 
                     settings.GameStateOffset = GetElementValue(root.Element("GameStateOffset"), 0u);
                     // settings.FrameScriptExecuteOffset = GetElementValue(root.Element("FrameScriptExecuteOffset"), 0u);
