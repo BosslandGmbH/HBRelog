@@ -23,8 +23,9 @@ namespace HighVoltz.HBRelog.Tasks
     {
         public LogonTask()
         {
-            HonorbuddyPath = CustomClass = ProfilePath = BotBase = Server = CharacterName = "";
+			HonorbuddyArgs = HonorbuddyPath = CustomClass = ProfilePath = BotBase = Server = CharacterName = "";
         }
+
         [XmlIgnore]
         public override string Name
         {
@@ -61,6 +62,7 @@ namespace HighVoltz.HBRelog.Tasks
         public string ProfilePath { get; set; }
         [TaskEditor.CustomTaskEditControl(typeof(HBPathEditControl))]
         public string HonorbuddyPath { get; set; }
+		public string HonorbuddyArgs { get; set; }
 
         bool _runOnce;
         public override void Pulse()
@@ -81,8 +83,11 @@ namespace HighVoltz.HBRelog.Tasks
                     hbSettings.HonorbuddyProfile = ProfilePath;
                 if (!string.IsNullOrEmpty(CustomClass))
                     hbSettings.CustomClass = CustomClass;
-                if (!string.IsNullOrEmpty(HonorbuddyPath))
-                    hbSettings.HonorbuddyPath = HonorbuddyPath;
+				if (!string.IsNullOrEmpty(HonorbuddyPath))
+					hbSettings.HonorbuddyPath = HonorbuddyPath;
+				if (!string.IsNullOrEmpty(HonorbuddyArgs))
+					hbSettings.HonorbuddyArgs = HonorbuddyArgs;
+
                 Profile.Log("Logging on different character.");
                 Profile.Status = "Logging on a different character";
                 Profile.TaskManager.HonorbuddyManager.Stop();
