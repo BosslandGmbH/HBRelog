@@ -135,6 +135,10 @@ namespace HighVoltz.HBRelog.Honorbuddy
                 !string.IsNullOrEmpty(Settings.HonorbuddyProfile) ? string.Format("/loadprofile=\"{0}\" ", Settings.HonorbuddyProfile) : string.Empty,
                 !string.IsNullOrEmpty(Settings.BotBase) ? string.Format("/botname=\"{0}\" ", Settings.BotBase) : string.Empty
                 );
+
+	        if (!string.IsNullOrEmpty(Settings.HonorbuddyArgs))
+		        hbArgs +=  Settings.HonorbuddyArgs.Trim();
+
             var hbWorkingDirectory = Path.GetDirectoryName(Settings.HonorbuddyPath);
             var procStartI = new ProcessStartInfo(Settings.HonorbuddyPath, hbArgs)
             {

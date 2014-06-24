@@ -30,6 +30,7 @@ namespace HighVoltz.HBRelog.Settings
             CustomClass = "Singular";
             BotBase = string.Empty;
             HonorbuddyProfile = string.Empty;
+	        HonorbuddyArgs = string.Empty;
         }
 
         private string _honorbuddyPath;
@@ -95,6 +96,17 @@ namespace HighVoltz.HBRelog.Settings
             get { return _customClass; }
             set { _customClass = value; NotifyPropertyChanged("CustomClass"); }
         }
+
+		private string _honorbuddyArgs;
+		/// <summary>
+		/// The Honorbuddy CustomClass to use. It can be left empty
+		/// </summary>
+		public string HonorbuddyArgs
+		{
+			get { return _honorbuddyArgs; }
+			set { _honorbuddyArgs = value; NotifyPropertyChanged("HonorbuddyArgs"); }
+		}
+
         private bool _useHBBeta;
         /// <summary>
         /// The Honorbuddy CustomClass to use. It can be left empty
@@ -108,6 +120,7 @@ namespace HighVoltz.HBRelog.Settings
         {
             return (HonorbuddySettings)MemberwiseClone();
         }
+
 
         public event PropertyChangedEventHandler PropertyChanged;
         private void NotifyPropertyChanged(string name)

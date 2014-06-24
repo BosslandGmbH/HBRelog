@@ -96,6 +96,7 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
@@ -127,9 +128,14 @@
                                                        Title="Browse to and select your WoW.exe file"
                                                        DefaultExt=".exe" Filter=".exe|*.exe"
                                                        ToolTip=" Path to your honorbuddy.exe file (it can be renamed)"/>
+
+                            <!-- BotBase -->
+                            <TextBlock Text="Honorbuddy Args" Grid.Row="5" HorizontalAlignment="Left" Height="20" Margin="5,0,5,0" />
+                            <TextBox x:Name="HBArgsText" Grid.Row="5" Grid.Column="1" Text="{Binding Path=HonorbuddySettings.HonorbuddyArgs}"
+                                     ToolTip="The name of the bot that you want to use e.g. ProfessionBuddy (optional)"/>
                             <!-- Use HB Beta-->
-                            <TextBlock Text="Use HB Beta" Grid.Row="5" />
-                            <CheckBox x:Name="UseHBBetaCheck" Grid.Column="1" Grid.Row="5"
+                            <TextBlock Text="Use HB Beta" Grid.Row="6" />
+                            <CheckBox x:Name="UseHBBetaCheck" Grid.Column="1" Grid.Row="6"
                               ToolTip="Uses HB beta. Auto-update HB must be enabled."
                               IsChecked="{Binding Path=HonorbuddySettings.UseHBBeta}"/>
                         </Grid>
