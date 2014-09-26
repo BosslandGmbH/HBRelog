@@ -48,28 +48,23 @@ namespace HighVoltz.HBRelog.Settings
 		private bool _setGameWindowTitle;
         private int _wowDelay;
 
-        private GlobalSettings(string path)
+        private GlobalSettings()
         {
-            SettingsPath = string.IsNullOrEmpty(path) ? DefaultPath : path;
             CharacterProfiles = new ObservableCollection<CharacterProfile>();
-            string settingsFolder = Path.GetDirectoryName(SettingsPath);
-            if (!Directory.Exists(settingsFolder))
-                Directory.CreateDirectory(settingsFolder);
-
             // set some default settings
             HBDelay = 3;
             AutoUpdateHB = CheckHbResponsiveness = UseDarkStyle = true;
         }
 
-        string DefaultPath
-        {
-            get
-            {
-                return Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\HighVoltz\\HBRelog\\Setting.xml";
-            }
-        }
+        public static readonly string SettingsPath =
+            Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "HighVoltz\\HBRelog\\Setting.xml");
 
-        public string SettingsPath { get; private set; }
+        private static string TempSettingsPath
+        {
+            get { return SettingsPath + ".tmp"; }
+        }
 
         public ObservableCollection<CharacterProfile> CharacterProfiles { get; set; }
         // Automatically start all enabled profiles on start
@@ -327,16 +322,40 @@ namespace HighVoltz.HBRelog.Settings
                     characterProfilesElement.Add(profileElement);
                 }
                 root.Add(characterProfilesElement);
-                var xmlSettings = new XmlWriterSettings { OmitXmlDeclaration = true, Indent = true, };
 
-                using (XmlWriter xmlOutFile = XmlWriter.Create(SettingsPath, xmlSettings))
+                var xmlSettings = new XmlWriterSettings { OmitXmlDeclaration = true, Indent = true, };
+                using (var tempFile = ObtainLock(TempSettingsPath, FileAccess.Write, FileShare.Delete))
                 {
-                    root.Save(xmlOutFile);
+                    using (XmlWriter xmlOutFile = XmlWriter.Create(tempFile, xmlSettings))
+                        root.Save(xmlOutFile);
+
+                    if (File.Exists(SettingsPath))
+                        File.Delete(SettingsPath);
+
+                    File.Move(TempSettingsPath, SettingsPath);
                 }
             }
             catch (Exception ex)
             {
                 Log.Err(ex.ToString());
+            }
+        }
+
+        private static FileStream ObtainLock(string path, FileAccess access, FileShare share = FileShare.None, int maxWaitTimeMs = 500)
+        {
+            var sw = Stopwatch.StartNew();
+            while (true)
+            {
+                try
+                {
+                    return File.Open(path, FileMode.OpenOrCreate, access, share);
+                }
+                catch (Exception)
+                {
+                    if (sw.ElapsedMilliseconds >= maxWaitTimeMs)
+                        throw;
+                }
+                Thread.Sleep(0);
             }
         }
 
@@ -346,12 +365,20 @@ namespace HighVoltz.HBRelog.Settings
         /// <returns>A GlocalSettings</returns>
         public static GlobalSettings Load(string path = null)
         {
-            var settings = new GlobalSettings(path);
+            var settings = new GlobalSettings();
             try
             {
-                if (File.Exists(settings.SettingsPath))
+                var hasSettings = File.Exists(SettingsPath);
+                var recoverFromCrash = !hasSettings && File.Exists(TempSettingsPath);
+                if (hasSettings || recoverFromCrash)
                 {
-                    XElement root = XElement.Load(settings.SettingsPath);
+                    if (recoverFromCrash)
+                    {
+                        Log.Write("Recovering settings from crash.");    
+                        File.Move(TempSettingsPath, SettingsPath);
+                    }
+
+                    XElement root = XElement.Load(SettingsPath);
                     settings.WowVersion = root.Element("WowVersion").Value;
                     settings.AutoStart = GetElementValue<bool>(root.Element("AutoStart"));
                     settings.WowDelay = GetElementValue<int>(root.Element("WowDelay"));
@@ -484,14 +511,12 @@ namespace HighVoltz.HBRelog.Settings
                         Utility.EncrptDpapi(Utility.DecryptAes(characterProfile.Settings.HonorbuddySettings.HonorbuddyKeyData, Key, Iv));
                 }
             }
-            settings.SettingsPath = settings.DefaultPath;
             return settings;
         }
 
         public GlobalSettings Export(string path)
         {
             var settings = (GlobalSettings)MemberwiseClone();
-            settings.SettingsPath = path;
             settings.CharacterProfiles = new ObservableCollection<CharacterProfile>();
             foreach (var characterProfile in CharacterProfiles)
             {
