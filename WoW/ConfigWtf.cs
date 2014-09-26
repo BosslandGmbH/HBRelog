@@ -8,7 +8,7 @@ namespace HighVoltz.HBRelog.WoW
 {
     class ConfigWtf
     {
-        private const string ErrorMsg = @"Warning: Possible corrupt \WTF\Config.wtf file at line #:{0}.\n\tReason: {1}";
+        private const string ErrorMsg = @"Warning: Possible corrupt \WTF\Config.wtf file at line #:{0}./n/tReason: {1}";
         private string _path;
         private readonly WowManager _wowManager;
         readonly Dictionary<string, string> _settings = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
@@ -89,39 +89,24 @@ namespace HighVoltz.HBRelog.WoW
             {
                 var line = lines[i];
                 var lineNum = i + 1;
-                var elements = line.Trim().Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-                // ensure there are 3 elements
-                if (elements.Length != 3)
-                {
-                    // remove all white space.
-                    var list = elements.Select(t => t.Trim()).ToList();
-                    list.RemoveAll(string.IsNullOrWhiteSpace);
-                    if ( list.Count > 0)
-                    {
-                        _wowManager.Profile.Log(ErrorMsg, lineNum, "Number of elements does not equal 3");
-                    }
-                    continue;
-                }
-                var settingName = elements[1];
-                var rawSettingValue = elements[2];
+
                 // ensure 1st element equals 'SET' case does not matter
-                if (!string.Equals(elements[0], "SET", Comparer))
+                if (!line.StartsWith("SET "))
                 {
-                    _wowManager.Profile.Log(ErrorMsg, lineNum, "Missing 'SET'");
+                    _wowManager.Profile.Log(ErrorMsg, lineNum, "Does not start with Set");
                     continue;
                 }
-                // ensure the 'value' (3rd) element is wrapped with double quotes
-                if (rawSettingValue[0] != '"' || rawSettingValue[rawSettingValue.Length - 1] != '"')
-                {
-                    _wowManager.Profile.Log(ErrorMsg, lineNum, "Value not wrapped with double qoutes'");
-                    continue;
-                }
+
+                var settingName = line.Substring(4, line.IndexOf(' ', 4) - 4);
+
+                var rawSettingValueIndex = line.IndexOf('"') + 1;
+                var settingValue = line.Substring(rawSettingValueIndex, line.LastIndexOf('"') - rawSettingValueIndex);
+
                 if (_settings.ContainsKey(settingName))
                 {
                     _wowManager.Profile.Log(ErrorMsg, lineNum, string.Format("{0} found multiple times", settingName));
                     continue;
                 }
-                var settingValue = rawSettingValue.Length <= 2 ? string.Empty : rawSettingValue.Substring(1, rawSettingValue.Length - 2);
                 _settings.Add(settingName, settingValue);
             }
         }
