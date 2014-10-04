@@ -323,6 +323,10 @@ namespace HighVoltz.HBRelog.Settings
                 }
                 root.Add(characterProfilesElement);
 
+                var directory = Path.GetDirectoryName(TempSettingsPath);
+                if (directory != null && !Directory.Exists(directory))
+                    Directory.CreateDirectory(directory);
+
                 var xmlSettings = new XmlWriterSettings { OmitXmlDeclaration = true, Indent = true, };
                 using (var tempFile = ObtainLock(TempSettingsPath, FileAccess.Write, FileShare.Delete))
                 {
