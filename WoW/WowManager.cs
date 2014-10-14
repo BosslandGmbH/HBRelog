@@ -227,7 +227,11 @@ namespace HighVoltz.HBRelog.WoW
             {
                 try
                 {
-                    return Memory != null && Memory.Read<byte>(true, (IntPtr)HbRelogManager.Settings.GameStateOffset) == 1;
+                    if (Memory == null)
+                        return false;
+
+                    var state = Memory.Read<byte>(true, (IntPtr)HbRelogManager.Settings.GameStateOffset);
+                    return state == 1;
                 }
                 catch
                 {

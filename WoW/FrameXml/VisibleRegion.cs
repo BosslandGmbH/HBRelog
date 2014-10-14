@@ -16,7 +16,7 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
         {
             get
             {
-                var flags = WowManager.Memory.Read<uint>(Address + Offsets.VisibleRegion.Flagsffset);
+                var flags = WowManager.Memory.Read<uint>(Address + Offsets.VisibleRegion.FlagsOffset);
                 return ((flags >> Offsets.VisibleRegion.IsVisibleRShiftAmount) & 1) != 0;
             }
         }
@@ -31,7 +31,7 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
         {
             get
             {
-                var flags = WowManager.Memory.Read<uint>(Address + Offsets.VisibleRegion.Flagsffset);
+                var flags = WowManager.Memory.Read<uint>(Address + Offsets.VisibleRegion.FlagsOffset);
                 return ((flags >> Offsets.VisibleRegion.IsShownRShiftAmount) & 1) != 0;
             }
         }
