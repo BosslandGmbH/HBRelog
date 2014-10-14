@@ -76,7 +76,9 @@ namespace HighVoltz.HBRelog.WoW
 
 				if (_launcherPid > 0)
 				{
-					Process wowProcess = Utility.GetChildProcessByName(_launcherPid, "Wow");
+                    Process wowProcess = Utility.GetChildProcessByName(_launcherPid, "Wow") 
+                        ?? Utility.GetChildProcessByName(_launcherPid, "WowB")  // Beta
+                        ?? Utility.GetChildProcessByName(_launcherPid, "WowT"); // PTR
 					if (wowProcess != null)
 					{
 						_launcherPid = 0;
@@ -106,7 +108,10 @@ namespace HighVoltz.HBRelog.WoW
 					_lockOwner.StartupSequenceIsComplete = false;
 					_lockOwner.Memory = null;
 
-					bool lanchingWoW = _lockOwner.Settings.WowPath.IndexOf("WoW.exe", StringComparison.InvariantCultureIgnoreCase) != -1;
+					bool lanchingWoW = _lockOwner.Settings.WowPath.IndexOf("WoW.exe", StringComparison.InvariantCultureIgnoreCase) != -1
+                         || _lockOwner.Settings.WowPath.IndexOf("WoWB.exe", StringComparison.InvariantCultureIgnoreCase) != -1 // Beta WoW
+                         || _lockOwner.Settings.WowPath.IndexOf("WoWT.exe", StringComparison.InvariantCultureIgnoreCase) != -1;// PTR WoW
+
 					// force 32 bit client to start.
 					if (lanchingWoW && _lockOwner.Settings.WowArgs.IndexOf("-noautolaunch64bit", StringComparison.InvariantCultureIgnoreCase) == -1)
 					{

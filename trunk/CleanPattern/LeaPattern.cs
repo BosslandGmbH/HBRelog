@@ -1,4 +1,4 @@
-﻿// originally made by caytchen https://github.com/caytchen/cleanCore/tree/6da9071f5ea74a10697a0461074d5c2154f1d354/cleanPattern
+﻿// originally made by caytchen https://github.com/stschake/cleanCore/tree/master/cleanPattern
 // modified by HighVoltz to work out of process
 /*
 #######################    Simplified BSD License    ########################

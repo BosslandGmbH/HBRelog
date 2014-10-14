@@ -38,6 +38,7 @@ namespace HighVoltz.HBRelog.WoW.States
 
         public override void Run()
         {
+            var versionString = _wowManager.GameProcess.VersionString();
             HbRelogManager.Settings.GameStateOffset = (uint)WowPatterns.GameStatePattern.Find(_wowManager.Memory);
             Log.Debug("GameState Offset found at 0x{0:X}", HbRelogManager.Settings.GameStateOffset);
 
@@ -50,7 +51,7 @@ namespace HighVoltz.HBRelog.WoW.States
             HbRelogManager.Settings.GlueStateOffset = (uint)WowPatterns.GlueStatePattern.Find(_wowManager.Memory);
             Log.Debug("GlueStateOffset Offset found at 0x{0:X}", HbRelogManager.Settings.GlueStateOffset);
 
-            HbRelogManager.Settings.WowVersion = _wowManager.GameProcess.VersionString();
+            HbRelogManager.Settings.WowVersion = versionString;
             HbRelogManager.Settings.Save();
         }
     }
