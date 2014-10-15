@@ -20,9 +20,9 @@ namespace HighVoltz.HBRelog.WoW
         // ref - Framescript_ExecuteBuffer.
         public static readonly Pattern LuaStatePattern = Pattern.FromTextstyle(
             "LuaState",
-            "33 c0 39 05 ?? ?? ?? ?? 74 ?? 50 6a 03 e8 ?? ?? ?? ?? 50 e8 ?? ?? ?? ?? 83 c4 0c c3",
-            new AddModifier(4),
+            "8b 35 ?? ?? ?? ?? 33 db 57 3b c3 74 ?? 88 18 ff 75 08 8d 85 dc fe ff ff 68 ?? ?? ?? ?? 68 ?? ?? ?? ?? 50",
+            new AddModifier(2),
             new LeaModifier());
-
+        // 
     }
 }
