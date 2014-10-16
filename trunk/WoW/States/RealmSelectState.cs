@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -13,6 +14,7 @@ namespace HighVoltz.HBRelog.WoW.States
 	internal class RealmSelectState : State
 	{
 		private readonly WowManager _wowManager;
+        private Stopwatch _realmSelectionTimer = new Stopwatch();
 		public RealmSelectState(WowManager wowManager)
 		{
 			_wowManager = wowManager;
@@ -53,6 +55,10 @@ namespace HighVoltz.HBRelog.WoW.States
 			if (!IsRealmListVisible)
 				return;
 
+            // throttle how fast realm is selected.
+		    if (_realmSelectionTimer.IsRunning && _realmSelectionTimer.ElapsedMilliseconds < 5000)
+		        return;
+
 			Utility.SaveForegroundWindowAndMouse();
 			var tabs = RealmTabs;
 			bool foundServer = false;
@@ -88,6 +94,8 @@ namespace HighVoltz.HBRelog.WoW.States
 			else
 			{
 				foundServer = SelectRealm(_wowManager.Settings.ServerName);
+                if (foundServer)
+                    _realmSelectionTimer.Restart();
 			}
 			Utility.RestoreForegroundWindowAndMouse();
 			if (!foundServer)
