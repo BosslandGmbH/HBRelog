@@ -59,7 +59,6 @@ namespace HighVoltz.HBRelogHelper
         static internal int HbProcId { get; private set; }
         static internal string CurrentProfileName { get; private set; }
         static DispatcherTimer _monitorTimer;
-        static WaitTimer _startupLogActivityTimer = new WaitTimer(TimeSpan.FromMinutes(1));
         //static IpcChannel _ipcChannel;
         static ChannelFactory<IRemotingApi> _pipeFactory;
         static internal HBRelogHelper Instance { get; private set; }
@@ -70,9 +69,7 @@ namespace HighVoltz.HBRelogHelper
             try
             {
                 AppDomain.CurrentDomain.ProcessExit += CurrentDomainProcessExit;
-                _startupLogActivityTimer.Reset();
                 AppDomain.CurrentDomain.UnhandledException += CurrentDomainUnhandledException;
-                Logging.OnLogMessage += Logging_OnLogMessage;
 
                 HbProcId = Process.GetCurrentProcess().Id;
                 _pipeFactory = new ChannelFactory<IRemotingApi>(new NetNamedPipeBinding(),
@@ -109,11 +106,6 @@ namespace HighVoltz.HBRelogHelper
             //  throw new Exception("Ignore this exception");
         }
 
-        void Logging_OnLogMessage(System.Collections.ObjectModel.ReadOnlyCollection<Logging.LogMessage> messages)
-        {
-            _startupLogActivityTimer.Reset();
-        }
-
         void Shutdown()
         {
             try
@@ -139,7 +131,6 @@ namespace HighVoltz.HBRelogHelper
 
         static string _lastStatus;
         static string _lastTooltip;
-        static DateTime _runningTimeStamp = DateTime.Now;
         public static void MonitorTimerCb(object sender, EventArgs args)
         {
             try
@@ -148,16 +139,7 @@ namespace HighVoltz.HBRelogHelper
                     return;
                 if (!StyxWoW.IsInGame)
                     return;
-                if (!TreeRoot.IsRunning && _startupLogActivityTimer.IsFinished)
-                {
-                    int profileStatus = HBRelogRemoteApi.GetProfileStatus(CurrentProfileName);
-                    // if HB isn't running after 30 seconds 
-                    // and the HBRelog profile isn't paused then restart hb
-                    if (profileStatus != 1 && DateTime.Now - _runningTimeStamp >= TimeSpan.FromSeconds(60))
-                        HBRelogRemoteApi.RestartHB(HbProcId);
-                }
-                else
-                    _runningTimeStamp = DateTime.Now;
+
                 if (TreeRoot.StatusText != _lastStatus && !string.IsNullOrEmpty(TreeRoot.StatusText))
                 {
                     HBRelogRemoteApi.SetProfileStatusText(HbProcId, TreeRoot.StatusText);
