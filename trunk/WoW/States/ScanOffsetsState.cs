@@ -25,7 +25,7 @@ namespace HighVoltz.HBRelog.WoW.States
         {
             get
             {
-                return (_wowManager.GameProcess != null && !_wowManager.GameProcess.HasExited)
+                return (_wowManager.GameProcess != null && !_wowManager.GameProcess.HasExitedSafe())
 					&& !_wowManager.StartupSequenceIsComplete && _wowManager.Memory != null &&
                        (string.IsNullOrEmpty(HbRelogManager.Settings.WowVersion)
                        || !HbRelogManager.Settings.WowVersion.Equals(_wowManager.GameProcess.VersionString())

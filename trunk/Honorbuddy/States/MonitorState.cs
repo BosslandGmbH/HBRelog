@@ -41,7 +41,7 @@ namespace HighVoltz.HBRelog.Honorbuddy.States
         public override void Run()
         {
             // restart wow hb if it has exited
-            if (_hbManager.BotProcess == null || _hbManager.BotProcess.HasExited)
+            if (_hbManager.BotProcess == null || _hbManager.BotProcess.HasExitedSafe())
             {
 				// bot process exit code of 12 is used by HB to signal relogers to not restart the bot.
 	            if (_hbManager.BotProcess != null && _hbManager.BotProcess.ExitCode == (int)ExitCode.StopMonitoring)
@@ -59,7 +59,7 @@ namespace HighVoltz.HBRelog.Honorbuddy.States
 				}
             }
 			var gameProc = _hbManager.Profile.TaskManager.WowManager.GameProcess;
-			if (gameProc == null || gameProc.HasExited)
+            if (gameProc == null || gameProc.HasExitedSafe())
 			{
 				if (!_hbManager.WaitForBotToExit)
 					_hbManager.Stop();
@@ -101,7 +101,7 @@ namespace HighVoltz.HBRelog.Honorbuddy.States
             {
                 if (!HbRelogManager.Settings.CheckHbResponsiveness)
                     return true;
-                if (_hbManager.BotProcess != null && !_hbManager.BotProcess.HasExited && !_hbManager.BotProcess.Responding && _hbManager.StartupSequenceIsComplete)
+                if (_hbManager.BotProcess != null && !_hbManager.BotProcess.HasExitedSafe() && !_hbManager.BotProcess.Responding && _hbManager.StartupSequenceIsComplete)
                 {
                     if (!_hbRespondingSw.IsRunning)
                         _hbRespondingSw.Start();

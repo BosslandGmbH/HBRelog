@@ -21,8 +21,8 @@ namespace HighVoltz.HBRelog.WoW.States
 			get
 			{
 				var hbManager = _wowManager.Profile.TaskManager.HonorbuddyManager;
-				return (_wowManager.GameProcess == null || _wowManager.GameProcess.HasExited) &&
-						!hbManager.WaitForBotToExit && (hbManager.BotProcess == null || hbManager.BotProcess.HasExited);
+                return (_wowManager.GameProcess == null || _wowManager.GameProcess.HasExitedSafe()) &&
+                        !hbManager.WaitForBotToExit && (hbManager.BotProcess == null || hbManager.BotProcess.HasExitedSafe());
 			}
 		}
 

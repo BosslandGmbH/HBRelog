@@ -25,8 +25,8 @@ namespace HighVoltz.HBRelog.WoW.States
         public override bool NeedToRun
         {
             get 
-			{ 
-				return (_wowManager.GameProcess != null && !_wowManager.GameProcess.HasExited) 
+			{
+                return (_wowManager.GameProcess != null && !_wowManager.GameProcess.HasExitedSafe()) 
 						&& !_wowManager.StartupSequenceIsComplete 
 						&& !_wowManager.InGame 
 						&& !_wowManager.IsConnectiongOrLoading 

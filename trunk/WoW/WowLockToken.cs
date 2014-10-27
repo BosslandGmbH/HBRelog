@@ -44,7 +44,7 @@ namespace HighVoltz.HBRelog.WoW
 		{
 			lock (LockObject)
 			{
-				if (_wowProcess != null && !_wowProcess.HasExited)
+                if (_wowProcess != null && !_wowProcess.HasExitedSafe())
 				{
 					_wowProcess.Kill();
 				}
@@ -94,10 +94,10 @@ namespace HighVoltz.HBRelog.WoW
 
 				}
 
-				if (_wowProcess == null || _wowProcess.HasExited)
+                if (_wowProcess == null || _wowProcess.HasExitedSafe())
 				{
 					// throttle the number of times wow is launched.
-					if (_wowProcess != null && _wowProcess.HasExited && DateTime.Now - _startTime < TimeSpan.FromSeconds(HbRelogManager.Settings.WowDelay))
+                    if (_wowProcess != null && _wowProcess.HasExitedSafe() && DateTime.Now - _startTime < TimeSpan.FromSeconds(HbRelogManager.Settings.WowDelay))
 					{
 						return;
 					}
