@@ -28,7 +28,7 @@ namespace HighVoltz.HBRelog.WoW.States
         {
 	        get
 	        {
-		        return (_wowManager.GameProcess != null && !_wowManager.GameProcess.HasExited) 
+                return (_wowManager.GameProcess != null && !_wowManager.GameProcess.HasExitedSafe()) 
 					&& !_wowManager.StartupSequenceIsComplete && !_wowManager.InGame
 					&& _wowManager.GlueStatus == WowManager.GlueState.Disconnected;
 	        }

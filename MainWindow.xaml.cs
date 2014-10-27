@@ -285,7 +285,7 @@ namespace HighVoltz.HBRelog
         private void BringHbToForegroundMenuItem_Click(object sender, RoutedEventArgs e)
         {
             var hbManager = ((CharacterProfile)((MenuItem)sender).Tag).TaskManager.HonorbuddyManager;
-            if (hbManager.IsRunning && !hbManager.BotProcess.HasExited)
+            if (hbManager.IsRunning && !hbManager.BotProcess.HasExitedSafe())
             {
                 NativeMethods.ShowWindow(hbManager.BotProcess.MainWindowHandle, NativeMethods.ShowWindowCommands.Restore);
                 NativeMethods.SetForegroundWindow(hbManager.BotProcess.MainWindowHandle);
@@ -301,7 +301,7 @@ namespace HighVoltz.HBRelog
         private void MaximizeWowMenuItem_Click(object sender, RoutedEventArgs e)
         {
             var wowManager = ((CharacterProfile)((MenuItem)sender).Tag).TaskManager.WowManager;
-            if (wowManager.IsRunning && !wowManager.GameProcess.HasExited)
+            if (wowManager.IsRunning && !wowManager.GameProcess.HasExitedSafe())
             {
                 NativeMethods.ShowWindow(wowManager.GameProcess.MainWindowHandle, NativeMethods.ShowWindowCommands.Maximize);
                 NativeMethods.SetForegroundWindow(wowManager.GameProcess.MainWindowHandle);
@@ -325,7 +325,7 @@ namespace HighVoltz.HBRelog
 
             //only show the 'Maximize Wow' task menu item if wow is running.
             var maximizeWowMenuItem = (MenuItem)row.ContextMenu.Items[1];
-            if (wowManager.IsRunning && wowManager.GameProcess!= null &&!wowManager.GameProcess.HasExited)
+            if (wowManager.IsRunning && wowManager.GameProcess != null && !wowManager.GameProcess.HasExitedSafe())
                 maximizeWowMenuItem.Visibility = Visibility.Visible;
             else
                 maximizeWowMenuItem.Visibility = Visibility.Collapsed;
@@ -334,7 +334,7 @@ namespace HighVoltz.HBRelog
             var bringHbToForegroundTaskMenuItem = (MenuItem)row.ContextMenu.Items[2];
             var killHBMenu = (MenuItem)row.ContextMenu.Items[3];
 
-            if (hbManager.IsRunning && hbManager.BotProcess != null && !hbManager.BotProcess.HasExited)
+            if (hbManager.IsRunning && hbManager.BotProcess != null && !hbManager.BotProcess.HasExitedSafe())
             {
                 bringHbToForegroundTaskMenuItem.Visibility = Visibility.Visible;
                 killHBMenu.Visibility = Visibility.Visible;

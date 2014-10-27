@@ -43,7 +43,7 @@ namespace HighVoltz.HBRelog.Remoting
 			{
 				profile.Status = "Restarting Honorbuddy";
 				var botProc = profile.TaskManager.HonorbuddyManager.BotProcess;
-				if (botProc != null && !botProc.HasExited)
+                if (botProc != null && !botProc.HasExitedSafe())
 					profile.TaskManager.HonorbuddyManager.Stop();
 			}
 		}
@@ -55,7 +55,7 @@ namespace HighVoltz.HBRelog.Remoting
 			{
 				profile.Status = "Restarting WoW";
 				var wowProc = profile.TaskManager.WowManager.GameProcess;
-				if (wowProc != null && !wowProc.HasExited)
+                if (wowProc != null && !wowProc.HasExitedSafe())
 					wowProc.Kill();
 			}
 		}

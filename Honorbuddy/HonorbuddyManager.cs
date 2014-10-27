@@ -54,9 +54,9 @@ namespace HighVoltz.HBRelog.Honorbuddy
 	    {
 		    get
 		    {
-				if (Profile.TaskManager.WowManager.GameProcess != null && !Profile.TaskManager.WowManager.GameProcess.HasExited)
+                if (Profile.TaskManager.WowManager.GameProcess != null && !Profile.TaskManager.WowManager.GameProcess.HasExitedSafe())
 					return false;
-			    if (BotProcess == null || BotProcess.HasExited)
+                if (BotProcess == null || BotProcess.HasExitedSafe())
 					return false;
 			    if (_botExitTimer == null)
 				    _botExitTimer = Stopwatch.StartNew();
@@ -85,33 +85,50 @@ namespace HighVoltz.HBRelog.Honorbuddy
         bool _isExiting;
         public void CloseBotProcess()
         {
-            if (!_isExiting && BotProcess != null && !BotProcess.HasExited)
+            if (!_isExiting && BotProcess != null && !BotProcess.HasExitedSafe())
             {
                 _isExiting = true;
                 Profile.Log("Attempting to close Honorbuddy");
                 BotProcess.CloseMainWindow();
                 _windowCloseAttempt++;
-                _hbCloseTimer = new Timer(state =>
-                {
-                    if (!((Process)state).HasExited)
+                _hbCloseTimer = new Timer(
+                    state =>
                     {
-                        if (_windowCloseAttempt++ < 15)
-                            ((Process)state).CloseMainWindow();
-                        else if (_windowCloseAttempt >= 15)
+                        if (!((Process)state).HasExitedSafe())
                         {
-                            Profile.Log("Killing Honorbuddy");
-                            ((Process)state).Kill();
+                            try
+                            {
+                                if (_windowCloseAttempt < 10)
+                                {
+                                    ((Process) state).CloseMainWindow();
+                                }
+                                else if (_windowCloseAttempt >= 10 && _windowCloseAttempt < 15)
+                                {
+                                    ((Process)state).Close();
+                                }
+                                else if (_windowCloseAttempt >= 15)
+                                {
+                                    Profile.Log("Killing Honorbuddy");
+                                    ((Process) state).Kill();
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                _windowCloseAttempt++;
+                            }
                         }
-                    }
-                    else
-                    {
-                        _isExiting = false;
-                        Profile.Log("Successfully closed Honorbuddy");
-                        BotProcess = null;
-                        _windowCloseAttempt = 0;
-                        _hbCloseTimer.Dispose();
-                    }
-                }, BotProcess, 1000, 1000);
+                        else
+                        {
+                            _isExiting = false;
+                            Profile.Log("Successfully closed Honorbuddy");
+                            BotProcess = null;
+                            _windowCloseAttempt = 0;
+                            _hbCloseTimer.Dispose();
+                        }
+                    },
+                    BotProcess,
+                    1000,
+                    1000);
             }
         }
 
@@ -166,7 +183,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
             {
                 if (BotProcess != null)
                 {
-                    if (!BotProcess.HasExited)
+                    if (!BotProcess.HasExitedSafe())
                         CloseBotProcess();
                     else
                         BotProcess = null;

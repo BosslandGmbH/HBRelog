@@ -316,7 +316,7 @@ namespace HighVoltz.HBRelog.WoW
 
         private void CloseGameProcess(Process proc)
         {
-            if (!_isExiting && proc != null && !proc.HasExited)
+            if (!_isExiting && proc != null && !proc.HasExitedSafe())
             {
                 _isExiting = true;
                 Profile.Log("Attempting to close Wow");
@@ -325,7 +325,7 @@ namespace HighVoltz.HBRelog.WoW
                 _wowCloseTimer = new Timer(
                     state =>
                     {
-                        if (!((Process)state).HasExited)
+                        if (!((Process)state).HasExitedSafe())
                         {
 	                        if (_windowCloseAttempt++ < 6)
 	                        {

@@ -53,8 +53,8 @@ namespace HighVoltz.HBRelog.Honorbuddy.States
         {
             get
             {
-                return _hbManager.IsRunning && (_hbManager.BotProcess == null || _hbManager.BotProcess.HasExited) && HbRelogManager.Settings.AutoUpdateHB &&
-                       DateTime.Now - _lastUpdateCheck >= TimeSpan.FromMinutes(30);
+                return _hbManager.IsRunning && (_hbManager.BotProcess == null || _hbManager.BotProcess.HasExitedSafe()) 
+                    && HbRelogManager.Settings.AutoUpdateHB && DateTime.Now - _lastUpdateCheck >= TimeSpan.FromMinutes(30);
             }
         }
 

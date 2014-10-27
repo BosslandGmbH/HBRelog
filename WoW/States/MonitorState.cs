@@ -26,7 +26,7 @@ namespace HighVoltz.HBRelog.WoW.States
         {
             get
             {
-                if (_wowManager.GameProcess == null || _wowManager.GameProcess.HasExited)
+                if (_wowManager.GameProcess == null || _wowManager.GameProcess.HasExitedSafe())
                     return false;
 
                 return _wowManager.StartupSequenceIsComplete || _wowManager.InGame; 
@@ -104,7 +104,7 @@ namespace HighVoltz.HBRelog.WoW.States
                 {
                     try
                     {
-                        if (_wowManager.GameProcess.HasExited)
+                        if (_wowManager.GameProcess.HasExitedSafe())
                             return true;
                         _crashTimeStamp = DateTime.Now;
                         List<IntPtr> childWinHandles = NativeMethods.EnumerateProcessWindowHandles(_wowManager.GameProcess.Id);
@@ -168,7 +168,7 @@ namespace HighVoltz.HBRelog.WoW.States
                 try
                 {
                     bool isResponding = _wowManager.GameProcess.Responding;
-                    if (_wowManager.GameProcess != null && !_wowManager.GameProcess.HasExited && !_wowManager.GameProcess.Responding)
+                    if (_wowManager.GameProcess != null && !_wowManager.GameProcess.HasExitedSafe() && !_wowManager.GameProcess.Responding)
                     {
                         if (!_wowRespondingSw.IsRunning)
                             _wowRespondingSw.Start();
