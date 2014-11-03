@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using GreyMagic;
 
-namespace Test.Lua
+namespace HighVoltz.HBRelog.WoW.Lua
 {
     public class LuaTable
     {

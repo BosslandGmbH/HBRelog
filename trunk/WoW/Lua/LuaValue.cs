@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using GreyMagic;
 
-namespace Test.Lua
+namespace HighVoltz.HBRelog.WoW.Lua
 {
     public class LuaValue
     {
         private LuaValueStruct _luaValue;
-        private ExternalProcessReader _memory;
+        private readonly ExternalProcessReader _memory;
 
         internal LuaValue(ExternalProcessReader memory, LuaValueStruct luaValue)
         {

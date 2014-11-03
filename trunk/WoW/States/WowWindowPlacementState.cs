@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using HighVoltz.HBRelog.FiniteStateMachine;
-using Test.Lua;
 
 namespace HighVoltz.HBRelog.WoW.States
 {
