@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using HighVoltz.HBRelog.FiniteStateMachine;
 using HighVoltz.HBRelog.WoW.FrameXml;
-using Test.Lua;
+using HighVoltz.HBRelog.WoW.Lua;
 
 namespace HighVoltz.HBRelog.WoW.States
 {

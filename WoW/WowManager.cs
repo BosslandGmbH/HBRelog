@@ -11,8 +11,8 @@ using HighVoltz.HBRelog.FiniteStateMachine;
 using HighVoltz.HBRelog.FiniteStateMachine.FiniteStateMachine;
 using HighVoltz.HBRelog.Settings;
 using HighVoltz.HBRelog.WoW.FrameXml;
+using HighVoltz.HBRelog.WoW.Lua;
 using HighVoltz.HBRelog.WoW.States;
-using Test.Lua;
 using Region = HighVoltz.HBRelog.WoW.FrameXml.Region;
 
 namespace HighVoltz.HBRelog.WoW

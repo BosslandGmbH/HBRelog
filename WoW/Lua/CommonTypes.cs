@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
 
-namespace Test.Lua
+namespace HighVoltz.HBRelog.WoW.Lua
 {
     [StructLayout(LayoutKind.Sequential, Size = 10, Pack = 1)]
     public struct LuaCommonHeader

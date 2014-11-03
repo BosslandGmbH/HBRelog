@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using GreyMagic;
-using Test.Lua;
+using HighVoltz.HBRelog.WoW.Lua;
 
 namespace HighVoltz.HBRelog.WoW.FrameXml
 {
@@ -165,7 +165,7 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
         public static IEnumerable<UIObject> GetUIObjects(WowManager wowManager)
         {
             IntPtr address = IntPtr.Zero;
-            return from table in wowManager.Globals.Nodes.Where(n => n.Value.Type == LuaType.Table).Select(n => n.Value.Table)
+            return from table in wowManager.Globals.Nodes.Where(n => n.Value.Type == LuaType.Table && n.Value.Pointer != IntPtr.Zero).Select(n => n.Value.Table)
                    where IsUIObject(table, out address)
                    select GetUIObjectFromPointer(wowManager, address);
         }
