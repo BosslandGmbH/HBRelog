@@ -164,10 +164,22 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
 
         public static IEnumerable<UIObject> GetUIObjects(WowManager wowManager)
         {
-            IntPtr address = IntPtr.Zero;
-            return from table in wowManager.Globals.Nodes.Where(n => n.Value.Type == LuaType.Table && n.Value.Pointer != IntPtr.Zero).Select(n => n.Value.Table)
-                   where IsUIObject(table, out address)
-                   select GetUIObjectFromPointer(wowManager, address);
+            foreach (var node in wowManager.Globals.Nodes)
+            {
+                if (node.Value.Type != LuaType.Table)
+                    continue;
+                if (node.Value.Pointer == IntPtr.Zero)
+                {
+                    continue;
+                }
+                IntPtr address;
+                if (!IsUIObject(node.Value.Table, out address))
+                {
+                    Log.Write("{0} is not a UI object", node.Key.Value.Pointer != IntPtr.Zero ? node.Key.Value.String.Value : "(Unknown)");
+                    continue;
+                }
+                yield return GetUIObjectFromPointer(wowManager, address);
+            }
         }
 
         public static T GetUIObjectByName<T>(WowManager wowManager, string name) where T : UIObject
@@ -175,7 +187,10 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
             if (wowManager == null) throw new ArgumentException("wowManager is null", "wowManager");
             if (wowManager.Globals == null) throw new ArgumentException("wowManager.Globals is null", "wowManager.Globals");
             var value = wowManager.Globals.GetValue(name);
-            if (value == null || value.Type != LuaType.Table) return null;
+            if (value == null || value.Type != LuaType.Table)
+            {
+                return null;
+            }
             IntPtr ptr;
             if (IsUIObject(value.Table, out ptr))
                 return (T)GetUIObjectFromPointer(wowManager, ptr);
