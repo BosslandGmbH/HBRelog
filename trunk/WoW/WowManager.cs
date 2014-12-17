@@ -72,7 +72,7 @@ namespace HighVoltz.HBRelog.WoW
                 if (_globals == null || _globals.Address != globalsOffset)
                 {
 #if DEBUG
-                    Log.Write("0x{0:X}", globalsOffset);
+                    Log.Write("Globals Offset: 0x{0:X}", globalsOffset);
 
 #endif 
                     _globals = new LuaTable(Memory, globalsOffset);

@@ -5,11 +5,9 @@ using System.ServiceModel;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
-using Bots.BGBuddy.Helpers;
 using HighVoltz.HBRelog.Remoting;
 using Styx;
 using Styx.Common;
-using Styx.Common.Helpers;
 using Styx.CommonBot;
 using Styx.Plugins;
 
@@ -153,7 +151,7 @@ namespace HighVoltz.HBRelogHelper
 	            if (ex is CommunicationObjectFaultedException)
 		            return;
 				if (ex is EndpointNotFoundException)
-					Logger.Write("Unable to connect to HBRelog");
+					Logging.Write("Unable to connect to HBRelog");
                 Logging.WriteException(ex);
             }
         }
