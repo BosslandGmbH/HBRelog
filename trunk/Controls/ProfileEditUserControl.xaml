@@ -30,55 +30,69 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="69" />
+                                <ColumnDefinition Width="19"/>
                                 <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="12" />
                             </Grid.ColumnDefinitions>
                             <!--Identifier-->
-                            <TextBlock Text="Profile Name" HorizontalAlignment="Left" Height="20" Margin="5,0,5,0" />
-                            <TextBox x:Name="ProfileNameText" Grid.Column="1" Text="{Binding Path=ProfileName}"
+                            <TextBlock Text="Profile Name" HorizontalAlignment="Left" Height="20" Margin="5,0,0,1" Grid.ColumnSpan="2" />
+                            <TextBox x:Name="ProfileNameText" Grid.Column="2" Text="{Binding Path=ProfileName}"
                                      ToolTip="This can be anything, preferably something relevant and easy to remember. This will be used in log files"/>
                             <!--Bnet Account-->
-                            <TextBlock Text="BattleNet" HorizontalAlignment="Left" Height="20" Margin="5,0,5,0" Grid.Row="1" />
-                            <TextBox x:Name="WoWBNetAccountText" Grid.Column="1" Grid.Row="1" Text="{Binding Path=WowSettings.Login}"
+                            <TextBlock Text="BattleNet" HorizontalAlignment="Left" Height="20" Margin="5,1,0,0" Grid.Row="1" />
+                            <TextBox x:Name="WoWBNetAccountText" Grid.Column="2" Grid.Row="1" Text="{Binding Path=WowSettings.Login}"
                                      ToolTip="This is your battlenet email address"/>
                             <!--Account Name-->
-                            <TextBlock Text="Account Name" Grid.Row="2" HorizontalAlignment="Left" Height="20" Margin="5,0,5,0" />
-                            <TextBox x:Name="AccountNameText" Grid.Column="1" Grid.Row="2" 
+                            <TextBlock Text="Account Name" Grid.Row="2" HorizontalAlignment="Left" Height="20" Margin="5,0,0,1" Grid.ColumnSpan="2" />
+                            <TextBox x:Name="AccountNameText" Grid.Column="2" Grid.Row="2" 
                                                       Text="{Binding Path=WowSettings.AcountName}"
                                                       ToolTip="This is the name of the wow account. e.g WoW1"/>
                             <!--Password Name-->
-                            <TextBlock Text="Password" Grid.Row="3" HorizontalAlignment="Left" Height="20" Margin="5,0,5,0" />
-                            <PasswordBox Name="PasswordText" Grid.Column="1" Grid.Row="3" PasswordChanged="PasswordTextPasswordChanged" 
+                            <TextBlock Text="Password" Grid.Row="3" HorizontalAlignment="Left" Height="20" Margin="5,1,0,0" />
+                            <PasswordBox Name="PasswordText" Grid.Column="2" Grid.Row="3" PasswordChanged="PasswordTextPasswordChanged" 
                                          ToolTip="this is your wow password. It is encrypted when saved"/>
+                            
+                            <TextBlock Text="Auth. Serial" Grid.Row="4" HorizontalAlignment="Left" Height="20" Margin="5,1,0,0" Grid.ColumnSpan="2" />
+							<TextBox x:Name="AuthenticatorSerialText"  Grid.Column="2" Grid.Row="4"
+                                                        Text="{Binding Path=WowSettings.AuthenticatorSerial}"
+                                                        ToolTip="Your Authenticator serial code. "/>
+
+							<TextBlock Text="Auth. Restore " Grid.Row="5" HorizontalAlignment="Left" Height="20" Margin="5,1,0,0" Grid.ColumnSpan="2" />
+							<TextBox x:Name="AuthenticatorRestoreText"  Grid.Column="2" Grid.Row="5"
+                                                        Text="{Binding Path=WowSettings.AuthenticatorRestoreCode}"
+                                                        ToolTip="Your Authenticator restore code. "/>
                             <!--Character Name-->
-                            <TextBlock Text="Character" Grid.Row="4" HorizontalAlignment="Left" Height="20" Margin="5,0,5,0" />
-                            <TextBox x:Name="CharacterText" Grid.Column="1" Grid.Row="4"  Text="{Binding Path=WowSettings.CharacterName}"
+                            <TextBlock Text="Character" Grid.Row="6" HorizontalAlignment="Left" Height="20" Margin="5,0,0,1" />
+                            <TextBox x:Name="CharacterText" Grid.Column="2" Grid.Row="6"  Text="{Binding Path=WowSettings.CharacterName}"
                                      ToolTip="This is the name of your WoW Character"/>
                             <!--Server Name-->
-                            <TextBlock Text="Server" Grid.Row="5" HorizontalAlignment="Left" Height="20" Margin="5,0,5,0" />
-                            <TextBox x:Name="ServerText" Grid.Column="1" Grid.Row="5" Text="{Binding Path=WowSettings.ServerName}"
+                            <TextBlock Text="Server" Grid.Row="7" HorizontalAlignment="Left" Height="20" Margin="5,1,0,0" />
+                            <TextBox x:Name="ServerText" Grid.Column="2" Grid.Row="7" Text="{Binding Path=WowSettings.ServerName}"
                                      ToolTip="Name of the server/realm that your character is located on"/>
                             <!--Wow Region-->
-                            <TextBlock Text="Wow Region" Grid.Row="6" HorizontalAlignment="Left" Height="20" Margin="5,0,5,0" />
-                            <ComboBox x:Name="RegionCombo" Grid.Column="1" Grid.Row="6" 
+                            <TextBlock Text="Wow Region" Grid.Row="8" HorizontalAlignment="Left" Height="20" Margin="5,2,0,1" Grid.ColumnSpan="2" />
+                            <ComboBox x:Name="RegionCombo" Grid.Column="2" Grid.Row="8" 
                                       SelectionChanged="RegionCombo_SelectionChanged"
                                       ToolTip="The Wow regional area"/>
                             <!--WoW Exe-->
-                            <TextBlock Text="WoW Exe Path" Grid.Row="7" HorizontalAlignment="Left" Height="20" Margin="5,0,5,0" />
-                            <Controls:FileInputBox x:Name="WoWFileInput" Grid.Row="7" Grid.Column="1" 
+                            <TextBlock Text="WoW Exe Path" Grid.Row="9" HorizontalAlignment="Left" Height="20" Margin="5,1,0,0" Grid.ColumnSpan="2" />
+                            <Controls:FileInputBox x:Name="WoWFileInput" Grid.Row="9" Grid.Column="2" Grid.ColumnSpan="2"
                                                        FileNameChanged="WoWFileInputFileNameChanged"
                                                        Title="Browse to and select your WoW.exe file"
                                                        DefaultExt=".exe" Filter=".exe|*.exe"
                                                        ToolTip="The path to Wow.exe. click the '...' button on the right to browse to it. This can also be a batch file that launches WoW.exe"/>
 
                             <!--Server Name-->
-                            <TextBlock Text="WoW Args" Grid.Row="8" HorizontalAlignment="Left" Height="20" Margin="5,0,5,0" />
-                            <TextBox x:Name="WoWParms" Grid.Column="1" Grid.Row="8" Text="{Binding Path=WowSettings.WowArgs}"
+                            <TextBlock Text="WoW Args" Grid.Row="10" HorizontalAlignment="Left" Height="20" Margin="5,0,0,1" />
+                            <TextBox x:Name="WoWParms" Grid.Column="2" Grid.Row="10" Text="{Binding Path=WowSettings.WowArgs}"
                                      ToolTip="Command-line arguments to pass to WoW or launcher (Advanced)"/>
                         </Grid>
                     </ScrollViewer>
@@ -99,43 +113,44 @@
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="18" />
+                                <ColumnDefinition Width="87"/>
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             <!--HBKey-->
-                            <TextBlock Text="Honorbuddy Key" HorizontalAlignment="Left" Height="20" Margin="5,0,5,0" Grid.Row="0" />
-                            <TextBox x:Name="HonorbuddyKeyText" Grid.Row="0" Grid.Column="1" Text="{Binding Path=HonorbuddySettings.HonorbuddyKey}"
+                            <TextBlock Text="Honorbuddy Key" HorizontalAlignment="Left" Height="20" Margin="5,0,0,1" Grid.Row="0" Grid.ColumnSpan="2" />
+                            <TextBox x:Name="HonorbuddyKeyText" Grid.Row="0" Grid.Column="2" Text="{Binding Path=HonorbuddySettings.HonorbuddyKey}"
                                      ToolTip="The key used to log into HB (optional)"/>
                             <!--CustomClass-->
-                            <TextBlock Text="Custom Class" HorizontalAlignment="Left" Height="20" Margin="5,0,5,0" Grid.Row="1" />
-                            <TextBox x:Name="CustomClassText" Grid.Row="1" Grid.Column="1" Text="{Binding Path=HonorbuddySettings.CustomClass}"
+                            <TextBlock Text="Custom Class" HorizontalAlignment="Left" Height="20" Margin="5,1,0,0" Grid.Row="1" Grid.ColumnSpan="2" />
+                            <TextBox x:Name="CustomClassText" Grid.Row="1" Grid.Column="2" Text="{Binding Path=HonorbuddySettings.CustomClass}"
                                      ToolTip="The name of the CustomClass that you want to use e.g. Singular (optional)"/>
                             <!-- BotBase -->
-                            <TextBlock Text="Bot" Grid.Row="2" HorizontalAlignment="Left" Height="20" Margin="5,0,5,0" />
-                            <TextBox x:Name="BotBaseText" Grid.Row="2" Grid.Column="1" Text="{Binding Path=HonorbuddySettings.BotBase}"
+                            <TextBlock Text="Bot" Grid.Row="2" HorizontalAlignment="Left" Height="20" Margin="5,0,0,1" Grid.ColumnSpan="2" />
+                            <TextBox x:Name="BotBaseText" Grid.Row="2" Grid.Column="2" Text="{Binding Path=HonorbuddySettings.BotBase}"
                                      ToolTip="The name of the bot that you want to use e.g. ProfessionBuddy (optional)"/>
                             <!--HB Profile-->
-                            <TextBlock Text="Profile Path" HorizontalAlignment="Left" Height="20" Margin="5,0,5,0" Grid.Row="3" />
-                            <Controls:FileInputBox x:Name="HBProfileInput" Grid.Row="3" Grid.Column="1" 
+                            <TextBlock Text="Profile Path" HorizontalAlignment="Left" Height="20" Margin="5,1,0,0" Grid.Row="3" Grid.ColumnSpan="2" />
+                            <Controls:FileInputBox x:Name="HBProfileInput" Grid.Row="3" Grid.Column="2" 
                                                        FileNameChanged="HBProfileFileInputFileNameChanged"
                                                        Title="Browse to and select your Honorbuddyy profile"
                                                        DefaultExt=".xml" Filter=".xml|*.xml"
                                                        ToolTip="The path to a Honorbuddy/Professionbuddy profile that you want to use. (optional)"/>
                             <!--HB Path-->
-                            <TextBlock Text="Honorbuddy Path" HorizontalAlignment="Left" Height="20" Margin="5,0,5,0" Grid.Row="4" />
-                            <Controls:FileInputBox x:Name="HBPathInput" Grid.Row="4" Grid.Column="1" 
+                            <TextBlock Text="Honorbuddy Path" HorizontalAlignment="Left" Height="20" Margin="5,0,0,1" Grid.Row="4" Grid.ColumnSpan="2" />
+                            <Controls:FileInputBox x:Name="HBPathInput" Grid.Row="4" Grid.Column="2" 
                                                        FileNameChanged="HBPathInputFileNameChanged"
                                                        Title="Browse to and select your WoW.exe file"
                                                        DefaultExt=".exe" Filter=".exe|*.exe"
                                                        ToolTip=" Path to your honorbuddy.exe file (it can be renamed)"/>
 
                             <!-- BotBase -->
-                            <TextBlock Text="Honorbuddy Args" Grid.Row="5" HorizontalAlignment="Left" Height="20" Margin="5,0,5,0" />
-                            <TextBox x:Name="HBArgsText" Grid.Row="5" Grid.Column="1" Text="{Binding Path=HonorbuddySettings.HonorbuddyArgs}"
+                            <TextBlock Text="Honorbuddy Args" Grid.Row="5" HorizontalAlignment="Left" Height="20" Margin="5,1,0,0" Grid.ColumnSpan="2" />
+                            <TextBox x:Name="HBArgsText" Grid.Row="5" Grid.Column="2" Text="{Binding Path=HonorbuddySettings.HonorbuddyArgs}"
                                      ToolTip="The name of the bot that you want to use e.g. ProfessionBuddy (optional)"/>
                             <!-- Use HB Beta-->
-                            <TextBlock Text="Use HB Beta" Grid.Row="6" />
-                            <CheckBox x:Name="UseHBBetaCheck" Grid.Column="1" Grid.Row="6"
+                            <TextBlock Text="Use HB Beta" Grid.Row="6" Grid.ColumnSpan="2" />
+                            <CheckBox x:Name="UseHBBetaCheck" Grid.Column="2" Grid.Row="6"
                               ToolTip="Uses HB beta. Auto-update HB must be enabled."
                               IsChecked="{Binding Path=HonorbuddySettings.UseHBBeta}"/>
                         </Grid>

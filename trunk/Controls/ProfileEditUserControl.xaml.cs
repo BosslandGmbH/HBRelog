@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Linq;
 using System.Windows.Forms;
+using System.Xml;
+//using WindowsAuthenticator;
 using HighVoltz.HBRelog;
 using System.Collections.Generic;
 using System.Windows.Controls;
@@ -44,7 +48,7 @@ namespace HighVoltz.HBRelog.Controls
                 item.ToolTip = task.Help;
                 TaskList.Items.Add(item);
             }
-        
+
             ProfileTaskList.ContextMenuOpening += (sender, e) => { if (ProfileTaskList.SelectedItem == null) e.Handled = true; };
             RegionCombo.ItemsSource = Enum.GetValues(typeof(WowSettings.WowRegion));
         }
@@ -64,6 +68,7 @@ namespace HighVoltz.HBRelog.Controls
         {
             PasswordText.Password = settings.WowSettings.Password;
             WoWFileInput.FileName = settings.WowSettings.WowPath;
+
             HBProfileInput.FileName = settings.HonorbuddySettings.HonorbuddyProfile;
             HBPathInput.FileName = settings.HonorbuddySettings.HonorbuddyPath;
             RegionCombo.SelectedItem = settings.WowSettings.Region;
@@ -74,6 +79,28 @@ namespace HighVoltz.HBRelog.Controls
         {
             if (MainWindow.Instance.AccountGrid.SelectedItem != null)
                 ((CharacterProfile)MainWindow.Instance.AccountGrid.SelectedItem).Settings.WowSettings.Password = PasswordText.Password;
+        }
+
+        private void AuthenticatorCodeClicked(object sender, RoutedEventArgs e)
+        {
+            if (MainWindow.Instance.AccountGrid.SelectedItem != null)
+            {
+				//RestoreForm restore = new RestoreForm();
+				//if (restore.ShowDialog() != DialogResult.OK)
+				//{
+				//	return;
+				//}
+
+				//StringBuilder sb = new StringBuilder();
+				//XmlWriter xw = XmlWriter.Create(sb);
+				//restore.Authenticator.WriteToWriter(xw);
+                // Build Xml with xw.
+				//xw.Flush();
+				//((CharacterProfile)MainWindow.Instance.AccountGrid.SelectedItem).Settings.WowSettings
+				//	.Authenticator = Convert.ToBase64String(Encoding.Unicode.GetBytes(sb.ToString()));
+
+
+            }
         }
 
         private void WoWFileInputFileNameChanged(object sender, RoutedEventArgs e)
@@ -211,7 +238,7 @@ namespace HighVoltz.HBRelog.Controls
                             profile.Settings.WowSettings.WowWindowY, profile.Settings.WowSettings.WowWindowWidth, profile.Settings.WowSettings.WowWindowHeight);
                     }
                     catch { }
-                   
+
                 }
             }
         }

@@ -54,17 +54,19 @@ namespace HighVoltz.HBRelog.Settings
             // set some default settings
             HBDelay = 3;
             AutoUpdateHB = CheckHbResponsiveness = UseDarkStyle = true;
+	        SettingsPath = DefaultSettingsPath;
         }
 
-        public static readonly string SettingsPath =
-            Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "HighVoltz\\HBRelog\\Setting.xml");
+	    public static readonly string DefaultSettingsPath =
+		    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "HighVoltz\\HBRelog\\Setting.xml");
 
-        private static string TempSettingsPath
-        {
-            get { return SettingsPath + ".tmp"; }
-        }
+	    public string SettingsPath { get; private set; }
+
+
+		private static string GetTempSettingsPath(string settingsPath)
+	    {
+		    return settingsPath + ".tmp";
+	    }
 
         public ObservableCollection<CharacterProfile> CharacterProfiles { get; set; }
         // Automatically start all enabled profiles on start
@@ -280,6 +282,8 @@ namespace HighVoltz.HBRelog.Settings
                     wowSettingsElement.Add(new XElement("AcountName", profile.Settings.WowSettings.AcountName));
                     wowSettingsElement.Add(new XElement("CharacterName", profile.Settings.WowSettings.CharacterName));
                     wowSettingsElement.Add(new XElement("ServerName", profile.Settings.WowSettings.ServerName));
+					wowSettingsElement.Add(new XElement("AuthenticatorSerialData", profile.Settings.WowSettings.AuthenticatorSerialData));
+					wowSettingsElement.Add(new XElement("AuthenticatorRestoreCodeData", profile.Settings.WowSettings.AuthenticatorRestoreCodeData));
                     wowSettingsElement.Add(new XElement("Region", profile.Settings.WowSettings.Region));
                     wowSettingsElement.Add(new XElement("WowPath", profile.Settings.WowSettings.WowPath));
                     wowSettingsElement.Add(new XElement("WowArgs", profile.Settings.WowSettings.WowArgs));
@@ -323,12 +327,13 @@ namespace HighVoltz.HBRelog.Settings
                 }
                 root.Add(characterProfilesElement);
 
-                var directory = Path.GetDirectoryName(TempSettingsPath);
+	            var tempPath = GetTempSettingsPath(SettingsPath);
+				var directory = Path.GetDirectoryName(tempPath);
                 if (directory != null && !Directory.Exists(directory))
                     Directory.CreateDirectory(directory);
 
                 var xmlSettings = new XmlWriterSettings { OmitXmlDeclaration = true, Indent = true, };
-                using (var tempFile = ObtainLock(TempSettingsPath, FileAccess.Write, FileShare.Delete))
+				using (var tempFile = ObtainLock(tempPath, FileAccess.Write, FileShare.Delete))
                 {
                     using (XmlWriter xmlOutFile = XmlWriter.Create(tempFile, xmlSettings))
                         root.Save(xmlOutFile);
@@ -336,7 +341,7 @@ namespace HighVoltz.HBRelog.Settings
                     if (File.Exists(SettingsPath))
                         File.Delete(SettingsPath);
 
-                    File.Move(TempSettingsPath, SettingsPath);
+					File.Move(tempPath, SettingsPath);
                 }
             }
             catch (Exception ex)
@@ -369,20 +374,23 @@ namespace HighVoltz.HBRelog.Settings
         /// <returns>A GlocalSettings</returns>
         public static GlobalSettings Load(string path = null)
         {
+	        path = path ?? DefaultSettingsPath;
             var settings = new GlobalSettings();
             try
             {
-                var hasSettings = File.Exists(SettingsPath);
-                var recoverFromCrash = !hasSettings && File.Exists(TempSettingsPath);
+				var hasSettings = File.Exists(path);
+
+				var tempPath = GetTempSettingsPath(path);
+
+				var recoverFromCrash = !hasSettings && File.Exists(tempPath);
                 if (hasSettings || recoverFromCrash)
                 {
                     if (recoverFromCrash)
                     {
-                        Log.Write("Recovering settings from crash.");    
-                        File.Move(TempSettingsPath, SettingsPath);
+						File.Move(tempPath, path);
                     }
 
-                    XElement root = XElement.Load(SettingsPath);
+					XElement root = XElement.Load(path);
                     settings.WowVersion = root.Element("WowVersion").Value;
                     settings.AutoStart = GetElementValue<bool>(root.Element("AutoStart"));
                     settings.WowDelay = GetElementValue<int>(root.Element("WowDelay"));
@@ -422,6 +430,8 @@ namespace HighVoltz.HBRelog.Settings
                             profile.Settings.WowSettings.AcountName = GetElementValue<string>(wowSettingsElement.Element("AcountName"));
                             profile.Settings.WowSettings.CharacterName = GetElementValue<string>(wowSettingsElement.Element("CharacterName"));
                             profile.Settings.WowSettings.ServerName = GetElementValue<string>(wowSettingsElement.Element("ServerName"));
+							profile.Settings.WowSettings.AuthenticatorSerialData = GetElementValue<string>(wowSettingsElement.Element("AuthenticatorSerialData"));
+							profile.Settings.WowSettings.AuthenticatorRestoreCodeData = GetElementValue<string>(wowSettingsElement.Element("AuthenticatorRestoreCodeData"));
                             profile.Settings.WowSettings.Region = GetElementValue<WowSettings.WowRegion>(wowSettingsElement.Element("Region"));
                             profile.Settings.WowSettings.WowPath = GetElementValue<string>(wowSettingsElement.Element("WowPath"));
                             profile.Settings.WowSettings.WowArgs = GetElementValue<string>(wowSettingsElement.Element("WowArgs"));
@@ -491,8 +501,8 @@ namespace HighVoltz.HBRelog.Settings
             return settings;
         }
 
-        static readonly byte[] Key = new byte[] { 230, 123, 245, 78, 43, 229, 126, 109, 126, 10, 134, 61, 167, 2, 138, 142 };
-        static readonly byte[] Iv = new byte[] { 113, 110, 177, 211, 193, 101, 36, 36, 52, 12, 51, 73, 61, 42, 239, 236 };
+        static readonly byte[] Key = { 230, 123, 245, 78, 43, 229, 126, 109, 126, 10, 134, 61, 167, 2, 138, 142 };
+        static readonly byte[] Iv = { 113, 110, 177, 211, 193, 101, 36, 36, 52, 12, 51, 73, 61, 42, 239, 236 };
 
         public static GlobalSettings Import(string path)
         {
@@ -504,11 +514,25 @@ namespace HighVoltz.HBRelog.Settings
                     characterProfile.Settings.WowSettings.LoginData =
                         Utility.EncrptDpapi(Utility.DecryptAes(characterProfile.Settings.WowSettings.LoginData, Key, Iv));
                 }
-                if (!string.IsNullOrEmpty(characterProfile.Settings.WowSettings.PasswordData))
-                {
-                    characterProfile.Settings.WowSettings.PasswordData =
-                        Utility.EncrptDpapi(Utility.DecryptAes(characterProfile.Settings.WowSettings.PasswordData, Key, Iv));
-                }
+
+				if (!string.IsNullOrEmpty(characterProfile.Settings.WowSettings.PasswordData))
+				{
+					characterProfile.Settings.WowSettings.PasswordData =
+						Utility.EncrptDpapi(Utility.DecryptAes(characterProfile.Settings.WowSettings.PasswordData, Key, Iv));
+				}
+
+				if (!string.IsNullOrEmpty(characterProfile.Settings.WowSettings.AuthenticatorSerialData))
+				{
+					characterProfile.Settings.WowSettings.AuthenticatorSerialData =
+						Utility.EncrptDpapi(Utility.DecryptAes(characterProfile.Settings.WowSettings.AuthenticatorSerialData, Key, Iv));
+				}
+
+				if (!string.IsNullOrEmpty(characterProfile.Settings.WowSettings.AuthenticatorRestoreCodeData))
+				{
+					characterProfile.Settings.WowSettings.AuthenticatorRestoreCodeData =
+						Utility.EncrptDpapi(Utility.DecryptAes(characterProfile.Settings.WowSettings.AuthenticatorRestoreCodeData, Key, Iv));
+				}
+
                 if (!string.IsNullOrEmpty(characterProfile.Settings.HonorbuddySettings.HonorbuddyKeyData))
                 {
                     characterProfile.Settings.HonorbuddySettings.HonorbuddyKeyData =
@@ -536,13 +560,28 @@ namespace HighVoltz.HBRelog.Settings
                     newProfile.Settings.WowSettings.PasswordData = Utility.EncryptAes(
                         Utility.DecrptDpapi(characterProfile.Settings.WowSettings.PasswordData), Key, Iv);
                 }
+
+				if (!string.IsNullOrEmpty(newProfile.Settings.WowSettings.AuthenticatorSerialData))
+				{
+					newProfile.Settings.WowSettings.AuthenticatorSerialData = Utility.EncryptAes(
+						Utility.DecrptDpapi(characterProfile.Settings.WowSettings.AuthenticatorSerialData), Key, Iv);
+				}
+
+				if (!string.IsNullOrEmpty(newProfile.Settings.WowSettings.AuthenticatorRestoreCodeData))
+				{
+					newProfile.Settings.WowSettings.AuthenticatorRestoreCodeData = Utility.EncryptAes(
+						Utility.DecrptDpapi(characterProfile.Settings.WowSettings.AuthenticatorRestoreCodeData), Key, Iv);
+				}
+
                 if (!string.IsNullOrEmpty(newProfile.Settings.HonorbuddySettings.HonorbuddyKeyData))
                 {
                     newProfile.Settings.HonorbuddySettings.HonorbuddyKeyData =
                         Utility.EncryptAes(Utility.DecrptDpapi(characterProfile.Settings.HonorbuddySettings.HonorbuddyKeyData), Key, Iv);
                 }
+
                 settings.CharacterProfiles.Add(newProfile);
             }
+	        settings.SettingsPath = path;
             return settings;
         }
 
