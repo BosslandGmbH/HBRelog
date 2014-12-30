@@ -70,13 +70,8 @@ namespace HighVoltz.HBRelog.WoW
                     return null;
                 var globalsOffset = Memory.Read<IntPtr>(true, (IntPtr)HbRelogManager.Settings.LuaStateOffset, (IntPtr)LuaStateGlobalsOffset);
                 if (_globals == null || _globals.Address != globalsOffset)
-                {
-#if DEBUG
-                    Log.Write("Globals Offset: 0x{0:X}", globalsOffset);
-
-#endif 
                     _globals = new LuaTable(Memory, globalsOffset);
-                }
+
                 return _globals;
             }
         }

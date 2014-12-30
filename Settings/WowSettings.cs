@@ -27,8 +27,7 @@ namespace HighVoltz.HBRelog.Settings
         public WowSettings()
         {
             Login = "Email@battle.net";
-            Password = string.Empty;
-            ServerName = string.Empty;
+            Password = ServerName = AuthenticatorSerial = AuthenticatorRestoreCode = "";
             WowPath = string.Empty;
             WowArgs = string.Empty;
             AcountName = "WoW1";
@@ -93,6 +92,56 @@ namespace HighVoltz.HBRelog.Settings
             get { return _acountName; }
             set { _acountName = value; NotifyPropertyChanged("AcountName"); }
         }
+
+		public string AuthenticatorRestoreCodeData { get; set; }
+
+        public string AuthenticatorRestoreCode
+        {
+	        get
+	        {
+				if (string.IsNullOrEmpty(AuthenticatorRestoreCodeData))
+					return "";
+				try
+				{
+					return Utility.DecrptDpapi(AuthenticatorRestoreCodeData);
+				}
+				catch
+				{
+					MessageBox.Show(string.Format("Error decrypting Authenticator Restore code for {0}. Try setting the restore code again.", CharacterName));
+					return "";
+				}
+	        }
+	        set
+	        {
+				AuthenticatorRestoreCodeData = Utility.EncrptDpapi(value);
+				NotifyPropertyChanged("AuthenticatorRestoreCode");
+	        }
+        }
+
+		public string AuthenticatorSerialData { get; set; }
+
+		public string AuthenticatorSerial
+		{
+			get
+			{
+				if (string.IsNullOrEmpty(AuthenticatorSerialData))
+					return "";
+				try
+				{
+					return Utility.DecrptDpapi(AuthenticatorSerialData);
+				}
+				catch
+				{
+					MessageBox.Show(string.Format("Error decrypting Authenticator Serial for {0}. Try setting the serial again.", CharacterName));
+					return "";
+				}
+			}
+			set
+			{
+				AuthenticatorSerialData = Utility.EncrptDpapi(value);
+				NotifyPropertyChanged("AuthenticatorSerial");
+			}
+		}
 
         private string _characterName;
         /// <summary>

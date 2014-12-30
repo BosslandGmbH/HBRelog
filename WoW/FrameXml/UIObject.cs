@@ -174,10 +174,8 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
                 }
                 IntPtr address;
                 if (!IsUIObject(node.Value.Table, out address))
-                {
-                    Log.Write("{0} is not a UI object", node.Key.Value.Pointer != IntPtr.Zero ? node.Key.Value.String.Value : "(Unknown)");
                     continue;
-                }
+
                 yield return GetUIObjectFromPointer(wowManager, address);
             }
         }

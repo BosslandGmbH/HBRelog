@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using HighVoltz.HBRelog.FiniteStateMachine;
 using HighVoltz.HBRelog.WoW.FrameXml;
+using WinAuth;
 using Button = HighVoltz.HBRelog.WoW.FrameXml.Button;
 
 namespace HighVoltz.HBRelog.WoW.States
@@ -26,12 +25,12 @@ namespace HighVoltz.HBRelog.WoW.States
 
         public override bool NeedToRun
         {
-	        get
-	        {
-                return (_wowManager.GameProcess != null && !_wowManager.GameProcess.HasExitedSafe()) 
-					&& !_wowManager.StartupSequenceIsComplete && !_wowManager.InGame
-					&& _wowManager.GlueStatus == WowManager.GlueState.Disconnected;
-	        }
+            get
+            {
+                return (_wowManager.GameProcess != null && !_wowManager.GameProcess.HasExitedSafe())
+                    && !_wowManager.StartupSequenceIsComplete && !_wowManager.InGame
+                    && _wowManager.GlueStatus == WowManager.GlueState.Disconnected;
+            }
         }
 
         public override void Run()
@@ -62,7 +61,7 @@ namespace HighVoltz.HBRelog.WoW.States
                 _wowManager.Profile.Status = string.Format("Incorrect login information entered");
                 _wowManager.Profile.Log("Pausing profile because incorrect login information was entered");
                 _wowManager.Profile.Pause();
-                return;                
+                return;
             }
 
             //  press 'Enter' key if popup dialog with an 'Okay' button is visible
@@ -91,12 +90,15 @@ namespace HighVoltz.HBRelog.WoW.States
                 return;
             }
 
+            if (HandleBattleNetToken())
+                return;
+
             // enter Battlenet email..
-            if (!EnterTextInEditBox("AccountLoginAccountEdit", _wowManager.Settings.Login))
+            if (EnterTextInEditBox("AccountLoginAccountEdit", _wowManager.Settings.Login))
                 return;
 
             // enter password
-            if (!EnterTextInEditBox("AccountLoginPasswordEdit", _wowManager.Settings.Password))
+            if (EnterTextInEditBox("AccountLoginPasswordEdit", _wowManager.Settings.Password))
                 return;
 
             // everything looks good. Press 'Enter' key to login.
@@ -165,7 +167,7 @@ namespace HighVoltz.HBRelog.WoW.States
             }
         }
 
-        private const string BannedTitleText = "Battle.net Error #202";
+        private const string BANNED_TITLE_TEXT = "Battle.net Error #202";
 
         bool IsBanned
         {
@@ -174,11 +176,11 @@ namespace HighVoltz.HBRelog.WoW.States
                 var dialogText = GlueDialogTitle;
                 if (string.IsNullOrEmpty(dialogText))
                     return false;
-                return BannedTitleText == dialogText;
+                return BANNED_TITLE_TEXT == dialogText;
             }
         }
 
-        private const string SuspenedText = "Battle.net Error #203";
+        private const string SUSPENED_TEXT = "Battle.net Error #203";
 
         bool IsSuspended
         {
@@ -187,11 +189,11 @@ namespace HighVoltz.HBRelog.WoW.States
                 var dialogText = GlueDialogTitle;
                 if (string.IsNullOrEmpty(dialogText))
                     return false;
-                return SuspenedText == dialogText;
+                return SUSPENED_TEXT == dialogText;
             }
         }
 
-        private const string FrozenText = "Battle.net Error #206";
+        private const string FROZEN_TEXT = "Battle.net Error #206";
 
         bool IsFrozen
         {
@@ -200,11 +202,11 @@ namespace HighVoltz.HBRelog.WoW.States
                 var dialogText = GlueDialogTitle;
                 if (string.IsNullOrEmpty(dialogText))
                     return false;
-                return FrozenText == dialogText;
+                return FROZEN_TEXT == dialogText;
             }
         }
 
-        private const string IncorrectPasswordText = "Battle.net Error #104";
+        private const string INCORRECT_PASSWORD_TEXT = "Battle.net Error #104";
         bool IncorrectPassword
         {
             get
@@ -212,24 +214,24 @@ namespace HighVoltz.HBRelog.WoW.States
                 var dialogText = GlueDialogTitle;
                 if (string.IsNullOrEmpty(dialogText))
                     return false;
-                return IncorrectPasswordText == dialogText;
+                return INCORRECT_PASSWORD_TEXT == dialogText;
             }
         }
 
-        private const string IsLockedLicenseText = "Battle.net Error #204";
-        bool IsLockedLicense 
+        private const string IS_LOCKED_LICENSE_TEXT = "Battle.net Error #204";
+        bool IsLockedLicense
         {
             get
             {
                 var dialogText = GlueDialogTitle;
                 if (string.IsNullOrEmpty(dialogText))
                     return false;
-                return IsLockedLicenseText == dialogText;
+                return IS_LOCKED_LICENSE_TEXT == dialogText;
             }
         }
 
-        private const string LockedText1 = "Battle.net Error #42003";
-        private const string LockedText2 = "Battle.net Error #141";
+        private const string LOCKED_TEXT1 = "Battle.net Error #42003";
+        private const string LOCKED_TEXT2 = "Battle.net Error #141";
         bool IsLockedSuspiciousActivity
         {
             get
@@ -237,12 +239,13 @@ namespace HighVoltz.HBRelog.WoW.States
                 var dialogText = GlueDialogTitle;
                 if (string.IsNullOrEmpty(dialogText))
                     return false;
-                return LockedText1 == dialogText || LockedText2 == dialogText;
+                return LOCKED_TEXT1 == dialogText || LOCKED_TEXT2 == dialogText;
             }
         }
 
         private string _okayText;
-        bool IsErrorDialogVisible
+
+        private bool IsErrorDialogVisible
         {
             get
             {
@@ -253,6 +256,47 @@ namespace HighVoltz.HBRelog.WoW.States
                     _okayText = _wowManager.Globals.GetValue("OKAY").String.Value;
                 return _okayText == dialogButtonText;
             }
+        }
+
+        private bool HandleBattleNetToken()
+        {
+	        var serial = _wowManager.Settings.AuthenticatorSerial;
+	        var restoreCode = _wowManager.Settings.AuthenticatorRestoreCode;
+
+			if (string.IsNullOrEmpty(serial) || string.IsNullOrEmpty(restoreCode)) 
+				return false;
+
+			if (string.IsNullOrEmpty(_wowManager.Settings.AuthenticatorSerial))
+				return false;
+
+            var frame = UIObject.GetUIObjectByName<Frame>(_wowManager, "TokenEnterDialogBackgroundEdit");
+            if (frame == null || !frame.IsVisible || !frame.IsShown) return false;
+
+            var editBox = UIObject.GetUIObjectByName<EditBox>(_wowManager, "AccountLoginTokenEdit");
+
+	        var auth = new BattleNetAuthenticator();
+
+	        try
+	        {
+				auth.Restore(serial, restoreCode);
+	        }
+	        catch (Exception ex)
+	        {
+				_wowManager.Profile.Err("Could not get auth token: {0}", ex.Message);
+		        return false;
+	        }
+
+            if (!string.IsNullOrEmpty(editBox.Text))
+            {
+                Utility.SendBackgroundKey(_wowManager.GameProcess.MainWindowHandle, (char)Keys.End, false);
+                Utility.SendBackgroundString(_wowManager.GameProcess.MainWindowHandle, new string('\b', "AccountLoginTokenEdit".Length * 2), false);
+                _wowManager.Profile.Log("Pressing 'end' + delete keys to remove contents from {0}", "AccountLoginTokenEdit");
+            }
+
+            Utility.SendBackgroundString(_wowManager.GameProcess.MainWindowHandle, auth.CurrentCode);
+            Utility.SendBackgroundKey(_wowManager.GameProcess.MainWindowHandle, (char)Keys.Enter, false);
+            _wowManager.Profile.Log("Accepting Battle net token.");
+            return true;
         }
 
         bool HandleAccountSelectionDialog()
@@ -274,10 +318,10 @@ namespace HighVoltz.HBRelog.WoW.States
 
                 if (buttonIndex != currentIndex)
                 {
-                    if (buttonIndex > currentIndex)
-                        Utility.SendBackgroundString(_wowManager.GameProcess.MainWindowHandle, new string((char)Keys.Down, buttonIndex - currentIndex), false);
-                    else
-                        Utility.SendBackgroundString(_wowManager.GameProcess.MainWindowHandle, new string((char)Keys.Up, currentIndex - buttonIndex), false);
+                    Utility.SendBackgroundString(_wowManager.GameProcess.MainWindowHandle,
+                        buttonIndex > currentIndex
+                            ? new string((char) Keys.Down, buttonIndex - currentIndex)
+                            : new string((char) Keys.Up, currentIndex - buttonIndex), false);
                     _wowManager.Profile.Log("Selecting Account");
                     Utility.SleepUntil(() => SelectedAccountIndex == buttonIndex, TimeSpan.FromSeconds(2));
                     return false;
@@ -303,27 +347,28 @@ namespace HighVoltz.HBRelog.WoW.States
                 return false;
 
             var editBoxText = editBox.Text;
-            if (!string.Equals(editBoxText, text, StringComparison.InvariantCultureIgnoreCase))
-            {
-                // do we have focus?
-                if (!editBox.HasFocus)
-                {
-                    Utility.SendBackgroundString(_wowManager.GameProcess.MainWindowHandle, "\t", false);
-                    _wowManager.Profile.Log("Pressing 'tab' key to gain set focus to {0}", editBoxName);
-                    Utility.SleepUntil(() => editBox.HasFocus, TimeSpan.FromSeconds(2));
-                    return false;
-                }
-                // check if we need to remove exisiting text.
-                if (!string.IsNullOrEmpty(editBoxText))
-                {
-                    Utility.SendBackgroundKey(_wowManager.GameProcess.MainWindowHandle, (char)Keys.End, false);
-                    Utility.SendBackgroundString(_wowManager.GameProcess.MainWindowHandle, new string('\b', editBoxText.Length * 2), false);
-                    _wowManager.Profile.Log("Pressing 'end' + delete keys to remove contents from {0}", editBoxName);
-                }
-                Utility.SendBackgroundString(_wowManager.GameProcess.MainWindowHandle, text);
-                _wowManager.Profile.Log("Sending {0}letters to {1}", editBox.IsPassword ? "" : text.Length.ToString() + " ", editBoxName);
-            }
-            return true;
+
+	        if (string.Equals(editBoxText, text, StringComparison.InvariantCultureIgnoreCase))
+		        return false;
+
+	        // do we have focus?
+	        if (!editBox.HasFocus)
+	        {
+		        Utility.SendBackgroundString(_wowManager.GameProcess.MainWindowHandle, "\t", false);
+		        _wowManager.Profile.Log("Pressing 'tab' key to gain set focus to {0}", editBoxName);
+		        Utility.SleepUntil(() => editBox.HasFocus, TimeSpan.FromSeconds(2));
+		        return true;
+	        }
+	        // check if we need to remove exisiting text.
+	        if (!string.IsNullOrEmpty(editBoxText))
+	        {
+		        Utility.SendBackgroundKey(_wowManager.GameProcess.MainWindowHandle, (char)Keys.End, false);
+		        Utility.SendBackgroundString(_wowManager.GameProcess.MainWindowHandle, new string('\b', editBoxText.Length * 2), false);
+		        _wowManager.Profile.Log("Pressing 'end' + delete keys to remove contents from {0}", editBoxName);
+	        }
+	        Utility.SendBackgroundString(_wowManager.GameProcess.MainWindowHandle, text);
+	        _wowManager.Profile.Log("Sending {0}letters to {1}", editBox.IsPassword ? "" : text.Length + " ", editBoxName);
+	        return true;
         }
 
     }
