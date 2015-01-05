@@ -68,7 +68,23 @@ namespace HighVoltz.HBRelog.WoW
             {
                 if (Memory == null)
                     return null;
-                var globalsOffset = Memory.Read<IntPtr>(true, (IntPtr)HbRelogManager.Settings.LuaStateOffset, (IntPtr)LuaStateGlobalsOffset);
+				var luaStatePtr = Memory.Read<IntPtr>((IntPtr)HbRelogManager.Settings.LuaStateOffset, true);
+	            if (luaStatePtr == IntPtr.Zero)
+	            {
+#if DEBUG
+					Log.Write("Lua state is not initialized");
+#endif
+		            return null;
+	            }
+
+				var globalsOffset = Memory.Read<IntPtr>(luaStatePtr + LuaStateGlobalsOffset);
+	            if (globalsOffset == IntPtr.Zero)
+	            {
+#if DEBUG
+					Log.Write("Lua globals is not initialized");
+#endif
+		            return null;
+	            }
                 if (_globals == null || _globals.Address != globalsOffset)
                     _globals = new LuaTable(Memory, globalsOffset);
 

@@ -31,6 +31,7 @@ namespace HighVoltz.HBRelog
         public bool StartupSequenceIsComplete { get; private set; }
         public event EventHandler<ProfileEventArgs> OnStartupSequenceIsComplete;
         public bool IsRunning { get; private set; }
+		public BMTask CurrentTask { get; private set; }
 
         public TaskManager(CharacterProfile profile)
         {
@@ -71,26 +72,36 @@ namespace HighVoltz.HBRelog
             // only pulse tasks if StartupSequenceIsComplete is true.
             if (StartupSequenceIsComplete)
             {
-                // reset tasks if they're all complete
-                if (Tasks.Count > 0 && Tasks.All(t => t.IsDone))
-                {
-                    foreach (var task in Tasks)
-                        task.Reset();
-                }
-                // get the 1st task that isn't done and pulse it.
-                BMTask currentTask = Tasks.FirstOrDefault(t => !t.IsDone);
-                if (currentTask != null)
-                {
-                    if (!currentTask.IsRunning)
-                        currentTask.Start();
-                    currentTask.Pulse();
-                    if (currentTask is WaitTask && currentTask.IsRunning)
-                        Profile.TaskTooltip = currentTask.ToolTip;
-                    else if (!string.IsNullOrEmpty(Profile.TaskTooltip))
-                        Profile.TaskTooltip = null;
-                }
+	            PulseTasks();
             }
         }
+
+
+	    private void PulseTasks()
+	    {
+		    if (!Tasks.Any())
+			    return;
+
+			// reset tasks if they're all complete
+			if (Tasks.All(t => t.IsDone))
+			{
+				foreach (var task in Tasks)
+					task.Reset();
+			}
+
+			// get the 1st task that isn't done and pulse it.
+			CurrentTask = Tasks.FirstOrDefault(t => !t.IsDone);
+			if (CurrentTask != null)
+			{
+				if (!CurrentTask.IsRunning)
+					CurrentTask.Start();
+				CurrentTask.Pulse();
+				if (CurrentTask is WaitTask && CurrentTask.IsRunning)
+					Profile.TaskTooltip = CurrentTask.ToolTip;
+				else if (!string.IsNullOrEmpty(Profile.TaskTooltip))
+					Profile.TaskTooltip = null;
+			}
+	    }
 
         public void Start()
         {
