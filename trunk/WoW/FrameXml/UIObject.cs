@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using GreyMagic;
+using HighVoltz.HBRelog.Settings;
 using HighVoltz.HBRelog.WoW.Lua;
 
 namespace HighVoltz.HBRelog.WoW.FrameXml
@@ -164,7 +165,7 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
 
         public static IEnumerable<UIObject> GetUIObjects(WowManager wowManager)
         {
-            foreach (var node in wowManager.Globals.Nodes)
+			foreach (var node in wowManager.Globals.Nodes)
             {
                 if (node.Value.Type != LuaType.Table)
                     continue;

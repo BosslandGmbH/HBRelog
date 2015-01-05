@@ -18,7 +18,6 @@ using System.Diagnostics;
 using System.Threading;
 using HighVoltz.HBRelog.Remoting;
 using HighVoltz.HBRelog.Settings;
-using System.Text.RegularExpressions;
 using System.ServiceModel;
 using System.Windows;
 using System.ComponentModel;
