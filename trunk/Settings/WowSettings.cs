@@ -68,7 +68,8 @@ namespace HighVoltz.HBRelog.Settings
             {
                 try
                 {
-                    return Utility.DecrptDpapi(PasswordData);
+	                var pass = Utility.DecrptDpapi(PasswordData);
+					return Utility.DecrptDpapi(PasswordData).Substring(0, Math.Min(16, pass.Length));
                 }
                 catch
                 {

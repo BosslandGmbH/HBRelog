@@ -5,6 +5,9 @@ an online copy can be found here https://github.com/stschake/cleanCore/blob/mast
 
 ICSharpCode.SharpZLib (http://www.icsharpcode.net/opensource/sharpziplib/)  is under the GNU General Public License. License is displayed in the source files.
 
+Fasm.Net copyrighted by ZenLulz ~ Jämes Ménétrey (https://github.com/ZenLulz/Fasm.NET) is under the MIT license
 
- 
+The Fasm compiler (http://flatassembler.net/) is copyrighted by Tomasz Grysztar
+
+WinAuth (https://code.google.com/p/winauth/) is under the GNU GPL v3 license 
  
