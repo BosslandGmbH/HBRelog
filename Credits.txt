@@ -1,5 +1,21 @@
-Apoc of www.ownedcore.com - Creator of the awesome GreyMagic library http://www.ownedcore.com/forums/world-of-warcraft/world-of-warcraft-bots-programs/wow-memory-editing/379821-greymagic-best-of-both-worlds-then-some.html
-Apoc of www.ownedcore.com - Finite State Machine http://www.ownedcore.com/forums/general/programming/232703-bot-developers-simple-but-effective-fsm-your-bots.html
-caytchen from www.ownedcore.com - used a modifed version of his CleanPattern classes. https://github.com/caytchen/cleanCore/
+Apoc of www.ownedcore.com - Creator of the awesome GreyMagic library 
+http://www.ownedcore.com/forums/world-of-warcraft/world-of-warcraft-bots-programs/wow-memory-editing/379821-greymagic-best-of-both-worlds-then-some.html
+
+Apoc of www.ownedcore.com - Finite State Machine 
+http://www.ownedcore.com/forums/general/programming/232703-bot-developers-simple-but-effective-fsm-your-bots.html
+
+Stefan Schake from www.ownedcore.com - used a modifed version of his CleanPattern classes. 
+https://github.com/caytchen/cleanCore/
+
 www.pinvoke.com - for most of the native win32 method and type declarations.
+
 findicons.com - used several 'free for non-comercial use' items found here.
+
+ZenLulz ~ Jämes Ménétrey - Creator of Fasm.net 
+https://github.com/ZenLulz/Fasm.NET
+
+Tomasz Grysztar - Creator of the flat assembler
+http://flatassembler.net/
+
+The WinAuth team 
+https://code.google.com/p/winauth/
