@@ -160,25 +160,5 @@ namespace HighVoltz.HBRelog.Controls
                 PropertyChanged(this, new PropertyChangedEventArgs(name));
             }
         }
-
-        #region Embedded Type - CustomTaskEditControlAttribute
-        [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
-        public sealed class CustomTaskEditControlAttribute : Attribute
-        {
-            public CustomTaskEditControlAttribute(Type controlType)
-            {
-                this.ControlType = controlType;
-            }
-            public Type ControlType { get; private set; }
-        }
-        #endregion
-
-        #region Embedded Type - ICustomTaskEditControlDataBound
-        public interface ICustomTaskEditControlDataBound
-        {
-            void SetBinding(BMTask source, string path);
-            void SetValue(object value);
-        }
-        #endregion
     }
 }

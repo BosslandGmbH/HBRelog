@@ -14,6 +14,7 @@ Copyright 2012 HighVoltz
    limitations under the License.
 */
 
+using System.Globalization;
 using System.IO;
 using System.Xml.Serialization;
 using HighVoltz.HBRelog.Controls;
@@ -55,12 +56,12 @@ namespace HighVoltz.HBRelog.Tasks
             }
         }
 
-        [TaskEditor.CustomTaskEditControl(typeof(ProfilePathEditControl))]
+        [CustomTaskEditControl(typeof(ProfilePathEditControl))]
         public string ProfilePath { get; set; }
         public string Bot { get; set; }
         public override void Pulse()
         {
-            if (File.Exists(ProfilePath))
+			if (File.Exists(ProfilePath) || ProfilePath.StartsWith("store://", true, CultureInfo.InvariantCulture))
             {
                 Profile.Log("Loading Honorbuddy profile: {0} and {1}",
                     Profile.Settings.ProfileName, ProfilePath, !string.IsNullOrEmpty(Bot) ? "switching to bot " + Bot : "using current bot");
@@ -80,7 +81,7 @@ namespace HighVoltz.HBRelog.Tasks
             IsDone = true;
         }
 
-        public class ProfilePathEditControl : FileInputBox, TaskEditor.ICustomTaskEditControlDataBound
+        public class ProfilePathEditControl : FileInputBox, ICustomTaskEditControlDataBound
         {
             ChangeProfileTask _task;
             public ProfilePathEditControl()
@@ -89,7 +90,7 @@ namespace HighVoltz.HBRelog.Tasks
                 DefaultExt = ".xml";
                 Filter = ".xml|*.xml";
             }
-            void TaskEditor.ICustomTaskEditControlDataBound.SetBinding(BMTask source, string path)
+            void ICustomTaskEditControlDataBound.SetBinding(BMTask source, string path)
             {
                 _task = (ChangeProfileTask)source;
                 // binding issues.. so just hooking an event.
@@ -98,7 +99,7 @@ namespace HighVoltz.HBRelog.Tasks
                 // SetBinding(FileNameProperty, binding);
             }
 
-            void TaskEditor.ICustomTaskEditControlDataBound.SetValue(object value)
+            void ICustomTaskEditControlDataBound.SetValue(object value)
             {
                 FileName = value.ToString();
                 FileNameChanged += ProfilePathEditControlFileNameChanged;

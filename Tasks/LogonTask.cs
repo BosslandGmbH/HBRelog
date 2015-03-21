@@ -58,9 +58,9 @@ namespace HighVoltz.HBRelog.Tasks
         public string Server { get; set; }
         public string BotBase { get; set; }
         public string CustomClass { get; set; }
-        [TaskEditor.CustomTaskEditControl(typeof(ProfilePathEditControl))]
+        [CustomTaskEditControl(typeof(ProfilePathEditControl))]
         public string ProfilePath { get; set; }
-        [TaskEditor.CustomTaskEditControl(typeof(HBPathEditControl))]
+        [CustomTaskEditControl(typeof(HBPathEditControl))]
         public string HonorbuddyPath { get; set; }
 		public string HonorbuddyArgs { get; set; }
 
@@ -108,7 +108,7 @@ namespace HighVoltz.HBRelog.Tasks
             _runOnce = false;
         }
 
-        public class ProfilePathEditControl : FileInputBox, TaskEditor.ICustomTaskEditControlDataBound
+        public class ProfilePathEditControl : FileInputBox, ICustomTaskEditControlDataBound
         {
             LogonTask _task;
             public ProfilePathEditControl()
@@ -117,7 +117,7 @@ namespace HighVoltz.HBRelog.Tasks
                 DefaultExt = ".xml";
                 Filter = ".xml|*.xml";
             }
-            void TaskEditor.ICustomTaskEditControlDataBound.SetBinding(BMTask source, string path)
+            void ICustomTaskEditControlDataBound.SetBinding(BMTask source, string path)
             {
                 _task = (LogonTask)source;
                 // binding issues.. so just hooking an event.
@@ -126,7 +126,7 @@ namespace HighVoltz.HBRelog.Tasks
                 // SetBinding(FileNameProperty, binding);
             }
 
-            void TaskEditor.ICustomTaskEditControlDataBound.SetValue(object value)
+            void ICustomTaskEditControlDataBound.SetValue(object value)
             {
                 FileName = value.ToString();
                 FileNameChanged += ProfilePathEditControlFileNameChanged;
@@ -138,7 +138,7 @@ namespace HighVoltz.HBRelog.Tasks
             }
         }
 
-        public class HBPathEditControl : FileInputBox, TaskEditor.ICustomTaskEditControlDataBound
+        public class HBPathEditControl : FileInputBox, ICustomTaskEditControlDataBound
         {
             LogonTask _task;
             public HBPathEditControl()
@@ -147,7 +147,7 @@ namespace HighVoltz.HBRelog.Tasks
                 DefaultExt = ".exe";
                 Filter = ".exe|*.exe";
             }
-            void TaskEditor.ICustomTaskEditControlDataBound.SetBinding(BMTask source, string path)
+            void ICustomTaskEditControlDataBound.SetBinding(BMTask source, string path)
             {
                 _task = (LogonTask)source;
                 // binding issues.. so just hooking an event.
@@ -156,7 +156,7 @@ namespace HighVoltz.HBRelog.Tasks
                 // SetBinding(FileNameProperty, binding);
             }
 
-            void TaskEditor.ICustomTaskEditControlDataBound.SetValue(object value)
+            void ICustomTaskEditControlDataBound.SetValue(object value)
             {
                 FileName = value.ToString();
                 FileNameChanged += ProfilePathEditControlFileNameChanged;

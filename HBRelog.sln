@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30723.0
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HBRelog", "HBRelog.csproj", "{9FEFE779-26EF-4E60-B1E9-1AC82000443A}"
 EndProject
@@ -17,13 +17,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Fasm.NET", "Libs\Fasm.NET\F
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Chinajade|Any CPU = Chinajade|Any CPU
-		Chinajade|Any CPU and x64 = Chinajade|Any CPU and x64
-		Chinajade|Any CPU and x86 = Chinajade|Any CPU and x86
-		Chinajade|Mixed Platforms = Chinajade|Mixed Platforms
-		Chinajade|Win32 = Chinajade|Win32
-		Chinajade|x64 = Chinajade|x64
-		Chinajade|x86 = Chinajade|x86
 		Debug|Any CPU = Debug|Any CPU
 		Debug|Any CPU and x64 = Debug|Any CPU and x64
 		Debug|Any CPU and x86 = Debug|Any CPU and x86
@@ -40,13 +33,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{9FEFE779-26EF-4E60-B1E9-1AC82000443A}.Chinajade|Any CPU.ActiveCfg = Release|x86
-		{9FEFE779-26EF-4E60-B1E9-1AC82000443A}.Chinajade|Any CPU and x64.ActiveCfg = Release|x86
-		{9FEFE779-26EF-4E60-B1E9-1AC82000443A}.Chinajade|Any CPU and x86.ActiveCfg = Release|x86
-		{9FEFE779-26EF-4E60-B1E9-1AC82000443A}.Chinajade|Mixed Platforms.ActiveCfg = Release|x86
-		{9FEFE779-26EF-4E60-B1E9-1AC82000443A}.Chinajade|Win32.ActiveCfg = Release|x86
-		{9FEFE779-26EF-4E60-B1E9-1AC82000443A}.Chinajade|x64.ActiveCfg = Release|x86
-		{9FEFE779-26EF-4E60-B1E9-1AC82000443A}.Chinajade|x86.ActiveCfg = Release|x86
 		{9FEFE779-26EF-4E60-B1E9-1AC82000443A}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{9FEFE779-26EF-4E60-B1E9-1AC82000443A}.Debug|Any CPU and x64.ActiveCfg = Debug|x86
 		{9FEFE779-26EF-4E60-B1E9-1AC82000443A}.Debug|Any CPU and x86.ActiveCfg = Debug|x86
@@ -67,13 +53,6 @@ Global
 		{9FEFE779-26EF-4E60-B1E9-1AC82000443A}.Release|x64.ActiveCfg = Release|x86
 		{9FEFE779-26EF-4E60-B1E9-1AC82000443A}.Release|x86.ActiveCfg = Release|x86
 		{9FEFE779-26EF-4E60-B1E9-1AC82000443A}.Release|x86.Build.0 = Release|x86
-		{8CBFDD9D-64B2-4ED8-962F-312D7E6A7F05}.Chinajade|Any CPU.ActiveCfg = Release|Any CPU
-		{8CBFDD9D-64B2-4ED8-962F-312D7E6A7F05}.Chinajade|Any CPU and x64.ActiveCfg = Release|Any CPU
-		{8CBFDD9D-64B2-4ED8-962F-312D7E6A7F05}.Chinajade|Any CPU and x86.ActiveCfg = Release|Any CPU
-		{8CBFDD9D-64B2-4ED8-962F-312D7E6A7F05}.Chinajade|Mixed Platforms.ActiveCfg = Release|x86
-		{8CBFDD9D-64B2-4ED8-962F-312D7E6A7F05}.Chinajade|Win32.ActiveCfg = Release|x86
-		{8CBFDD9D-64B2-4ED8-962F-312D7E6A7F05}.Chinajade|x64.ActiveCfg = Release|Any CPU
-		{8CBFDD9D-64B2-4ED8-962F-312D7E6A7F05}.Chinajade|x86.ActiveCfg = Release|x86
 		{8CBFDD9D-64B2-4ED8-962F-312D7E6A7F05}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8CBFDD9D-64B2-4ED8-962F-312D7E6A7F05}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8CBFDD9D-64B2-4ED8-962F-312D7E6A7F05}.Debug|Any CPU and x64.ActiveCfg = Debug|Any CPU
@@ -94,13 +73,6 @@ Global
 		{8CBFDD9D-64B2-4ED8-962F-312D7E6A7F05}.Release|Win32.Build.0 = Release|x86
 		{8CBFDD9D-64B2-4ED8-962F-312D7E6A7F05}.Release|x64.ActiveCfg = Release|Any CPU
 		{8CBFDD9D-64B2-4ED8-962F-312D7E6A7F05}.Release|x86.ActiveCfg = Release|Any CPU
-		{29BEE34E-8D6A-47BF-96FA-ABA46F6E9B66}.Chinajade|Any CPU.ActiveCfg = Release|Any CPU
-		{29BEE34E-8D6A-47BF-96FA-ABA46F6E9B66}.Chinajade|Any CPU and x64.ActiveCfg = Release|Any CPU
-		{29BEE34E-8D6A-47BF-96FA-ABA46F6E9B66}.Chinajade|Any CPU and x86.ActiveCfg = Release|Any CPU
-		{29BEE34E-8D6A-47BF-96FA-ABA46F6E9B66}.Chinajade|Mixed Platforms.ActiveCfg = Release|x86
-		{29BEE34E-8D6A-47BF-96FA-ABA46F6E9B66}.Chinajade|Win32.ActiveCfg = Release|x86
-		{29BEE34E-8D6A-47BF-96FA-ABA46F6E9B66}.Chinajade|x64.ActiveCfg = Release|Any CPU
-		{29BEE34E-8D6A-47BF-96FA-ABA46F6E9B66}.Chinajade|x86.ActiveCfg = Release|x86
 		{29BEE34E-8D6A-47BF-96FA-ABA46F6E9B66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{29BEE34E-8D6A-47BF-96FA-ABA46F6E9B66}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{29BEE34E-8D6A-47BF-96FA-ABA46F6E9B66}.Debug|Any CPU and x64.ActiveCfg = Debug|Any CPU
@@ -123,13 +95,6 @@ Global
 		{29BEE34E-8D6A-47BF-96FA-ABA46F6E9B66}.Release|x64.ActiveCfg = Release|Any CPU
 		{29BEE34E-8D6A-47BF-96FA-ABA46F6E9B66}.Release|x86.ActiveCfg = Release|x86
 		{29BEE34E-8D6A-47BF-96FA-ABA46F6E9B66}.Release|x86.Build.0 = Release|x86
-		{4781EA6C-E946-4B0F-8013-FA04AEC24B15}.Chinajade|Any CPU.ActiveCfg = Release|Any CPU
-		{4781EA6C-E946-4B0F-8013-FA04AEC24B15}.Chinajade|Any CPU and x64.ActiveCfg = Release|Any CPU
-		{4781EA6C-E946-4B0F-8013-FA04AEC24B15}.Chinajade|Any CPU and x86.ActiveCfg = Release|Any CPU
-		{4781EA6C-E946-4B0F-8013-FA04AEC24B15}.Chinajade|Mixed Platforms.ActiveCfg = Release|x86
-		{4781EA6C-E946-4B0F-8013-FA04AEC24B15}.Chinajade|Win32.ActiveCfg = Release|x86
-		{4781EA6C-E946-4B0F-8013-FA04AEC24B15}.Chinajade|x64.ActiveCfg = Release|Any CPU
-		{4781EA6C-E946-4B0F-8013-FA04AEC24B15}.Chinajade|x86.ActiveCfg = Release|x86
 		{4781EA6C-E946-4B0F-8013-FA04AEC24B15}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4781EA6C-E946-4B0F-8013-FA04AEC24B15}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4781EA6C-E946-4B0F-8013-FA04AEC24B15}.Debug|Any CPU and x64.ActiveCfg = Debug|Any CPU
@@ -152,16 +117,6 @@ Global
 		{4781EA6C-E946-4B0F-8013-FA04AEC24B15}.Release|x64.ActiveCfg = Release|Any CPU
 		{4781EA6C-E946-4B0F-8013-FA04AEC24B15}.Release|x86.ActiveCfg = Release|x86
 		{4781EA6C-E946-4B0F-8013-FA04AEC24B15}.Release|x86.Build.0 = Release|x86
-		{EAF2D5CE-D817-453A-8A32-3D531570AE04}.Chinajade|Any CPU.ActiveCfg = Release|x86
-		{EAF2D5CE-D817-453A-8A32-3D531570AE04}.Chinajade|Any CPU and x64.ActiveCfg = Release|x86
-		{EAF2D5CE-D817-453A-8A32-3D531570AE04}.Chinajade|Any CPU and x86.ActiveCfg = Release|x86
-		{EAF2D5CE-D817-453A-8A32-3D531570AE04}.Chinajade|Mixed Platforms.ActiveCfg = Release|x86
-		{EAF2D5CE-D817-453A-8A32-3D531570AE04}.Chinajade|Mixed Platforms.Build.0 = Release|x86
-		{EAF2D5CE-D817-453A-8A32-3D531570AE04}.Chinajade|Win32.ActiveCfg = Release|x86
-		{EAF2D5CE-D817-453A-8A32-3D531570AE04}.Chinajade|Win32.Build.0 = Release|x86
-		{EAF2D5CE-D817-453A-8A32-3D531570AE04}.Chinajade|x64.ActiveCfg = Release|x86
-		{EAF2D5CE-D817-453A-8A32-3D531570AE04}.Chinajade|x86.ActiveCfg = Release|x86
-		{EAF2D5CE-D817-453A-8A32-3D531570AE04}.Chinajade|x86.Build.0 = Release|x86
 		{EAF2D5CE-D817-453A-8A32-3D531570AE04}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{EAF2D5CE-D817-453A-8A32-3D531570AE04}.Debug|Any CPU and x64.ActiveCfg = Debug|x86
 		{EAF2D5CE-D817-453A-8A32-3D531570AE04}.Debug|Any CPU and x86.ActiveCfg = Debug|x86
@@ -182,16 +137,6 @@ Global
 		{EAF2D5CE-D817-453A-8A32-3D531570AE04}.Release|x64.ActiveCfg = Release|x86
 		{EAF2D5CE-D817-453A-8A32-3D531570AE04}.Release|x86.ActiveCfg = Release|x86
 		{EAF2D5CE-D817-453A-8A32-3D531570AE04}.Release|x86.Build.0 = Release|x86
-		{2DAC1A31-EF28-499A-B67A-963B5343D778}.Chinajade|Any CPU.ActiveCfg = Release|Win32
-		{2DAC1A31-EF28-499A-B67A-963B5343D778}.Chinajade|Any CPU and x64.ActiveCfg = Release|Win32
-		{2DAC1A31-EF28-499A-B67A-963B5343D778}.Chinajade|Any CPU and x86.ActiveCfg = Release|Win32
-		{2DAC1A31-EF28-499A-B67A-963B5343D778}.Chinajade|Mixed Platforms.ActiveCfg = Release|Win32
-		{2DAC1A31-EF28-499A-B67A-963B5343D778}.Chinajade|Mixed Platforms.Build.0 = Release|Win32
-		{2DAC1A31-EF28-499A-B67A-963B5343D778}.Chinajade|Win32.ActiveCfg = Release|Win32
-		{2DAC1A31-EF28-499A-B67A-963B5343D778}.Chinajade|Win32.Build.0 = Release|Win32
-		{2DAC1A31-EF28-499A-B67A-963B5343D778}.Chinajade|x64.ActiveCfg = Release|Win32
-		{2DAC1A31-EF28-499A-B67A-963B5343D778}.Chinajade|x86.ActiveCfg = Release|Win32
-		{2DAC1A31-EF28-499A-B67A-963B5343D778}.Chinajade|x86.Build.0 = Release|Win32
 		{2DAC1A31-EF28-499A-B67A-963B5343D778}.Debug|Any CPU.ActiveCfg = Debug|Win32
 		{2DAC1A31-EF28-499A-B67A-963B5343D778}.Debug|Any CPU and x64.ActiveCfg = Debug|Win32
 		{2DAC1A31-EF28-499A-B67A-963B5343D778}.Debug|Any CPU and x86.ActiveCfg = Debug|Win32

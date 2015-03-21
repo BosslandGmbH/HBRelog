@@ -86,6 +86,8 @@
     <Compile Include="Honorbuddy\States\MonitorState.cs" />
     <Compile Include="Honorbuddy\States\StartHonorbuddyState.cs" />
     <Compile Include="Honorbuddy\States\UpdateHonorbuddyState.cs" />
+    <Compile Include="Tasks\CustomTaskEditControlAttribute.cs" />
+    <Compile Include="Tasks\ICustomTaskEditControlDataBound.cs" />
     <Compile Include="WoW\States\CharacterCreationState.cs" />
     <Compile Include="WoW\States\CharacterSelectState.cs" />
     <Compile Include="WoW\States\MonitorState.cs" />
@@ -310,7 +312,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>SubWCRev.exe $(ProjectDir)Properties/ $(ProjectDir)Properties/AssemblyInfo.template $(ProjectDir)Properties/AssemblyInfo.cs</PreBuildEvent>
+    <PreBuildEvent>
+    </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PostBuildEvent>
