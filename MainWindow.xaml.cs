@@ -153,7 +153,7 @@ namespace HighVoltz.HBRelog
             OptionsTab.IsSelected = false;
             Version version = Assembly.GetExecutingAssembly().GetName().Version;
             // add one to Revision because it uses current revision and we want this to use the next revision number.
-            version = new Version(version.Major, version.Minor, version.Build, version.Revision + 1);
+            version = new Version(version.Major, version.Minor, version.Build);
             Log.Write("HBRelog Version {0}", version);
             Log.Write("******* Settings ******** ");
             Log.Write("\t{0,-30} {1}", "Auto AcceptTosEula:", HbRelogManager.Settings.AutoAcceptTosEula);
