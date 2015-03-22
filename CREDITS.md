@@ -1,4 +1,4 @@
-* (CleanPattern)[https://github.com/stschake/cleanCore] by Stefan Schake is under the [Simplified BSD License](https://github.com/stschake/cleanCore/blob/master/LICENSE) 
+* [CleanPattern](https://github.com/stschake/cleanCore) by Stefan Schake is under the [Simplified BSD License](https://github.com/stschake/cleanCore/blob/master/LICENSE) 
 * [ICSharpCode.SharpZLib](https://www.gnu.org/licenses/lgpl.html) is under the [Lesser GNU General Public License](https://www.gnu.org/copyleft/gpl.html)
 * [Fasm.Net](https://github.com/ZenLulz/Fasm.NET) by ZenLulz - Jämes Ménétrey is under the [MIT licence](https://github.com/ZenLulz/Fasm.NET/blob/master/LICENSE)
 * [The Fasm compiler](http://flatassembler.net/) is by Tomasz Grysztar
