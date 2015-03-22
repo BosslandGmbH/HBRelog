@@ -7,5 +7,3 @@
 * [Finite State Machine](http://www.ownedcore.com/forums/general/programming/232703-bot-developers-simple-but-effective-fsm-your-bots.html) is by Apoc of [ownedcore](www.ownedcore.com)
 * A lot of native win32 method and type declarations are from www.pinvoke.com
 * Used several 'free for non-comercial use' items from findicons.com
-* [WinAuth](https://code.google.com/p/winauth/) is under the [GNU General Public License](https://www.gnu.org/copyleft/gpl.html)
-
