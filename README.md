@@ -15,6 +15,7 @@ A Relogger for World of Warcraft and Honorbuddy with task support.
 * WoW and Honorbuddy crash detection
 * Automatically scans for new memory offsets whenever Wow updates
 * WoW window re-size and placement and custom title
+* Authenticator support
 * Task system. 
 
 ### Installation 
