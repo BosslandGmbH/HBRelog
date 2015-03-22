@@ -18,4 +18,6 @@ A Relogger for World of Warcraft and Honorbuddy with task support.
 * Task system. 
 
 ### Installation 
-There is no installer, simply download the binaries from [here](https://github.com/highvoltz/HBRelog/releases/latest), extract zip into any folder and run the HBRelog executable.  
+You can either download and build the source using Visual Studio (project file is from VS2013)
+or download the binaries from [here](https://github.com/highvoltz/HBRelog/releases/latest).
+There is no installer, simply extract zip into any folder and run the HBRelog executable.
