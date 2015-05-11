@@ -214,11 +214,10 @@ namespace HighVoltz.HBRelog.Settings
 
         // offsets
         public uint GameStateOffset { get; set; }
-        //public uint FrameScriptExecuteOffset { get; set; }
         public uint FocusedWidgetOffset { get; set; }
         public uint LuaStateOffset { get; set; }
-        //public uint LastHardwareEventOffset { get; set; }
-        public uint GlueStateOffset { get; set; }
+		public uint GlueStateOffset { get; set; }
+		public uint LoadingScreenEnableCountOffset { get; set; }
 
         public TimeSpan SaveCompleteTimeSpan
         {
@@ -262,11 +261,10 @@ namespace HighVoltz.HBRelog.Settings
                 root.Add(new XElement("WowVersion", WowVersion));
 
                 root.Add(new XElement("GameStateOffset", GameStateOffset));
-                //root.Add(new XElement("FrameScriptExecuteOffset", FrameScriptExecuteOffset));
                 root.Add(new XElement("FocusedWidgetOffset", FocusedWidgetOffset));
                 root.Add(new XElement("LuaStateOffset", LuaStateOffset));
-                //root.Add(new XElement("LastHardwareEventOffset", LastHardwareEventOffset));
                 root.Add(new XElement("GlueStateOffset", GlueStateOffset));
+				root.Add(new XElement("LoadingScreenEnableCountOffset", LoadingScreenEnableCountOffset));
 
                 var characterProfilesElement = new XElement("CharacterProfiles");
                 foreach (CharacterProfile profile in CharacterProfiles)
@@ -412,6 +410,9 @@ namespace HighVoltz.HBRelog.Settings
                     settings.LuaStateOffset = GetElementValue(root.Element("LuaStateOffset"), 0u);
                     //settings.LastHardwareEventOffset = GetElementValue(root.Element("LastHardwareEventOffset"), 0u);
                     settings.GlueStateOffset = GetElementValue(root.Element("GlueStateOffset"), 0u);
+	                settings.LoadingScreenEnableCountOffset = GetElementValue(
+		                root.Element("LoadingScreenEnableCountOffset"),
+		                0u);
 
                     XElement characterProfilesElement = root.Element("CharacterProfiles");
                     foreach (XElement profileElement in characterProfilesElement.Elements("CharacterProfile"))

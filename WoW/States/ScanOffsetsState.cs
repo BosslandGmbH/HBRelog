@@ -32,7 +32,8 @@ namespace HighVoltz.HBRelog.WoW.States
                        || HbRelogManager.Settings.GlueStateOffset == 0
                        || HbRelogManager.Settings.GameStateOffset == 0
                        || HbRelogManager.Settings.FocusedWidgetOffset == 0
-                       || HbRelogManager.Settings.LuaStateOffset == 0);
+					   || HbRelogManager.Settings.LuaStateOffset == 0
+					   || HbRelogManager.Settings.LoadingScreenEnableCountOffset == 0);
             }
         }
 
@@ -48,8 +49,8 @@ namespace HighVoltz.HBRelog.WoW.States
             HbRelogManager.Settings.FocusedWidgetOffset = (uint)WowPatterns.FocusedWidgetPattern.Find(_wowManager.Memory);
             Log.Debug("FocusedWidget Offset found at 0x{0:X}", HbRelogManager.Settings.FocusedWidgetOffset);
 
-            HbRelogManager.Settings.GlueStateOffset = (uint)WowPatterns.GlueStatePattern.Find(_wowManager.Memory);
-            Log.Debug("GlueStateOffset Offset found at 0x{0:X}", HbRelogManager.Settings.GlueStateOffset);
+			HbRelogManager.Settings.LoadingScreenEnableCountOffset = (uint)WowPatterns.LoadingScreenEnableCountPattern.Find(_wowManager.Memory);
+			Log.Debug("LoadingScreenEnableCountOffset Offset found at 0x{0:X}", HbRelogManager.Settings.LoadingScreenEnableCountOffset);
 
             HbRelogManager.Settings.WowVersion = versionString;
             HbRelogManager.Settings.Save();

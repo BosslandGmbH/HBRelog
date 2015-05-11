@@ -242,7 +242,10 @@ namespace HighVoltz.HBRelog.WoW
                         return false;
 
                     var state = Memory.Read<byte>(true, (IntPtr)HbRelogManager.Settings.GameStateOffset);
-                    return state == 1;
+	                var loadingScreenCount = Memory.Read<int>(
+		                true,
+		                (IntPtr) HbRelogManager.Settings.LoadingScreenEnableCountOffset);
+					return state == 1 && loadingScreenCount == 0;
                 }
                 catch
                 {
