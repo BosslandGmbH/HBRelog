@@ -290,15 +290,16 @@ namespace HighVoltz.HBRelog
                 for (int num = 0; forefroundWindow != hWnd && num < 1000; num++)
                 {
                     NativeMethods.SetForegroundWindow(hWnd);
-                    Thread.Sleep(1);
+                    Thread.Sleep(10);
                     forefroundWindow = NativeMethods.GetForegroundWindow();
                 }
 
                 NativeMethods.SendInput(1, ref structInput, SizeOfInput);
+				Thread.Sleep(100);
                 if (doubleClick)
                 {
-                    Thread.Sleep(100);
                     NativeMethods.SendInput(1, ref structInput, SizeOfInput);
+					Thread.Sleep(100);
                 }
             }
             finally
