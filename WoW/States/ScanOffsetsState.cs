@@ -52,6 +52,9 @@ namespace HighVoltz.HBRelog.WoW.States
 			HbRelogManager.Settings.LoadingScreenEnableCountOffset = (uint)WowPatterns.LoadingScreenEnableCountPattern.Find(_wowManager.Memory);
 			Log.Debug("LoadingScreenEnableCountOffset Offset found at 0x{0:X}", HbRelogManager.Settings.LoadingScreenEnableCountOffset);
 
+            HbRelogManager.Settings.GlueStateOffset = (uint)WowPatterns.GlueStatePattern.Find(_wowManager.Memory);
+            Log.Debug("GlueStateOffset Offset found at 0x{0:X}", HbRelogManager.Settings.GlueStateOffset);
+
             HbRelogManager.Settings.WowVersion = versionString;
             HbRelogManager.Settings.Save();
         }
