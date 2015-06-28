@@ -98,7 +98,6 @@ namespace HighVoltz.HBRelog.WoW.States
                 return false;
             }
 
-			DetachGlove();
             Utility.SendBackgroundKey(_wowManager.GameProcess.MainWindowHandle, (char)Keys.Enter, false);
             return true;
         }
@@ -158,34 +157,6 @@ namespace HighVoltz.HBRelog.WoW.States
 			Utility.LeftClickAtPos(_wowManager.GameProcess.MainWindowHandle, (int)clickPos.X, (int)clickPos.Y);
 			return true;
 	    }
-
-		Stopwatch _gloveSw = new Stopwatch();
-		private void DetachGlove()
-		{
-			if (_gloveSw.IsRunning && _gloveSw.ElapsedMilliseconds < 5000)
-				return;
-
-			var gloveLauncherPath = Path.Combine(Utility.AssemblyDirectory, "Glove.exe");
-			if (!File.Exists(gloveLauncherPath))
-				return;
-
-			var pi = new ProcessStartInfo { UseShellExecute = false, FileName = gloveLauncherPath };
-			pi.FileName = gloveLauncherPath;
-
-			pi.Arguments = string.Format("/detach \"{0}\"", _wowManager.GameProcess.Id);
-			_wowManager.Profile.Log("Detatching Glove");
-			using (var proc = Process.Start(pi))
-			{
-				var sw = Stopwatch.StartNew();
-				while (!proc.HasExited && sw.ElapsedMilliseconds < 3000)
-					Thread.Sleep(100);
-
-				if (!proc.HasExited)
-					proc.Kill();
-			}
-
-			_gloveSw.Restart();
-		}
 
     }
 }

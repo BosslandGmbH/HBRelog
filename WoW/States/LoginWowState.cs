@@ -107,7 +107,6 @@ namespace HighVoltz.HBRelog.WoW.States
             if (EnterTextInEditBox("AccountLoginPasswordEdit", _wowManager.Settings.Password))
                 return;
 
-			AttachGlove();
             // everything looks good. Press 'Enter' key to login.
             Utility.SendBackgroundKey(_wowManager.GameProcess.MainWindowHandle, (char)Keys.Enter, false);
         }
@@ -378,30 +377,5 @@ namespace HighVoltz.HBRelog.WoW.States
 	        return true;
         }
 
-		private void AttachGlove()
-		{
-			var gloveLauncherPath = Path.Combine(Utility.AssemblyDirectory, "Glove.exe");
-			if (!File.Exists(gloveLauncherPath))
-				return;
-
-			var pi = new ProcessStartInfo { UseShellExecute = false, FileName = gloveLauncherPath };
-			pi.FileName = gloveLauncherPath;
-			var profilePath = Path.Combine(Utility.AssemblyDirectory, (uint)_wowManager.Settings.Login.GetHashCode() + ".xml");
-			if (!File.Exists(profilePath))
-			{
-				_wowManager.Profile.Log("Generating glove profile.");
-				var proc = Process.Start(gloveLauncherPath, string.Format("/generate {0}", profilePath));
-
-				while (!proc.HasExited)
-					Thread.Sleep(100);
-			}
-			pi.Arguments = string.Format("/attach \"{0}\" \"{1}\"", profilePath, _wowManager.GameProcess.Id);
-			_wowManager.Profile.Log("Attaching Glove");
-			using (var proc = Process.Start(pi))
-			{
-				while (!proc.HasExited)
-					Thread.Sleep(100);
-			}
-		}
     }
 }
