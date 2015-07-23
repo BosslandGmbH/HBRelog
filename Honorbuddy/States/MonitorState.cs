@@ -77,20 +77,14 @@ namespace HighVoltz.HBRelog.Honorbuddy.States
                 _hbManager.Profile.Log("Closing Honorbuddy because it took too long to attach");
                 _hbManager.Stop();
             }
-            if (!HBIsResponding || HBHasCrashed)
+            if (!HBIsResponding)
             {
-                if (!HBIsResponding) // we need to kill the process if it's not responding. 
-                {
-                    _hbManager.Profile.Log("Honorbuddy is not responding.. So lets restart it");
-                    _hbManager.Profile.Status = "Honorbuddy isn't responding. restarting";
-                }
-                else
-                {
-                    _hbManager.Profile.Log("Honorbuddy has crashed.. So lets restart it");
-                    _hbManager.Profile.Status = "Honorbuddy has crashed. restarting";
-                }
+                _hbManager.Profile.Log("Honorbuddy is not responding.. So lets restart it");
+                _hbManager.Profile.Status = "Honorbuddy isn't responding. restarting";
                 _hbManager.Stop();
             }
+
+            CloseAnyCrashedHonorbuddies();
         }
 
         #endregion
@@ -114,23 +108,29 @@ namespace HighVoltz.HBRelog.Honorbuddy.States
             }
         }
 
-        DateTime _crashTimeStamp = DateTime.Now;
-        public bool HBHasCrashed
+        private static readonly Stopwatch CrashCheckSw = new Stopwatch();
+        void CloseAnyCrashedHonorbuddies()
         {
-            get
+            if (!CrashCheckSw.IsRunning)
+                CrashCheckSw.Start();
+
+            if (CrashCheckSw.ElapsedMilliseconds < 10000)
+                return;
+
+            var processes =
+                Process.GetProcessesByName("WerFault")
+                .Where(p => p.MainWindowTitle == "Honorbuddy" )
+                .ToList();
+
+            if (processes.Any())
             {
-                // check for crash every 10 seconds
-                if (DateTime.Now - _crashTimeStamp >= TimeSpan.FromSeconds(10))
+                foreach (var proc in processes)
                 {
-                    _crashTimeStamp = DateTime.Now;
-                    List<IntPtr> childWinHandles = NativeMethods.EnumerateProcessWindowHandles(_hbManager.BotProcess.Id);
-                    string hbName = Path.GetFileNameWithoutExtension(_hbManager.Profile.Settings.HonorbuddySettings.HonorbuddyPath);
-                    var windowTitles = childWinHandles.Select(NativeMethods.GetWindowText);
-                    var ret = windowTitles.Count(n => !string.IsNullOrEmpty(n) && (n == "Honorbuddy" ||(hbName != "Honorbuddy" && n.Contains(hbName)))) > 1;
-                    return ret;
+                    proc.Kill();
+                    _hbManager.Profile.Log("Closing crashed Honorbuddy");
                 }
-                return false;
             }
+            CrashCheckSw.Restart();
         }
 
 	    enum ExitCode
