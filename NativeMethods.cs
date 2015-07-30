@@ -10,9 +10,14 @@ using System.Text;
 
 namespace HighVoltz.HBRelog
 {
-    public class NativeMethods
+    internal class NativeMethods
     {
         // credits to http://www.pinvoke.net/ for most of this.
+
+        public const int GWL_STYLE = -16;
+
+        // Window Styles
+        public const uint WS_POPUP = 0x80000000;
 
         #region ConnectionStates enum
 
@@ -87,6 +92,9 @@ namespace HighVoltz.HBRelog
 
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern int GetWindowLong(IntPtr hWnd, int nIndex);
 
         public static string GetClassName(IntPtr hWnd)
         {

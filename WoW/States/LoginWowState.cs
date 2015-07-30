@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.IO;
@@ -106,6 +107,8 @@ namespace HighVoltz.HBRelog.WoW.States
             // enter password
             if (EnterTextInEditBox("AccountLoginPasswordEdit", _wowManager.Settings.Password))
                 return;
+
+            SetGameTitle();
 
             // everything looks good. Press 'Enter' key to login.
             Utility.SendBackgroundKey(_wowManager.GameProcess.MainWindowHandle, (char)Keys.Enter, false);
@@ -375,6 +378,27 @@ namespace HighVoltz.HBRelog.WoW.States
 	        Utility.SendBackgroundString(_wowManager.GameProcess.MainWindowHandle, text);
 	        _wowManager.Profile.Log("Sending {0}letters to {1}", editBox.IsPassword ? "" : text.Length + " ", editBoxName);
 	        return true;
+        }
+
+        private void SetGameTitle()
+        {
+            if (!HbRelogManager.Settings.SetGameWindowTitle) return;
+
+            var title = HbRelogManager.Settings.GameWindowTitle;
+
+            var profileNameI = title.IndexOf("{name}", StringComparison.InvariantCultureIgnoreCase);
+
+            if (profileNameI >= 0)
+                title = title.Replace(title.Substring(profileNameI, "{name}".Length),
+                    _wowManager.Profile.Settings.ProfileName);
+
+            var pidI = title.IndexOf("{pid}", StringComparison.InvariantCultureIgnoreCase);
+            if (pidI >= 0)
+                title = title.Replace(title.Substring(pidI, "{pid}".Length),
+                    _wowManager.GameProcess.Id.ToString(CultureInfo.InvariantCulture));
+
+            // change window title
+            NativeMethods.SetWindowText(_wowManager.GameProcess.MainWindowHandle, title);
         }
 
     }

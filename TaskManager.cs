@@ -45,7 +45,7 @@ namespace HighVoltz.HBRelog
 
         void HonorbuddyManager_OnStartupSequenceIsComplete(object sender, ProfileEventArgs e)
         {
-            Profile.Log(" WoW and HB startup sequence complete");
+            Profile.Log("WoW and HB startup sequence complete");
             Profile.Status = "Running";
             if (!StartupSequenceIsComplete)
             {

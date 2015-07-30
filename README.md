@@ -1,5 +1,6 @@
 # HBRelog
 A Relogger for World of Warcraft and Honorbuddy with task support. 
+Releases can be downloaded from [here](https://github.com/highvoltz/HBRelog/releases/latest).
 
 ### Requirements
 * Windows Vista SP2 or a newer windows. 

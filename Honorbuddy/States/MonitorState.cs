@@ -1,20 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using HighVoltz.HBRelog.FiniteStateMachine;
+using System;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
-using HighVoltz.HBRelog.FiniteStateMachine;
 
 namespace HighVoltz.HBRelog.Honorbuddy.States
 {
-    class MonitorState : State
+    internal class MonitorState : State
     {
         #region Fields
 
         private readonly HonorbuddyManager _hbManager;
-        readonly Stopwatch _hbRespondingSw = new Stopwatch();
-        #endregion
+
+        #endregion Fields
 
         #region Constructors
 
@@ -23,8 +19,7 @@ namespace HighVoltz.HBRelog.Honorbuddy.States
             _hbManager = hbManager;
         }
 
-        #endregion
-
+        #endregion Constructors
 
         #region State Members
 
@@ -43,33 +38,33 @@ namespace HighVoltz.HBRelog.Honorbuddy.States
             // restart wow hb if it has exited
             if (_hbManager.BotProcess == null || _hbManager.BotProcess.HasExitedSafe())
             {
-				// bot process exit code of 12 is used by HB to signal relogers to not restart the bot.
-	            if (_hbManager.BotProcess != null && _hbManager.BotProcess.ExitCode == (int)ExitCode.StopMonitoring)
-	            {
-					_hbManager.Profile.Log("Honorbuddy process has exited with code 12, signaling that it should not be restarted");
-					_hbManager.Profile.Status = "Honorbuddy has requested a bot shutdown.";
-					_hbManager.Profile.Stop();
-				}
-	            else
-	            {		            
-					_hbManager.Profile.Log("Honorbuddy process was terminated. Restarting");
-					_hbManager.Profile.Status = "Honorbuddy has exited.";
-					_hbManager.Stop();
-					return;
-				}
+                // bot process exit code of 12 is used by HB to signal relogers to not restart the bot.
+                if (_hbManager.BotProcess != null && GetExitCodeSafe(_hbManager.BotProcess) == (int)ExitCode.StopMonitoring)
+                {
+                    _hbManager.Profile.Log("Honorbuddy process has exited with code 12, signaling that it should not be restarted");
+                    _hbManager.Profile.Status = "Honorbuddy has requested a bot shutdown.";
+                    _hbManager.Profile.Stop();
+                }
+                else
+                {
+                    _hbManager.Profile.Log("Honorbuddy process was terminated. Restarting");
+                    _hbManager.Profile.Status = "Honorbuddy has exited.";
+                    _hbManager.Stop();
+                    return;
+                }
             }
-			var gameProc = _hbManager.Profile.TaskManager.WowManager.GameProcess;
+            var gameProc = _hbManager.Profile.TaskManager.WowManager.GameProcess;
             if (gameProc == null || gameProc.HasExitedSafe())
-			{
-				if (!_hbManager.WaitForBotToExit)
-					_hbManager.Stop();
-				return;
-			}
+            {
+                if (!_hbManager.WaitForBotToExit)
+                    _hbManager.Stop();
+                return;
+            }
             // return if hb isn't ready for input.
             if (!_hbManager.BotProcess.WaitForInputIdle(0))
                 return;
             // force the mainWindow handle to cache before HB auto minimizes to system tray..
-	        if (_hbManager.BotProcess.MainWindowHandle == IntPtr.Zero) ;
+            if (_hbManager.BotProcess.MainWindowHandle == IntPtr.Zero) ;
 
             // check if it's taking Honorbuddy too long to connect.
             if (!_hbManager.StartupSequenceIsComplete && DateTime.Now - _hbManager.HbStartupTimeStamp > TimeSpan.FromMinutes(2))
@@ -77,23 +72,30 @@ namespace HighVoltz.HBRelog.Honorbuddy.States
                 _hbManager.Profile.Log("Closing Honorbuddy because it took too long to attach");
                 _hbManager.Stop();
             }
-            if (!HBIsResponding || HBHasCrashed)
+
+
+            if (_hbManager.StartupSequenceIsComplete && !HBIsResponding)
             {
-                if (!HBIsResponding) // we need to kill the process if it's not responding. 
-                {
-                    _hbManager.Profile.Log("Honorbuddy is not responding.. So lets restart it");
-                    _hbManager.Profile.Status = "Honorbuddy isn't responding. restarting";
-                }
-                else
-                {
-                    _hbManager.Profile.Log("Honorbuddy has crashed.. So lets restart it");
-                    _hbManager.Profile.Status = "Honorbuddy has crashed. restarting";
-                }
+                _hbManager.Profile.Log("Honorbuddy is not responding.. So lets restart it");
+                _hbManager.Profile.Status = "Honorbuddy isn't responding. restarting";
                 _hbManager.Stop();
             }
         }
 
-        #endregion
+        #endregion State Members
+
+        private int GetExitCodeSafe(Process proc)
+        {
+            try
+            {
+                return _hbManager.BotProcess != null && _hbManager.BotProcess.HasExitedSafe()
+                    ? _hbManager.BotProcess.ExitCode : 0;
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
+        }
 
         public bool HBIsResponding
         {
@@ -101,42 +103,14 @@ namespace HighVoltz.HBRelog.Honorbuddy.States
             {
                 if (!HbRelogManager.Settings.CheckHbResponsiveness)
                     return true;
-                if (_hbManager.BotProcess != null && !_hbManager.BotProcess.HasExitedSafe() && !_hbManager.BotProcess.Responding && _hbManager.StartupSequenceIsComplete)
-                {
-                    if (!_hbRespondingSw.IsRunning)
-                        _hbRespondingSw.Start();
-                    if (_hbRespondingSw.ElapsedMilliseconds >= 120000)
-                        return false;
-                }
-                else if (_hbRespondingSw.IsRunning)
-                    _hbRespondingSw.Reset();
-                return true;
+
+                return _hbManager.LastHeartbeat.ElapsedMilliseconds < 50000;
             }
         }
 
-        DateTime _crashTimeStamp = DateTime.Now;
-        public bool HBHasCrashed
+        private enum ExitCode
         {
-            get
-            {
-                // check for crash every 10 seconds
-                if (DateTime.Now - _crashTimeStamp >= TimeSpan.FromSeconds(10))
-                {
-                    _crashTimeStamp = DateTime.Now;
-                    List<IntPtr> childWinHandles = NativeMethods.EnumerateProcessWindowHandles(_hbManager.BotProcess.Id);
-                    string hbName = Path.GetFileNameWithoutExtension(_hbManager.Profile.Settings.HonorbuddySettings.HonorbuddyPath);
-                    var windowTitles = childWinHandles.Select(NativeMethods.GetWindowText);
-                    var ret = windowTitles.Count(n => !string.IsNullOrEmpty(n) && (n == "Honorbuddy" ||(hbName != "Honorbuddy" && n.Contains(hbName)))) > 1;
-                    return ret;
-                }
-                return false;
-            }
+            StopMonitoring = 12,
         }
-
-	    enum ExitCode
-	    {
-		    StopMonitoring = 12,
-	    }
-
     }
 }
