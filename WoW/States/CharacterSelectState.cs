@@ -43,6 +43,13 @@ namespace HighVoltz.HBRelog.WoW.States
         {
             if (_wowManager.Throttled)
                 return;
+
+            if (ReactivateAccountDialogVisible)
+            {
+                _wowManager.Profile.Log("Account has no game time, pausing.");
+                _wowManager.Profile.Pause();
+                return;
+            }
 	        
 			// trial account will have a promotion frame that requires clicking a 'Play Trial' button to enter game.
 			if (ClickPlayTrial())
@@ -158,5 +165,14 @@ namespace HighVoltz.HBRelog.WoW.States
 			return true;
 	    }
 
+
+        bool ReactivateAccountDialogVisible
+        {
+            get
+            {
+                var promotionFrame = UIObject.GetUIObjectByName<Frame>(_wowManager, "ReactivateAccountDialog");
+                return promotionFrame != null && promotionFrame.IsVisible;
+            }
+        }
     }
 }

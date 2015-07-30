@@ -21,6 +21,7 @@ using HighVoltz.HBRelog.Settings;
 using System.ServiceModel;
 using System.Windows;
 using System.ComponentModel;
+using System.Linq;
 
 namespace HighVoltz.HBRelog
 {
@@ -29,7 +30,8 @@ namespace HighVoltz.HBRelog
         public static GlobalSettings Settings { get; internal set; }
         static public Thread WorkerThread { get; private set; }
         public static bool IsInitialized { get; private set; }
-        private static DateTime _killWowErrsTimeStamp = DateTime.Now;
+        private static Stopwatch _crashCheckTimer = Stopwatch.StartNew();
+        private static Stopwatch _updateRealmStatusTimer = Stopwatch.StartNew();
         static readonly ServiceHost _host;
         public static WowRealmStatus WowRealmStatus { get; private set; }
 
@@ -86,18 +88,25 @@ namespace HighVoltz.HBRelog
                                 character.Pulse();
                         }
 
-                        if (DateTime.Now - _killWowErrsTimeStamp >= TimeSpan.FromMinutes(1))
+                        if (_crashCheckTimer.ElapsedMilliseconds >= 5000)
                         {
-                            // update Wow Realm status
-                            if (Settings.CheckRealmStatus)
-                                WowRealmStatus.Update();
-                            // check for wow error windows
-                            foreach (var process in Process.GetProcessesByName("BlizzardError"))
+                            KillWoWCrashDialogs();
+                            KillHonorbuddyCrashDialogs();
+                            _crashCheckTimer.Restart();
+                        }
+
+                        if (Settings.CheckRealmStatus)
+                        {
+                            if (_updateRealmStatusTimer == null)
+                                _updateRealmStatusTimer = Stopwatch.StartNew();
+
+                            if (_updateRealmStatusTimer.ElapsedMilliseconds >= 60000)
                             {
-                                process.Kill();
-                                Log.Write("Killing WowError process");
+                                // update Wow Realm status
+                                if (Settings.CheckRealmStatus)
+                                    WowRealmStatus.Update();
+                                _updateRealmStatusTimer.Restart();
                             }
-                            _killWowErrsTimeStamp = DateTime.Now;
                         }
                     }
                 }
@@ -125,5 +134,33 @@ namespace HighVoltz.HBRelog
             }
         }
 
+        private static void KillWoWCrashDialogs()
+        {
+            var processes = Process.GetProcessesByName("BlizzardError")
+                .Concat(Process.GetProcessesByName("WerFault")
+                .Where(p => p.MainWindowTitle == "World of Warcraft"));
+
+            // check for wow error windows
+            foreach (var process in processes)
+            {
+                process.Kill();
+                Log.Write("Killing crashed WoW process");
+            }
+        }
+
+        private static void KillHonorbuddyCrashDialogs()
+        {
+            var processes =
+                Process.GetProcessesByName("WerFault")
+                .Where(p => p.MainWindowTitle == "Honorbuddy")
+                .ToList();
+
+            // check for wow error windows
+            foreach (var process in processes)
+            {
+                process.Kill();
+                Log.Write("Killing crashed Honorbuddy process");
+            }
+        }
     }
 }

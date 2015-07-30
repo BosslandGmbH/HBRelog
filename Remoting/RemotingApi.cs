@@ -6,7 +6,7 @@ using HighVoltz.HBRelog.Tasks;
 
 namespace HighVoltz.HBRelog.Remoting
 {
-	[ServiceBehavior(InstanceContextMode = InstanceContextMode.PerSession)]
+	[ServiceBehavior(InstanceContextMode = InstanceContextMode.PerSession, IncludeExceptionDetailInFaults = true)]
 	class RemotingApi : MarshalByRefObject, IRemotingApi
 	{
 		CharacterProfile GetProfileByHbProcID(int hbProcID)
@@ -35,6 +35,18 @@ namespace HighVoltz.HBRelog.Remoting
 			Log.Write("Received communication from an unknown process Id: {0}", hbProcID);
 			return false;
 		}
+
+	    public void Heartbeat(int hbProcID)
+	    {
+            CharacterProfile profile = GetProfileByHbProcID(hbProcID);
+	        if (profile == null)
+	        {
+			    Log.Write("Received heartbeart from an unknown process Id: {0}", hbProcID);
+	            return;
+	        }
+
+            profile.TaskManager.HonorbuddyManager.LastHeartbeat.Restart();
+        }
 
 		public void RestartHB(int hbProcID)
 		{

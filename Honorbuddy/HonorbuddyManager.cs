@@ -21,6 +21,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using HighVoltz.HBRelog.FiniteStateMachine;
 using HighVoltz.HBRelog.FiniteStateMachine.FiniteStateMachine;
@@ -36,9 +37,13 @@ namespace HighVoltz.HBRelog.Honorbuddy
 {
     public class HonorbuddyManager : Engine, IBotManager
     {
-	    private Stopwatch _botExitTimer;
+        private Stopwatch _botExitTimer;
         readonly object _lockObject = new object();
+
         public bool StartupSequenceIsComplete { get; private set; }
+
+        // Note: if you're getting a compile error here then you need to install VS 2015 or better.
+        public Stopwatch LastHeartbeat { get; } = new Stopwatch();
 
         public event EventHandler<ProfileEventArgs> OnStartupSequenceIsComplete;
         CharacterProfile _profile;
@@ -80,58 +85,22 @@ namespace HighVoltz.HBRelog.Honorbuddy
             Settings = settings;
         }
 
-        Timer _hbCloseTimer;
-        int _windowCloseAttempt;
         bool _isExiting;
         public void CloseBotProcess()
         {
             if (!_isExiting && BotProcess != null && !BotProcess.HasExitedSafe())
             {
                 _isExiting = true;
-                Profile.Log("Attempting to close Honorbuddy");
-                BotProcess.CloseMainWindow();
-                _windowCloseAttempt++;
-                _hbCloseTimer = new Timer(
-                    state =>
+                Task.Run(async () => await Utility.CloseBotProcessAsync(BotProcess, Profile))
+                    .ContinueWith(o =>
                     {
-                        if (!((Process)state).HasExitedSafe())
-                        {
-                            try
-                            {
-                                if (_windowCloseAttempt < 10)
-                                {
-                                    ((Process) state).CloseMainWindow();
-                                }
-                                else if (_windowCloseAttempt >= 10 && _windowCloseAttempt < 15)
-                                {
-                                    ((Process)state).Close();
-                                }
-                                else if (_windowCloseAttempt >= 15)
-                                {
-                                    Profile.Log("Killing Honorbuddy");
-                                    ((Process) state).Kill();
-                                }
-                            }
-                            catch (Exception e)
-                            {
-                                _windowCloseAttempt++;
-                            }
-                        }
-                        else
-                        {
-                            _isExiting = false;
-                            Profile.Log("Successfully closed Honorbuddy");
-                            BotProcess = null;
-                            _windowCloseAttempt = 0;
-                            _hbCloseTimer.Dispose();
-                        }
-                    },
-                    BotProcess,
-                    1000,
-                    1000);
+                        _isExiting = false;
+                        BotProcess = null;
+                        if (o.IsFaulted)
+                            Profile.Log("{0}", o.Exception.Flatten().ToString());
+                    });
             }
         }
-
 
         public void Start()
         {
@@ -189,6 +158,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
                         BotProcess = null;
                 }
 
+                LastHeartbeat.Reset();
                 IsRunning = false;
                 StartupSequenceIsComplete = false;
             }
@@ -200,6 +170,8 @@ namespace HighVoltz.HBRelog.Honorbuddy
         public void SetStartupSequenceToComplete()
         {
             StartupSequenceIsComplete = true;
+            LastHeartbeat.Restart();
+
             if (HbRelogManager.Settings.MinimizeHbOnStart)
                 NativeMethods.ShowWindow(BotProcess.MainWindowHandle, NativeMethods.ShowWindowCommands.Minimize);
             if (OnStartupSequenceIsComplete != null)
@@ -209,14 +181,14 @@ namespace HighVoltz.HBRelog.Honorbuddy
         /// <summary>
         /// returns false if the WoW user interface is not responsive for 10+ seconds.
         /// </summary>
-
-        static public class HBStartupManager
+        static internal class HBStartupManager
         {
-            static readonly object LockObject = new object();
-            static readonly Dictionary<string, DateTime> TimeStamps = new Dictionary<string, DateTime>();
-            static public bool CanStart(string path)
+            private static readonly object LockObject = new object();
+            private static readonly Dictionary<string, DateTime> TimeStamps = new Dictionary<string, DateTime>();
+
+            public static bool CanStart(string path)
             {
-                string key = path.ToUpper();
+                var key = path.ToUpper();
                 lock (LockObject)
                 {
                     if (TimeStamps.ContainsKey(key) &&

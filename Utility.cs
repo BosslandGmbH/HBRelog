@@ -23,6 +23,7 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace HighVoltz.HBRelog
 {
@@ -370,5 +371,34 @@ namespace HighVoltz.HBRelog
         }
 
         #endregion
+
+        public static async Task CloseBotProcessAsync(Process proc, CharacterProfile profile)
+        {
+            var procName = proc.ProcessName;
+            profile.Log("Attempting to close {0}", procName);
+
+            proc.CloseMainWindow();
+            if (await WaitForProcessToExitAsync(proc, TimeSpan.FromSeconds(10)))
+            {
+                profile.Log("Successfully closed {0} gracefully", procName);
+                return;
+            }
+
+            profile.Log("Killing {0}", procName);
+            proc.Kill();
+        }
+
+        private static async Task<bool> WaitForProcessToExitAsync(Process process, TimeSpan waitTimespan)
+        {
+            var sw = Stopwatch.StartNew();
+            while (sw.Elapsed < waitTimespan)
+            {
+                if (process.HasExitedSafe())
+                    return true;
+
+                await Task.Delay(100);
+            }
+            return false;
+        }
     }
 }

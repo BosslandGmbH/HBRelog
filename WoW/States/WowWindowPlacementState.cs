@@ -35,26 +35,6 @@ namespace HighVoltz.HBRelog.WoW.States
 
         public override void Run()
         {
-	        if (HbRelogManager.Settings.SetGameWindowTitle)
-	        {
-			    var title = HbRelogManager.Settings.GameWindowTitle;
-
-			    var profileNameI = title.IndexOf("{name}", StringComparison.InvariantCultureIgnoreCase);
-
-			    if (profileNameI >= 0)
-				    title = title.Replace(title.Substring(profileNameI, "{name}".Length),
-								_wowManager.Profile.Settings.ProfileName);
-
-				var pidI = title.IndexOf("{pid}", StringComparison.InvariantCultureIgnoreCase);
-				if (pidI >= 0)
-					title = title.Replace(title.Substring(pidI, "{pid}".Length),
-								_wowManager.GameProcess.Id.ToString(CultureInfo.InvariantCulture));
-		        	
-				// change window title
-				NativeMethods.SetWindowText(_wowManager.GameProcess.MainWindowHandle, title);	        
-	        }
-
-
             // resize and position window.
             if (_wowManager.Settings.WowWindowWidth > 0 && _wowManager.Settings.WowWindowHeight > 0)
             {
