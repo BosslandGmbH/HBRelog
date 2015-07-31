@@ -11,11 +11,14 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
 using Styx.Common.Helpers;
+using System.ServiceModel.Channels;
+using Styx.CommonBot.Profiles;
 
 namespace HighVoltz.HBRelog.Remoting
 {
-    [ServiceContract]
-    internal interface IRemotingApi
+    [ServiceContract(CallbackContract = typeof(IRemotingApiCallback),
+        SessionMode = SessionMode.Required)]
+    interface IRemotingApi
     {
         [OperationContract]
         bool Init(int hbProcID);
@@ -59,37 +62,194 @@ namespace HighVoltz.HBRelog.Remoting
 
         [OperationContract(IsOneWay = true)]
         void SkipCurrentTask(string profileName);
+
+        [OperationContract(IsOneWay = true)]
+        void NotifyBotStopped(string reason);
     }
+
+    interface IRemotingApiCallback
+    {
+        [OperationContract]
+        void StartBot();
+        [OperationContract]
+        void StopBot();
+        [OperationContract]
+        void ChangeProfile(string profileName);
+    }
+
 }
 
 namespace HighVoltz.HBRelogHelper
 {
+
+    internal class ServiceProxy : DuplexClientBase<IRemotingApi>, IRemotingApi
+    {
+        public ServiceProxy(InstanceContext c, Binding b, EndpointAddress a)
+            : base(c, b, a) { }
+
+        static int HbProcID
+        {
+            get { return HBRelogHelper.HbProcId; }
+        }
+
+        public bool IsConnected
+        {
+            get { return HBRelogHelper.IsConnected; }
+        }
+
+        public string CurrentProfileName
+        {
+            get { return HBRelogHelper.CurrentProfileName; }
+        }
+
+        public void RestartWow()
+        {
+            Channel.RestartWow(HbProcID);
+        }
+
+        public void RestartHB()
+        {
+            Channel.RestartHB(HbProcID);
+        }
+
+        public bool Init(int hbProcID)
+        {
+            return Channel.Init(hbProcID);
+        }
+
+        public void RestartHB(int hbProcID)
+        {
+            Channel.RestartHB(hbProcID);
+        }
+
+        public void RestartWow(int hbProcID)
+        {
+            RestartWow(hbProcID);
+        }
+
+        public string[] GetProfileNames()
+        {
+            return Channel.GetProfileNames();
+        }
+
+        public string GetCurrentProfileName(int hbProcID)
+        {
+            return Channel.GetCurrentProfileName(hbProcID);
+        }
+
+        public void StartProfile(string profileName)
+        {
+            Channel.StartProfile(profileName);
+        }
+
+        public void StopProfile(string profileName)
+        {
+            Channel.StopProfile(profileName);
+        }
+
+        public void PauseProfile(string profileName)
+        {
+            Channel.PauseProfile(profileName);
+        }
+        public void IdleProfile(string profileName, TimeSpan time)
+        {
+            Channel.IdleProfile(profileName, time);
+        }
+
+        public void Logon(int hbProcID, string character, string server, string customClass, string botBase, string profilePath)
+        {
+            Channel.Logon(HbProcID, character, server, customClass, botBase, profilePath);
+        }
+
+        public void Logon(string character, string server, string customClass, string botBase, string profilePath)
+        {
+            Channel.Logon(HbProcID, character, server, customClass, botBase, profilePath);
+        }
+
+        public int GetProfileStatus(string profileName)
+        {
+            return Channel.GetProfileStatus(profileName);
+        }
+
+        public void SetProfileStatusText(int hbProcID, string status)
+        {
+            Channel.SetProfileStatusText(hbProcID, status);
+        }
+
+        public void SetBotInfoToolTip(int hbProcID, string tooltip)
+        {
+            Channel.SetBotInfoToolTip(hbProcID, tooltip);
+        }
+
+        public void SetProfileStatusText(string status)
+        {
+            Channel.SetProfileStatusText(HbProcID, status);
+        }
+
+        public void SkipCurrentTask(string profileName)
+        {
+            Channel.SkipCurrentTask(profileName);
+        }
+
+        public void NotifyBotStopped(string reason)
+        {
+            Channel.NotifyBotStopped(reason);
+        }
+
+        public void Heartbeat(int hbProcID)
+        {
+            Channel.Heartbeat(hbProcID);
+        }
+
+
+    }
+
+    class CallbackHandler : IRemotingApiCallback
+    {
+        public void StartBot()
+        {
+            if (TreeRoot.State == TreeRootState.Stopped)
+            {
+                TreeRoot.Start();
+            }
+        }
+
+        public void StopBot()
+        {
+            if (TreeRoot.State == TreeRootState.Running || TreeRoot.State == TreeRootState.Paused)
+            {
+                TreeRoot.Stop();
+            }
+        }
+
+        public void ChangeProfile(string profileName)
+        {
+            ProfileManager.LoadNew(profileName);
+        }
+    }
+
     public class HBRelogHelper : HBPlugin
     {
         static public bool IsConnected { get; private set; }
-        static internal IRemotingApi HBRelogRemoteApi { get; private set; }
         static internal int HbProcId { get; private set; }
         static internal string CurrentProfileName { get; private set; }
         private static DispatcherTimer _monitorTimer;
-
-        //static IpcChannel _ipcChannel;
-        private static ChannelFactory<IRemotingApi> _pipeFactory;
-
-        static internal HBRelogHelper Instance { get; private set; }
+        private static ServiceProxy _proxy;
+        private static TreeRootState _lastTreeState;
 
         public HBRelogHelper()
         {
-            Instance = this;
             try
             {
                 AppDomain.CurrentDomain.ProcessExit += CurrentDomainProcessExit;
                 AppDomain.CurrentDomain.UnhandledException += CurrentDomainUnhandledException;
 
-                HbProcId = Process.GetCurrentProcess().Id;
-                _pipeFactory = new ChannelFactory<IRemotingApi>(new NetNamedPipeBinding(),
-                        new EndpointAddress("net.pipe://localhost/HBRelog/Server"));
+                var hnd = new CallbackHandler();
+                var ctx = new InstanceContext(hnd);
+                _proxy = new ServiceProxy(ctx, new NetNamedPipeBinding(), new EndpointAddress("net.pipe://localhost/HBRelog/Server"));
 
-                HBRelogRemoteApi = _pipeFactory.CreateChannel();
+                HbProcId = Process.GetCurrentProcess().Id;
+
                 //instead of spawning a new thread use the GUI one.
                 Application.Current.Dispatcher.Invoke(new Action(
                     delegate
@@ -99,16 +259,16 @@ namespace HighVoltz.HBRelogHelper
                         _monitorTimer.Interval = TimeSpan.FromSeconds(10);
                         _monitorTimer.Start();
                     }));
-                IsConnected = HBRelogRemoteApi.Init(HbProcId);
-                if (IsConnected)
-                {
-                    Logging.Write("HBRelogHelper: Connected with HBRelog");
-                    CurrentProfileName = HBRelogRemoteApi.GetCurrentProfileName(HbProcId);
-                }
-                else
-                {
-                    Logging.Write("HBRelogHelper: Could not connect to HBRelog");
-                }
+                IsConnected = _proxy.Init(HbProcId);
+	            if (IsConnected)
+	            {
+		            Logging.Write("HBRelogHelper: Connected with HBRelog");
+		            CurrentProfileName = _proxy.GetCurrentProfileName(HbProcId);
+	            }
+	            else
+	            {
+					Logging.Write("HBRelogHelper: Could not connect to HBRelog");
+	            }
             }
             catch (Exception ex)
             {
@@ -124,10 +284,11 @@ namespace HighVoltz.HBRelogHelper
         {
             try
             {
-                if (_pipeFactory.State == CommunicationState.Opened || _pipeFactory.State == CommunicationState.Opening)
+                if (_proxy.ChannelFactory.State == CommunicationState.Opened ||
+                    _proxy.State == CommunicationState.Opening)
                 {
-                    _pipeFactory.Close();
-                    _pipeFactory.Abort();
+                    _proxy.ChannelFactory.Close();
+                    _proxy.ChannelFactory.Abort();
                 }
             }
             catch
@@ -157,16 +318,22 @@ namespace HighVoltz.HBRelogHelper
                 if (!StyxWoW.IsInGame)
                     return;
 
+                if (TreeRoot.State == TreeRootState.Stopped && _lastTreeState != TreeRoot.State)
+                {
+                    _proxy.NotifyBotStopped("");
+                    _lastTreeState = TreeRootState.Stopped;
+                    Logging.Write("bot stopped, fire event");
+                }
                 if (TreeRoot.StatusText != _lastStatus && !string.IsNullOrEmpty(TreeRoot.StatusText))
                 {
-                    HBRelogRemoteApi.SetProfileStatusText(HbProcId, TreeRoot.StatusText);
+                    _proxy.SetProfileStatusText(HbProcId, TreeRoot.StatusText);
                     _lastStatus = TreeRoot.StatusText;
                 }
 
 
                 if (HeartbeatTimer.IsFinished)
                 {
-                    HBRelogRemoteApi.Heartbeat(HbProcId);
+                    _proxy.Heartbeat(HbProcId);
                     HeartbeatTimer.Reset();
                 }
 
@@ -214,7 +381,7 @@ namespace HighVoltz.HBRelogHelper
                 }
                 if (tooltip != _lastTooltip)
                 {
-                    HBRelogRemoteApi.SetBotInfoToolTip(HbProcId, tooltip);
+                    _proxy.SetBotInfoToolTip(HbProcId, tooltip);
                     _lastTooltip = tooltip;
                 }
             }
@@ -248,76 +415,11 @@ namespace HighVoltz.HBRelogHelper
         public override void OnButtonPress()
         {
             Logging.Write("IsConnected: {0}", IsConnected);
-            foreach (string name in HBRelogRemoteApi.GetProfileNames())
+            foreach (string name in _proxy.GetProfileNames())
             {
-                Logging.Write("{1}: GetProfileStatus: {0}", HBRelogRemoteApi.GetProfileStatus(name), name);
-                HBRelogRemoteApi.SetProfileStatusText(HbProcId, TreeRoot.StatusText);
+                Logging.Write("{1}: GetProfileStatus: {0}", _proxy.GetProfileStatus(name), name);
+                _proxy.SetProfileStatusText(HbProcId, TreeRoot.StatusText);
             }
-        }
-    }
-
-    static public class HBRelogApi
-    {
-        private static int HbProcID
-        { get { return HBRelogHelper.HbProcId; } }
-        private static IRemotingApi HBRelogRemoteApi
-        { get { return HBRelogHelper.HBRelogRemoteApi; } }
-        public static bool IsConnected { get { return HBRelogHelper.IsConnected; } }
-        public static string CurrentProfileName { get { return HBRelogHelper.CurrentProfileName; } }
-
-        public static void RestartWow()
-        {
-            HBRelogRemoteApi.RestartWow(HbProcID);
-        }
-
-        public static void RestartHB()
-        {
-            HBRelogRemoteApi.RestartHB(HbProcID);
-        }
-
-        public static string[] GetProfileNames()
-        {
-            return HBRelogRemoteApi.GetProfileNames();
-        }
-
-        public static void StartProfile(string profileName)
-        {
-            HBRelogRemoteApi.StartProfile(profileName);
-        }
-
-        public static void StopProfile(string profileName)
-        {
-            HBRelogRemoteApi.StopProfile(profileName);
-        }
-
-        public static void PauseProfile(string profileName)
-        {
-            HBRelogRemoteApi.PauseProfile(profileName);
-        }
-
-        public static void IdleProfile(string profileName, TimeSpan time)
-        {
-            HBRelogRemoteApi.IdleProfile(profileName, time);
-        }
-
-        public static void Logon(string character, string server, string customClass, string botBase, string profilePath)
-        {
-            HBRelogRemoteApi.Logon(HbProcID, character, server, customClass, botBase, profilePath);
-        }
-
-        public static int GetProfileStatus(string profileName)
-        {
-            return HBRelogRemoteApi.GetProfileStatus(profileName);
-        }
-
-        public static void SetProfileStatusText(string status)
-        {
-            HBRelogRemoteApi.SetProfileStatusText(HbProcID, status);
-        }
-
-        public static void SkipCurrentTask(string profileName)
-        {
-            HBRelogRemoteApi.SkipCurrentTask(profileName);
         }
     }
 }

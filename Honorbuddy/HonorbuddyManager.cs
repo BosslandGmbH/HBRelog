@@ -43,7 +43,12 @@ namespace HighVoltz.HBRelog.Honorbuddy
         public bool StartupSequenceIsComplete { get; private set; }
 
         // Note: if you're getting a compile error here then you need to install VS 2015 or better.
-        public Stopwatch LastHeartbeat { get; } = new Stopwatch();
+        private Stopwatch _lastHeartbeat = new Stopwatch();
+
+        public Stopwatch LastHeartbeat
+        {
+            get { return _lastHeartbeat; }
+        }
 
         public event EventHandler<ProfileEventArgs> OnStartupSequenceIsComplete;
         CharacterProfile _profile;
