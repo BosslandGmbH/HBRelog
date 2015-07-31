@@ -1,0 +1,13 @@
+*.user
+*~
+*.swp
+*.sdf
+*.opensdf
+*.suo
+.generated
+obj/
+bin/
+Debug/
+Release/
+ipch/
+packages/
