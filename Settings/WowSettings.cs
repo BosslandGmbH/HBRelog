@@ -32,6 +32,7 @@ namespace HighVoltz.HBRelog.Settings
             WowArgs = string.Empty;
             AcountName = "WoW1";
             Region = WowRegion.Auto;
+            ReuseFreeWowProcess = false;
         }
         public string LoginData { get; set; }
         /// <summary>
@@ -171,6 +172,13 @@ namespace HighVoltz.HBRelog.Settings
         {
             get { return _wowPath; }
             set { _wowPath = value; NotifyPropertyChanged("WowPath"); }
+        }
+
+        private bool _reuseFreeWowProcess;
+        public bool ReuseFreeWowProcess
+        {
+            get { return _reuseFreeWowProcess; }
+            set { _reuseFreeWowProcess = value; NotifyPropertyChanged("ReuseFreeWowProcess"); }
         }
 
         private string _wowArgs;

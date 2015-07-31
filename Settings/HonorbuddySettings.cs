@@ -116,6 +116,12 @@ namespace HighVoltz.HBRelog.Settings
             get { return _useHBBeta; }
             set { _useHBBeta = value; NotifyPropertyChanged("UseHBBeta"); }
         }
+        private bool _autoStartBot;
+        public bool AutoStartBot
+        {
+            get { return _autoStartBot; }
+            set { _autoStartBot = value; NotifyPropertyChanged("AutoStartBot"); }
+        }
         public HonorbuddySettings ShadowCopy()
         {
             return (HonorbuddySettings)MemberwiseClone();

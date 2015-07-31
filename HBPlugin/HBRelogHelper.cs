@@ -256,7 +256,7 @@ namespace HighVoltz.HBRelogHelper
                     {
                         _monitorTimer = new DispatcherTimer();
                         _monitorTimer.Tick += MonitorTimerCb;
-                        _monitorTimer.Interval = TimeSpan.FromSeconds(10);
+                        _monitorTimer.Interval = TimeSpan.FromSeconds(2);
                         _monitorTimer.Start();
                     }));
                 IsConnected = _proxy.Init(HbProcId);
@@ -322,10 +322,10 @@ namespace HighVoltz.HBRelogHelper
                 {
                     _proxy.NotifyBotStopped("");
                     _lastTreeState = TreeRootState.Stopped;
-                    Logging.Write("bot stopped, fire event");
                 }
                 if (TreeRoot.StatusText != _lastStatus && !string.IsNullOrEmpty(TreeRoot.StatusText))
                 {
+                    _lastTreeState = TreeRoot.State;
                     _proxy.SetProfileStatusText(HbProcId, TreeRoot.StatusText);
                     _lastStatus = TreeRoot.StatusText;
                 }

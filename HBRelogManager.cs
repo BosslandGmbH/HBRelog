@@ -75,6 +75,28 @@ namespace HighVoltz.HBRelog
                 // update Wow Realm status
                 if (Settings.CheckRealmStatus)
                     WowRealmStatus.Update();
+
+                Settings.CharacterProfiles.ToList().ForEach(cp => cp.PropertyChanged += (sender, args) =>
+                {
+                    var profile = (CharacterProfile)sender;
+                    if (profile.TaskManager.HonorbuddyManager.BotProcess == null)
+                        return;
+                    var pid = profile.TaskManager.HonorbuddyManager.BotProcess.Id;
+                    if (Clients.ContainsKey(pid))
+                    {
+                        try
+                        {
+                            if (args.PropertyName != "Status" || profile.Status != "Honorbuddy Startup Complete")
+                                return;
+                            if (profile.TaskManager.HonorbuddyManager.Settings.AutoStartBot)
+                                Clients[pid].StartBot();
+                        }
+                        catch (Exception)
+                        {
+                            Clients.Remove(pid);
+                        }
+                    }
+                });
                 IsInitialized = true;
             }
             catch (Exception ex)

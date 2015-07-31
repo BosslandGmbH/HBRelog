@@ -61,6 +61,8 @@ namespace HighVoltz.HBRelog.WoW
 
         public Process GameProcess { get; internal set; }
 
+        public Process ReusedGameProcess { get; internal set; }
+
         private LuaTable _globals;
         public LuaTable Globals
         {
@@ -187,6 +189,16 @@ namespace HighVoltz.HBRelog.WoW
             }
         }
 
+        public bool IsReusedGameProcess
+        {
+            get { return Settings.ReuseFreeWowProcess && ReusedGameProcess != null; }
+        }
+
+        public bool IsOwnGameProcess
+        {
+            get { return !IsReusedGameProcess; }
+        }
+
         public bool ServerHasQueue
         {
             get
@@ -276,10 +288,18 @@ namespace HighVoltz.HBRelog.WoW
             bool lockAquried = Monitor.TryEnter(_lockObject, 500);
             if (IsRunning)
             {
+                if (Memory != null)
+                    Memory.Dispose();
                 Memory = null;
-                CloseGameProcess();
+                if (IsOwnGameProcess)
+                {
+                    CloseGameProcess();
+                }
+                GameProcess = null;
+                ProcessIsReadyForInput = false;
                 IsRunning = false;
                 StartupSequenceIsComplete = false;
+                ReusedGameProcess = null;
                 if (LockToken != null)
                 {
                     LockToken.Dispose();

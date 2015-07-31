@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using GreyMagic;
+using HighVoltz.HBRelog.WoW.FrameXml;
 using HighVoltz.Launcher;
 
 namespace HighVoltz.HBRelog.WoW
@@ -66,7 +67,47 @@ namespace HighVoltz.HBRelog.WoW
 				if (!IsValid)
 					throw new InvalidOperationException("Lock token is not valid");
 
-				if (_wowProcess != null && Utility.Is64BitProcess(_wowProcess))
+                // get valid Wow process which is logged in and PlayerName the same
+                // as the CharacterName of current profile
+                if (_lockOwner.Settings.ReuseFreeWowProcess && _wowProcess == null)
+			    {
+                    var attachedWoW32Pids = HbRelogManager.Settings.CharacterProfiles.Where(
+                        p => p.TaskManager.WowManager.GameProcess != null).Select(
+                        p => p.TaskManager.WowManager.GameProcess.Id).ToList();
+                    if (_wowProcess != null)
+                        attachedWoW32Pids.Add(_wowProcess.Id);
+                    var wow32Processes = Process.GetProcessesByName("Wow").Where(
+                        p => !Utility.Is64BitProcess(p) && p.Responding && !attachedWoW32Pids.Contains(p.Id));
+                    foreach (var p in wow32Processes)
+                    {
+                        _lockOwner.Memory = new ExternalProcessReader(p);
+                        HbRelogManager.Settings.GameStateOffset = (uint)WowPatterns.GameStatePattern.Find(_lockOwner.Memory);
+                        HbRelogManager.Settings.LuaStateOffset = (uint)WowPatterns.LuaStatePattern.Find(_lockOwner.Memory);
+                        HbRelogManager.Settings.FocusedWidgetOffset = (uint)WowPatterns.FocusedWidgetPattern.Find(_lockOwner.Memory);
+                        HbRelogManager.Settings.LoadingScreenEnableCountOffset = (uint)WowPatterns.LoadingScreenEnableCountPattern.Find(_lockOwner.Memory);
+                        HbRelogManager.Settings.GlueStateOffset = (uint)WowPatterns.GlueStatePattern.Find(_lockOwner.Memory);
+                        if (_lockOwner.InGame)
+                        {
+                            var playerName = "";
+                            try
+                            {
+                                playerName = (from fontString in UIObject.GetUIObjectsOfType<FontString>(_lockOwner)
+                                              where fontString.IsVisible && fontString.Name.Contains("PlayerName")
+                                              select fontString.Text).First();
+                            }
+                            catch (Exception e)
+                            {
+                                _lockOwner.Profile.Log(e.ToString());
+                            }
+                            if (playerName != _lockOwner.Settings.CharacterName) continue;
+                            _wowProcess = p;
+                            _lockOwner.ReusedGameProcess = p;
+                            break;
+                        }
+                    }
+			    }
+                
+                if (_wowProcess != null && Utility.Is64BitProcess(_wowProcess))
 				{
 					_lockOwner.Profile.Log("64 bit Wow is not supported. Delete or rename the WoW-64.exe file in your WoW install folder");
 					_lockOwner.Stop();
@@ -150,10 +191,13 @@ namespace HighVoltz.HBRelog.WoW
 						_lockOwner.Profile.Log(_lockOwner.Profile.Status);
 						return;
 					}
-					_lockOwner.GameProcess = _wowProcess;
-					_lockOwner.Memory = new ExternalProcessReader(_wowProcess);
+				    if (_lockOwner.ReusedGameProcess == null)
+				    {
+                        _lockOwner.GameProcess = _wowProcess;
+                        _lockOwner.Memory = new ExternalProcessReader(_wowProcess);
+                    }
 					_wowProcess = null;
-					_lockOwner.Profile.Log("Wow is ready to login.");
+				    _lockOwner.Profile.Log(_lockOwner.Settings.ReuseFreeWowProcess ? "Wow is ready." : "Wow is ready to login.");
 				}
 			}
 		}

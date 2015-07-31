@@ -117,6 +117,7 @@
                                 <RowDefinition MinHeight="22" Height="Auto" />
                                 <RowDefinition MinHeight="22" Height="Auto" />
                                 <RowDefinition MinHeight="22" Height="Auto" />
+                                <RowDefinition MinHeight="22" Height="Auto" />
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="18" />
@@ -159,6 +160,10 @@
                             <CheckBox x:Name="UseHBBetaCheck" Grid.Column="2" Grid.Row="6" VerticalAlignment="Center"
                               ToolTip="Uses HB beta. Auto-update HB must be enabled."
                               IsChecked="{Binding Path=HonorbuddySettings.UseHBBeta}"/>
+                            <TextBlock Text="Auto start bot" Grid.Row="7" Grid.ColumnSpan="2" VerticalAlignment="Center" Margin="5,1,0,0" />
+                            <CheckBox x:Name="AutoStartBot" Grid.Column="2" Grid.Row="7" VerticalAlignment="Center" VerticalContentAlignment="Center"
+                              ToolTip="Start bot when Honorbuddy window initializes."
+                              IsChecked="{Binding Path=HonorbuddySettings.AutoStartBot}"/>
                         </Grid>
                     </ScrollViewer>
                 </Border>

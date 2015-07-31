@@ -88,6 +88,7 @@
     <Compile Include="Honorbuddy\States\UpdateHonorbuddyState.cs" />
     <Compile Include="Tasks\CustomTaskEditControlAttribute.cs" />
     <Compile Include="Tasks\ICustomTaskEditControlDataBound.cs" />
+    <Compile Include="Tasks\WaitBotStopTask.cs" />
     <Compile Include="WoW\States\CharacterCreationState.cs" />
     <Compile Include="WoW\States\CharacterSelectState.cs" />
     <Compile Include="WoW\States\MonitorState.cs" />

@@ -313,6 +313,7 @@ namespace HighVoltz.HBRelog.Settings
                     wowSettingsElement.Add(new XElement("WowWindowHeight", profile.Settings.WowSettings.WowWindowHeight));
                     wowSettingsElement.Add(new XElement("WowWindowX", profile.Settings.WowSettings.WowWindowX));
                     wowSettingsElement.Add(new XElement("WowWindowY", profile.Settings.WowSettings.WowWindowY));
+                    wowSettingsElement.Add(new XElement("ReuseFreeWowProcess", profile.Settings.WowSettings.ReuseFreeWowProcess));
                     settingsElement.Add(wowSettingsElement);
                     var hbSettingsElement = new XElement("HonorbuddySettings");
                     // Honorbuddy Settings
@@ -322,6 +323,7 @@ namespace HighVoltz.HBRelog.Settings
                     hbSettingsElement.Add(new XElement("HonorbuddyProfile", profile.Settings.HonorbuddySettings.HonorbuddyProfile));
                     hbSettingsElement.Add(new XElement("HonorbuddyPath", profile.Settings.HonorbuddySettings.HonorbuddyPath));
                     hbSettingsElement.Add(new XElement("UseHBBeta", profile.Settings.HonorbuddySettings.UseHBBeta));
+                    hbSettingsElement.Add(new XElement("AutoStartBot", profile.Settings.HonorbuddySettings.AutoStartBot));
 
                     settingsElement.Add(hbSettingsElement);
                     profileElement.Add(settingsElement);
@@ -460,6 +462,7 @@ namespace HighVoltz.HBRelog.Settings
 							profile.Settings.WowSettings.AuthenticatorRestoreCodeData = GetElementValue<string>(wowSettingsElement.Element("AuthenticatorRestoreCodeData"));
                             profile.Settings.WowSettings.Region = GetElementValue<WowSettings.WowRegion>(wowSettingsElement.Element("Region"));
                             profile.Settings.WowSettings.WowPath = GetElementValue<string>(wowSettingsElement.Element("WowPath"));
+                            profile.Settings.WowSettings.ReuseFreeWowProcess = GetElementValue<bool>(wowSettingsElement.Element("ReuseFreeWowProcess"));
                             profile.Settings.WowSettings.WowArgs = GetElementValue<string>(wowSettingsElement.Element("WowArgs"));
                             profile.Settings.WowSettings.WowWindowWidth = GetElementValue<int>(wowSettingsElement.Element("WowWindowWidth"));
                             profile.Settings.WowSettings.WowWindowHeight = GetElementValue<int>(wowSettingsElement.Element("WowWindowHeight"));
@@ -476,6 +479,7 @@ namespace HighVoltz.HBRelog.Settings
                             profile.Settings.HonorbuddySettings.HonorbuddyProfile = GetElementValue<string>(hbSettingsElement.Element("HonorbuddyProfile"));
                             profile.Settings.HonorbuddySettings.HonorbuddyPath = GetElementValue<string>(hbSettingsElement.Element("HonorbuddyPath"));
                             profile.Settings.HonorbuddySettings.UseHBBeta = GetElementValue<bool>(hbSettingsElement.Element("UseHBBeta"));
+                            profile.Settings.HonorbuddySettings.AutoStartBot = GetElementValue<bool>(hbSettingsElement.Element("AutoStartBot"));
                         }
                         XElement tasksElement = profileElement.Element("Tasks");
                         // Load the Task list.
