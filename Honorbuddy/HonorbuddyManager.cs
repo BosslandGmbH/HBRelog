@@ -58,6 +58,9 @@ namespace HighVoltz.HBRelog.Honorbuddy
             private set { _profile = value; Settings = value.Settings.HonorbuddySettings; }
         }
         public HonorbuddySettings Settings { get; private set; }
+
+        private string _hbKeyInUse;
+
         public Process BotProcess { get; private set; }
 
 	    public bool WaitForBotToExit
@@ -83,6 +86,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
                 new StartHonorbuddyState(this),
                 new MonitorState(this),
             };
+            _hbKeyInUse = "";
         }
 
         public void SetSettings(HonorbuddySettings settings)
@@ -110,18 +114,34 @@ namespace HighVoltz.HBRelog.Honorbuddy
         public void Start()
         {
             IsRunning = true;
+            PickFreeHBKey();
         }
 
 
+        public string PickFreeHBKey()
+        {
+            if (string.IsNullOrEmpty(Settings.HonorbuddyKey))
+            {
+                if (HbRelogManager.Settings.FreeHBKeyPool.Count > 0)
+                {
+                    _hbKeyInUse = HbRelogManager.Settings.FreeHBKeyPool.First();
+                    HbRelogManager.Settings.FreeHBKeyPool.Remove(_hbKeyInUse);
+                }
+                return _hbKeyInUse;
+            }
+            return Settings.HonorbuddyKey;
+        }
+        
         internal void StartHonorbuddy()
         {
 	        _botExitTimer = null;
             Profile.Log("starting {0}", Profile.Settings.HonorbuddySettings.HonorbuddyPath);
             Profile.Status = "Starting Honorbuddy";
             StartupSequenceIsComplete = false;
-            string hbArgs = string.Format("/noupdate /pid={0} /autostart {1}{2}{3}{4}",
+            var hbKey = _hbKeyInUse;
+            string hbArgs = string.Format("/noupdate /pid={0} {1}{2}{3}{4}",
                 Profile.TaskManager.WowManager.GameProcess.Id,
-                !string.IsNullOrEmpty(Settings.HonorbuddyKey) ? string.Format("/hbkey=\"{0}\" ", Settings.HonorbuddyKey) : string.Empty,
+                !string.IsNullOrEmpty(hbKey) ? string.Format("/hbkey=\"{0}\" ", hbKey) : string.Empty,
                 !string.IsNullOrEmpty(Settings.CustomClass) ? string.Format("/customclass=\"{0}\" ", Settings.CustomClass) : string.Empty,
                 !string.IsNullOrEmpty(Settings.HonorbuddyProfile) ? string.Format("/loadprofile=\"{0}\" ", Settings.HonorbuddyProfile) : string.Empty,
                 !string.IsNullOrEmpty(Settings.BotBase) ? string.Format("/botname=\"{0}\" ", Settings.BotBase) : string.Empty
@@ -166,6 +186,13 @@ namespace HighVoltz.HBRelog.Honorbuddy
                 LastHeartbeat.Reset();
                 IsRunning = false;
                 StartupSequenceIsComplete = false;
+                // return key to the pool
+                if (!String.IsNullOrEmpty(_hbKeyInUse))
+                {
+                    HbRelogManager.Settings.FreeHBKeyPool.Add(_hbKeyInUse);
+                    _hbKeyInUse = "";
+                }
+                
             }
             if (lockAquried) // release lock if it was aquired
                 Monitor.Exit(_lockObject);

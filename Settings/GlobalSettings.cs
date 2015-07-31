@@ -47,6 +47,8 @@ namespace HighVoltz.HBRelog.Settings
         private bool _useDarkStyle;
 		private bool _setGameWindowTitle;
         private int _wowDelay;
+        private string _hbKeyPool;
+        private List<string> _freeHBKeyPool = null;
 
         private GlobalSettings()
         {
@@ -102,6 +104,27 @@ namespace HighVoltz.HBRelog.Settings
 				NotifyPropertyChanged("GameWindowTitle");
 			}
 		}
+
+        public string HBKeyPool
+        {
+            get { return _hbKeyPool; }
+            set
+            {
+                _hbKeyPool = value;
+                NotifyPropertyChanged("HBKeyPool");
+            }
+        }
+
+        // not serialized
+        public List<string> FreeHBKeyPool
+        {
+            get { return _freeHBKeyPool ?? (_freeHBKeyPool = new List<string>()); }
+            set
+            {
+                _freeHBKeyPool = value;
+                NotifyPropertyChanged("FreeHBKeyPool");
+            }
+        }
 
         // delay in seconds between starting multiple Honorbuddy instance
 
@@ -256,7 +279,8 @@ namespace HighVoltz.HBRelog.Settings
                 root.Add(new XElement("AutoUpdateHB", AutoUpdateHB));
                 root.Add(new XElement("AutoAcceptTosEula", AutoAcceptTosEula));
 				root.Add(new XElement("SetGameWindowTitle", SetGameWindowTitle));
-				root.Add(new XElement("GameWindowTitle", GameWindowTitle));
+                root.Add(new XElement("GameWindowTitle", GameWindowTitle));
+                root.Add(new XElement("HBKeyPool", HBKeyPool));
 
                 root.Add(new XElement("WowVersion", WowVersion));
 
@@ -402,7 +426,8 @@ namespace HighVoltz.HBRelog.Settings
                     settings.MinimizeHbOnStart = GetElementValue(root.Element("MinimizeHbOnStart"), false);
                     settings.AutoAcceptTosEula = GetElementValue(root.Element("AutoAcceptTosEula"), false);
 					settings.SetGameWindowTitle = GetElementValue(root.Element("SetGameWindowTitle"), true);
-					settings.GameWindowTitle = GetElementValue(root.Element("GameWindowTitle"), "{name} - {pid}");
+                    settings.GameWindowTitle = GetElementValue(root.Element("GameWindowTitle"), "{name} - {pid}");
+                    settings.HBKeyPool = GetElementValue(root.Element("HBKeyPool"), "");
 
                     settings.GameStateOffset = GetElementValue(root.Element("GameStateOffset"), 0u);
                     // settings.FrameScriptExecuteOffset = GetElementValue(root.Element("FrameScriptExecuteOffset"), 0u);

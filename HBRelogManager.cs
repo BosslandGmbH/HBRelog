@@ -49,6 +49,13 @@ namespace HighVoltz.HBRelog
                 if (MainWindow.Instance == null || DesignerProperties.GetIsInDesignMode(MainWindow.Instance))
                     return; 
                 Settings = GlobalSettings.Load();
+
+                Settings.FreeHBKeyPool.Clear();
+                foreach (var key in Settings.HBKeyPool.Split(','))
+                {
+                    Settings.FreeHBKeyPool.Add(key);
+                }
+
                 WorkerThread = new Thread(DoWork) { IsBackground = true };
                 WorkerThread.Start();
                 try

@@ -31,6 +31,8 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <TextBlock Text="Use Dark UI style" />
                     <CheckBox x:Name="DarkStyleCheck" Grid.Column="1"
@@ -52,9 +54,15 @@
                              ToolTip="Changes the game's window title. {name} is a placeholder for profile name and {pid} is a placeholder for game process ID" 
                              Width="100" IsEnabled="{Binding SetGameWindowTitle}"
                               Text="{Binding GameWindowTitle}"/>
-                    <Button x:Name="ImportSettingsButton" Content="Import Settings" Grid.Row="4" Click="ImportSettingsButton_Click"
+                    <TextBlock Text="HB key pool" Grid.Row="4"/>
+                    <!-- for the sake of fast prototyping use TextBox coontrol here -->
+                    <TextBox x:Name="HBKeyPoolTextBox" Grid.Column="1" Grid.Row="4"
+                             ToolTip="" 
+                             Width="100"
+                              Text="{Binding HBKeyPool}"/>
+                    <Button x:Name="ImportSettingsButton" Content="Import Settings" Grid.Row="5" Click="ImportSettingsButton_Click"
                             ToolTip="Import settings" Height="21" VerticalAlignment="Bottom"/>
-                    <Button x:Name="ExportSettingsButton" Content="Export Settings" Grid.Row="5" Click="ExportSettingsButton_Click"
+                    <Button x:Name="ExportSettingsButton" Content="Export Settings" Grid.Row="6" Click="ExportSettingsButton_Click"
                             ToolTip="Export settings. Useful when copying settings to another computer"/>
                 </Grid>
             </GroupBox>
