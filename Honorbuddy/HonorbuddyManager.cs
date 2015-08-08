@@ -116,7 +116,8 @@ namespace HighVoltz.HBRelog.Honorbuddy
             PickFreeHBKey();
         }
 
-
+        // TODO add Max sessions handler
+        // TODO (Debug) communicate Debug/Release free hb keys list
         public string PickFreeHBKey()
         {
             if (string.IsNullOrEmpty(Settings.HonorbuddyKey))
