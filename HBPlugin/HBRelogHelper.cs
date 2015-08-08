@@ -13,6 +13,9 @@ using System.Windows.Threading;
 using Styx.Common.Helpers;
 using System.ServiceModel.Channels;
 using Styx.CommonBot.Profiles;
+using Styx.Helpers;
+using System.IO;
+using System.Threading;
 
 namespace HighVoltz.HBRelog.Remoting
 {
@@ -65,6 +68,9 @@ namespace HighVoltz.HBRelog.Remoting
 
         [OperationContract(IsOneWay = true)]
         void NotifyBotStopped(string reason);
+
+        [OperationContract(IsOneWay = true)]
+        void NotifyBotEvent(string what);
     }
 
     interface IRemotingApiCallback
@@ -196,6 +202,11 @@ namespace HighVoltz.HBRelogHelper
             Channel.NotifyBotStopped(reason);
         }
 
+        public void NotifyBotEvent(string what)
+        {
+            Channel.NotifyBotEvent(what);
+        }
+
         public void Heartbeat(int hbProcID)
         {
             Channel.Heartbeat(hbProcID);
@@ -208,18 +219,20 @@ namespace HighVoltz.HBRelogHelper
     {
         public void StartBot()
         {
-            if (TreeRoot.State == TreeRootState.Stopped)
+            Util.QueueUserWorkItemOn(Application.Current.Dispatcher, () =>
             {
+                if (TreeRoot.IsRunning || TreeRoot.IsPaused) return;
                 TreeRoot.Start();
-            }
+            });
         }
 
         public void StopBot()
         {
-            if (TreeRoot.State == TreeRootState.Running || TreeRoot.State == TreeRootState.Paused)
+            Util.QueueUserWorkItemOn(Application.Current.Dispatcher, () =>
             {
-                TreeRoot.Stop();
-            }
+                if (!TreeRoot.IsRunning && !TreeRoot.IsPaused) return;
+                TreeRoot.Stop("request from HBRelog");
+            });
         }
 
         public void ChangeProfile(string profileName)
@@ -436,6 +449,29 @@ namespace HighVoltz.HBRelogHelper
                 Logging.Write("{1}: GetProfileStatus: {0}", _proxy.GetProfileStatus(name), name);
                 _proxy.SetProfileStatusText(HbProcId, TreeRoot.StatusText);
             }
+        }
+    }
+
+    public static class Util
+    {
+        // credits to Chinajade
+        public static void InvokeOn(Dispatcher dispatcher, Action action)
+        {
+            if (!dispatcher.CheckAccess())
+            {
+                dispatcher.Invoke(DispatcherPriority.Normal, action);
+                return;
+            }
+
+            action();
+        }
+
+        public static void QueueUserWorkItemOn(Dispatcher dispatcher, Action action)
+        {
+            ThreadPool.QueueUserWorkItem( _ =>
+            {
+                InvokeOn(dispatcher, action);
+            });
         }
     }
 }

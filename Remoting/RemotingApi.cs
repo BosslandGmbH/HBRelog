@@ -6,6 +6,11 @@ using HighVoltz.HBRelog.Tasks;
 
 namespace HighVoltz.HBRelog.Remoting
 {
+    class BotEventArgs : EventArgs
+    {
+        public string BotEvent { get; set; }
+    }
+
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single,
         ConcurrencyMode = ConcurrencyMode.Multiple, UseSynchronizationContext = false,
         IncludeExceptionDetailInFaults = true)]
@@ -31,6 +36,8 @@ namespace HighVoltz.HBRelog.Remoting
 			if (profile != null)
 			{
 				profile.TaskManager.HonorbuddyManager.SetStartupSequenceToComplete();
+			    if (HbRelogManager.Clients.ContainsKey(hbProcID))
+			        HbRelogManager.Clients.Remove(hbProcID);
                 HbRelogManager.Clients.Add(hbProcID,
                     OperationContext.Current.GetCallbackChannel<IRemotingApiCallback>());
 				profile.Log("Opened communication with HBRelogHelper");
@@ -216,9 +223,14 @@ namespace HighVoltz.HBRelog.Remoting
 
         public void NotifyBotStopped(string reason)
         {
-            Log.Write("HBRelogHelper: bot stopped");
             if (OnBotStoppedEvent != null)
                 OnBotStoppedEvent(this, null);
+        }
+
+        public void NotifyBotEvent(string what)
+        {
+            var handler = OnBotEvent;
+            if (handler != null) handler(this, new BotEventArgs() { BotEvent = what });
         }
 
         IRemotingApiCallback Callback
@@ -231,6 +243,7 @@ namespace HighVoltz.HBRelog.Remoting
 
         public event EventHandler OnBotStoppedEvent;
 
+        public event EventHandler OnBotEvent;
 
 	}
 }

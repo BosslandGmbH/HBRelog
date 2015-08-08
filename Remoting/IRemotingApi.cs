@@ -40,6 +40,8 @@ namespace HighVoltz.HBRelog.Remoting
         void SkipCurrentTask(string profileName);
         [OperationContract(IsOneWay = true)]
         void NotifyBotStopped(string reason);
+        [OperationContract(IsOneWay = true)]
+        void NotifyBotEvent(string what);
     }
     internal interface IRemotingApiCallback
     {
