@@ -128,6 +128,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
                 }
                 return _hbKeyInUse;
             }
+            _hbKeyInUse = Settings.HonorbuddyKey;
             return Settings.HonorbuddyKey;
         }
         
