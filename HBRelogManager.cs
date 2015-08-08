@@ -61,7 +61,7 @@ namespace HighVoltz.HBRelog
                 try
                 {
                     remoting = new RemotingApi();
-                    _host = new ServiceHost(remoting, new Uri("net.pipe://localhost/HBRelog"));
+                    _host = new ServiceHost(remoting, new Uri(string.Format("net.pipe://localhost/HBRelog{0}", Program.IsAssemblyDebugBuild() ? "_debug" : "")));
                     _host.AddServiceEndpoint(typeof(IRemotingApi), new NetNamedPipeBinding { ReceiveTimeout = TimeSpan.MaxValue }, "Server");
                     _host.Open();
                 }

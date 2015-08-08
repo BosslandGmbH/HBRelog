@@ -228,6 +228,19 @@ namespace HighVoltz.HBRelogHelper
         }
     }
 
+    public class HBRelogHelperSettings : Settings
+    {
+
+        public HBRelogHelperSettings()
+            : base(Path.Combine(CharacterSettingsDirectory, "HBRelogHelper.xml"))
+        {
+            Load();
+        }
+
+        [Setting, DefaultValue("net.pipe://localhost/HBRelog/Server")]
+        public string RemotingUri { get; set; }
+
+    }
     public class HBRelogHelper : HBPlugin
     {
         static public bool IsConnected { get; private set; }
@@ -236,6 +249,7 @@ namespace HighVoltz.HBRelogHelper
         private static DispatcherTimer _monitorTimer;
         private static ServiceProxy _proxy;
         private static TreeRootState _lastTreeState;
+        private static HBRelogHelperSettings MySettings;
 
         public HBRelogHelper()
         {
@@ -244,9 +258,11 @@ namespace HighVoltz.HBRelogHelper
                 AppDomain.CurrentDomain.ProcessExit += CurrentDomainProcessExit;
                 AppDomain.CurrentDomain.UnhandledException += CurrentDomainUnhandledException;
 
+                MySettings = new HBRelogHelperSettings();
+
                 var hnd = new CallbackHandler();
                 var ctx = new InstanceContext(hnd);
-                _proxy = new ServiceProxy(ctx, new NetNamedPipeBinding(), new EndpointAddress("net.pipe://localhost/HBRelog/Server"));
+                _proxy = new ServiceProxy(ctx, new NetNamedPipeBinding(), new EndpointAddress(MySettings.RemotingUri));
 
                 HbProcId = Process.GetCurrentProcess().Id;
 

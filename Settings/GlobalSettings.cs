@@ -60,7 +60,8 @@ namespace HighVoltz.HBRelog.Settings
         }
 
 	    public static readonly string DefaultSettingsPath =
-		    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "HighVoltz\\HBRelog\\Setting.xml");
+		    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), string.Format("HighVoltz\\HBRelog\\Setting{0}.xml",
+                Program.IsAssemblyDebugBuild() ? ".debug" : ""));
 
 	    public string SettingsPath { get; private set; }
 
