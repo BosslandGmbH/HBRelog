@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using GreyMagic;
 using HighVoltz.HBRelog.WoW.FrameXml;
 using HighVoltz.Launcher;
@@ -80,7 +79,14 @@ namespace HighVoltz.HBRelog.WoW
                         p => !Utility.Is64BitProcess(p) && p.Responding && !attachedWoW32Pids.Contains(p.Id));
                     foreach (var p in wow32Processes)
                     {
-                        _lockOwner.Memory = new ExternalProcessReader(p);
+                        try
+                        {
+                            _lockOwner.Memory = new ExternalProcessReader(p);
+                        }
+                        catch (Exception)
+                        {
+                            continue;
+                        }
                         HbRelogManager.Settings.GameStateOffset = (uint)WowPatterns.GameStatePattern.Find(_lockOwner.Memory);
                         HbRelogManager.Settings.LuaStateOffset = (uint)WowPatterns.LuaStatePattern.Find(_lockOwner.Memory);
                         HbRelogManager.Settings.FocusedWidgetOffset = (uint)WowPatterns.FocusedWidgetPattern.Find(_lockOwner.Memory);
@@ -92,7 +98,7 @@ namespace HighVoltz.HBRelog.WoW
                             try
                             {
                                 playerName = (from fontString in UIObject.GetUIObjectsOfType<FontString>(_lockOwner)
-                                              where fontString.IsVisible && fontString.Name.Contains("PlayerName")
+                                              where fontString.IsShown && fontString.Name == "PlayerName"
                                               select fontString.Text).First();
                             }
                             catch (Exception e)
@@ -193,10 +199,10 @@ namespace HighVoltz.HBRelog.WoW
 					}
 				    if (_lockOwner.ReusedGameProcess == null)
 				    {
-                        _lockOwner.GameProcess = _wowProcess;
                         _lockOwner.Memory = new ExternalProcessReader(_wowProcess);
                     }
-					_wowProcess = null;
+                    _lockOwner.GameProcess = _wowProcess;
+                    _wowProcess = null;
 				    _lockOwner.Profile.Log(_lockOwner.Settings.ReuseFreeWowProcess ? "Wow is ready." : "Wow is ready to login.");
 				}
 			}
