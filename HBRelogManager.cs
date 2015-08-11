@@ -51,9 +51,12 @@ namespace HighVoltz.HBRelog
                 Settings = GlobalSettings.Load();
 
                 Settings.FreeHBKeyPool.Clear();
-                foreach (var key in Settings.HBKeyPool.Split(','))
+                if (!string.IsNullOrEmpty(Settings.HBKeyPool))
                 {
-                    Settings.FreeHBKeyPool.Add(key);
+                    foreach (var key in Settings.HBKeyPool.Split(','))
+                    {
+                        Settings.FreeHBKeyPool.Add(key);
+                    }
                 }
 
                 WorkerThread = new Thread(DoWork) { IsBackground = true };
