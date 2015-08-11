@@ -253,10 +253,8 @@
     <Resource Include="Images\Logo.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="bin\Debug\fasmdll_managed.dll" />
     <Content Include="bin\Debug\HBRelog.exe" />
     <Content Include="bin\Debug\HBRelog.pdb" />
-    <Content Include="bin\Release\fasmdll_managed.dll" />
     <Content Include="bin\Release\HBRelog.exe" />
     <None Include="CREDITS.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -285,8 +283,7 @@
     <PostBuildEvent>
     </PostBuildEvent>
   </PropertyGroup>
-
-  <UsingTask TaskName="DownloadFile" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+  <UsingTask TaskName="DownloadFile" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v12.0.dll">
     <ParameterGroup>
       <Url ParameterType="System.String" Required="true"/>
       <FileName ParameterType="System.String" Required="true" />
@@ -295,12 +292,15 @@
       <Reference Include="System" />
       <Code Type="Fragment" Language="cs">
         <![CDATA[
-        new System.Net.WebClient().DownloadFile(Address, FileName);
+        new System.Net.WebClient().DownloadFile(Url, FileName);
         ]]>
       </Code>
     </Task>
   </UsingTask>
   <Target Name="GetNuget">
     <DownloadFile Url="https://nuget.org/nuget.exe" FileName="nuget.exe" />
+  </Target>
+  <Target Name="NugetRestore" DependsOnTargets="GetNuget">
+    <Exec Command="nuget.exe restore HBRelog.sln" />
   </Target>
 </Project>
