@@ -283,7 +283,7 @@
     <PostBuildEvent>
     </PostBuildEvent>
   </PropertyGroup>
-  <UsingTask TaskName="DownloadFile" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v12.0.dll">
+  <UsingTask TaskName="DownloadFile" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
     <ParameterGroup>
       <Url ParameterType="System.String" Required="true"/>
       <FileName ParameterType="System.String" Required="true" />
