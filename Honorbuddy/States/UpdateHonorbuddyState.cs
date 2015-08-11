@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Text;
 using HighVoltz.HBRelog.FiniteStateMachine;
-using ICSharpCode.SharpZipLib.Zip;
+//using ICSharpCode.SharpZipLib.Zip;
 
 namespace HighVoltz.HBRelog.Honorbuddy.States
 {
@@ -84,32 +85,15 @@ namespace HighVoltz.HBRelog.Honorbuddy.States
                 // download the new honorbuddy zip
                 Log.Write("Downloading new version of Honorbuddy");
                 _hbManager.Profile.Status = "Downloading new version of HB";
-                string tempFileName = Path.GetTempFileName();
+                string tempFileName = Path.GetTempFileName() + ".zip";
 
                 client.DownloadFile(_hbManager.Profile.Settings.HonorbuddySettings.UseHBBeta ? HbBetaUpdateUrl : HbUpdateUrl, tempFileName);
-                //Log.Write("Deleting old .exe and .dll files");
-
-                //var assembliesToDelete = new List<string>(_dllNames);
-                //assembliesToDelete.Add(originalFileName);
-                //foreach (var fileName in assembliesToDelete)
-                //{
-                //    var fullPath = Path.Combine(Settings.HonorbuddyPath, fileName);
-                //    if (File.Exists(fullPath))
-                //    {
-                //        try
-                //        {
-                //            File.Delete(fullPath);
-                //        }
-                //        catch { }
-                //    }
-                //}
 
                 // extract the downloaded zip
                 var hbFolder = Path.GetDirectoryName(_hbManager.Settings.HonorbuddyPath);
                 Log.Write("Extracting Honorbuddy to {0}", hbFolder);
                 _hbManager.Profile.Status = "Extracting Honorbuddy";
-                var zip = new FastZip();
-                zip.ExtractZip(tempFileName, hbFolder, FastZip.Overwrite.Always, s => true, ".*", ".*", false);
+                ZipFile.ExtractToDirectory(tempFileName, hbFolder);
 
                 // delete the downloaded zip
                 Log.Write("Deleting temporary file");

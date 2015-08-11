@@ -29,7 +29,6 @@ using HighVoltz.HBRelog.Honorbuddy.States;
 using HighVoltz.HBRelog.Settings;
 using HighVoltz.HBRelog.WoW;
 using HighVoltz.HBRelog.WoW.States;
-using ICSharpCode.SharpZipLib.Zip;
 using Microsoft.Win32.SafeHandles;
 using MonitorState = HighVoltz.HBRelog.Honorbuddy.States.MonitorState;
 
