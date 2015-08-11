@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+VisualStudioVersion = 12.0.30501.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HBRelog", "HBRelog.csproj", "{9FEFE779-26EF-4E60-B1E9-1AC82000443A}"
 EndProject
@@ -12,8 +12,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Launcher", "Launcher\Launcher.csproj", "{4781EA6C-E946-4B0F-8013-FA04AEC24B15}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Authenticator", "Libs\Authenticator\Authenticator.csproj", "{EAF2D5CE-D817-453A-8A32-3D531570AE04}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Fasm.NET", "Libs\Fasm.NET\Fasm.NET.vcxproj", "{2DAC1A31-EF28-499A-B67A-963B5343D778}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -137,26 +135,6 @@ Global
 		{EAF2D5CE-D817-453A-8A32-3D531570AE04}.Release|x64.ActiveCfg = Release|x86
 		{EAF2D5CE-D817-453A-8A32-3D531570AE04}.Release|x86.ActiveCfg = Release|x86
 		{EAF2D5CE-D817-453A-8A32-3D531570AE04}.Release|x86.Build.0 = Release|x86
-		{2DAC1A31-EF28-499A-B67A-963B5343D778}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{2DAC1A31-EF28-499A-B67A-963B5343D778}.Debug|Any CPU and x64.ActiveCfg = Debug|Win32
-		{2DAC1A31-EF28-499A-B67A-963B5343D778}.Debug|Any CPU and x86.ActiveCfg = Debug|Win32
-		{2DAC1A31-EF28-499A-B67A-963B5343D778}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
-		{2DAC1A31-EF28-499A-B67A-963B5343D778}.Debug|Mixed Platforms.Build.0 = Debug|Win32
-		{2DAC1A31-EF28-499A-B67A-963B5343D778}.Debug|Win32.ActiveCfg = Debug|Win32
-		{2DAC1A31-EF28-499A-B67A-963B5343D778}.Debug|Win32.Build.0 = Debug|Win32
-		{2DAC1A31-EF28-499A-B67A-963B5343D778}.Debug|x64.ActiveCfg = Debug|Win32
-		{2DAC1A31-EF28-499A-B67A-963B5343D778}.Debug|x86.ActiveCfg = Debug|Win32
-		{2DAC1A31-EF28-499A-B67A-963B5343D778}.Debug|x86.Build.0 = Debug|Win32
-		{2DAC1A31-EF28-499A-B67A-963B5343D778}.Release|Any CPU.ActiveCfg = Release|Win32
-		{2DAC1A31-EF28-499A-B67A-963B5343D778}.Release|Any CPU and x64.ActiveCfg = Release|Win32
-		{2DAC1A31-EF28-499A-B67A-963B5343D778}.Release|Any CPU and x86.ActiveCfg = Release|Win32
-		{2DAC1A31-EF28-499A-B67A-963B5343D778}.Release|Mixed Platforms.ActiveCfg = Release|Win32
-		{2DAC1A31-EF28-499A-B67A-963B5343D778}.Release|Mixed Platforms.Build.0 = Release|Win32
-		{2DAC1A31-EF28-499A-B67A-963B5343D778}.Release|Win32.ActiveCfg = Release|Win32
-		{2DAC1A31-EF28-499A-B67A-963B5343D778}.Release|Win32.Build.0 = Release|Win32
-		{2DAC1A31-EF28-499A-B67A-963B5343D778}.Release|x64.ActiveCfg = Release|Win32
-		{2DAC1A31-EF28-499A-B67A-963B5343D778}.Release|x86.ActiveCfg = Release|Win32
-		{2DAC1A31-EF28-499A-B67A-963B5343D778}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

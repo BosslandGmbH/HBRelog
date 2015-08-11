@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security;
-using Binarysharp.Assemblers.Fasm;
 using GreyMagic.Internals;
 using GreyMagic.Native;
 
@@ -23,7 +22,6 @@ namespace GreyMagic
             {
                 ThreadHandle = Imports.OpenThread(0x0001F03FF, false, (uint) proc.Threads[0].Id);
                 WindowHandle = Process.MainWindowHandle;
-	            Asm = new FasmNet();
             }
             else
             {
@@ -65,12 +63,6 @@ namespace GreyMagic
         /// </value>
         /// <remarks>Created 2012-04-23</remarks>
         public bool IsProcessOpen { get { return ProcessHandle != null && !ProcessHandle.IsClosed && !ProcessHandle.IsInvalid; } }
-
-        #region FasmManaged stuff
-
-        public FasmNet Asm { get; private set; }
-
-        #endregion
 
         #region Imports
 
@@ -286,9 +278,6 @@ namespace GreyMagic
             ProcessHandle.Dispose();
             ProcessHandle = null;
             SafeMemoryHandle.CloseHandle(ThreadHandle);
-            if (Asm != null)
-                Asm.Clear();
-            Asm = null;
             base.Dispose();
         }
 
