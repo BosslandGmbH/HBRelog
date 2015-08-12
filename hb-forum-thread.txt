@@ -4,22 +4,27 @@ Every true developer has his own vision on how things should look like. So I've 
 [size=4][i][b]For administration / moderators[/b][/i][/size]
 [size=3]I've searched any possible sources about the rules of this forum and did not find the reason it could violate any. If you find some please contact me ASAP. Also I've created the [URL="https://www.thebuddyforum.com/honorbuddy-forum/community-developer-forum/222189-legal-distributing-hbrelog-utility.html"]forum thread[/URL] about the latter form of distribution, but it didn't get aswered.[/size]
 
+[size=4][i][b]Updates[/b][/i][/size]
+[size=3]08/12/2015 -- I should have deleted the entire post for a couple of days to ensure that sources which I posted do not violate forum policies. Now I'm pretty confident -- it's clean like a mountain lake :).[/size]
+
 [size=4][i][b]What you can get from it?[/b][/i][/size]
 [size=3]Right now I'm [b]very[/b] motivated to keep implementing new features and tune UI, so you can get free support here, get issues fixed in a near-week-time frame, discuss your ideas or what you wanna see in the change log.[/size]
 
 [size=4][i][b]How to use.[/b][/i][/size]
-[size=3]To take advantage of HBRelog(aash) you should[/size]
+[size=3]To take advantage of HBRelog(aash) you should build it from sources, it is easy like eat a piece of cake:[/size]
 [list]
 [*][size=3]install Honorbuddy dependencies:[/size]
 [list]
 [*][size=3]Got problems? [url=https://www.thebuddyforum.com/honorbuddy-forum/68254-install-buddy-product-buddy-dependency-wizard.html]Buddy Dependency Wizard[/url][/size]
 [/list]
 [*][size=3]download and extract [url=https://github.com/aash/HBRelog]aash/HBRelog[/url] sources[/size]
-[*][size=3]build it yourself by issuing the following commands ([url=https://msdn.microsoft.com/en-us/library/bb383796.aspx]msbuild[/url] is a standard .NET Framework tool):[/size]
-[list]
-[*][size=3]cd <to-the-sources-folder>[/size]
-[*][size=3]msbuild HBRelog.sln /p:[/size][size=3]ReferencePath="c:\full\honorbuddy\directory\path" /p:Configuration=Release[/size]
-[/list]
+[*][size=3]run build.cmd script which is obviously builds the HBRelog binary; it is located in the sources folder[/size]
+[*][size=3]or build it by hand issuing the following commands in cmd interpreter: Win + R, type "cmd", enter[/size]
+[code]
+cd <sources-folder>
+:: make msbuild command available to the command interpreter; type "msbuild /version" + enter, you should see it's version in response
+set PATH=C:\Windows\Microsoft.NET\Framework\v4.0.30319;%PATH%
+msbuild HBRelog.csproj /t:NugetRestore;Build /p:Configuration=Release /p:AllowUnsafeItems=true[/code]
 [*][size=3]done, find the binary in the bin\Release folder[/size]
 [/list]
 [i][b][size=4]Changelog.[/size][/b][/i]
