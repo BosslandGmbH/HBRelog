@@ -20,9 +20,12 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Forms;
 using HighVoltz.HBRelog.FiniteStateMachine;
 using HighVoltz.HBRelog.FiniteStateMachine.FiniteStateMachine;
 using HighVoltz.HBRelog.Honorbuddy.States;
@@ -157,6 +160,20 @@ namespace HighVoltz.HBRelog.Honorbuddy
             };
             BotProcess = Process.Start(procStartI);
             HbStartupTimeStamp = DateTime.Now;
+            if (BotProcess != null)
+            {
+                // TODO: (DIRTY HACK) works only for english versions, as this code is dependent on locale
+                // if hb key dialog appears try to send Key.Enter
+                Utility.SleepUntil(() => !string.IsNullOrEmpty(Process.GetProcessById(BotProcess.Id).MainWindowTitle), TimeSpan.FromSeconds(10));
+                if (Process.GetProcessById(BotProcess.Id).MainWindowTitle.ToLower() == "honorbuddy login")
+                {
+                    while (Process.GetProcessById(BotProcess.Id).MainWindowTitle.ToLower() == "honorbuddy login")
+                    {
+                        Utility.SendBackgroundKey(Process.GetProcessById(BotProcess.Id).MainWindowHandle, (char)Keys.Enter, false);
+                        Thread.Sleep(50);
+                    }
+                }
+            }
         }
 
         public DateTime HbStartupTimeStamp { get; private set; }
