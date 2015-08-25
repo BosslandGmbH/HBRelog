@@ -5,7 +5,7 @@ namespace HighVoltz.HBRelog.Remoting
 {
     [ServiceContract(CallbackContract = typeof(IRemotingApiCallback),
         SessionMode = SessionMode.Required)]
-    interface IRemotingApi
+    public interface IRemotingApi
     {
         [OperationContract]
         bool Init(int hbProcID);

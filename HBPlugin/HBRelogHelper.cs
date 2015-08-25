@@ -21,7 +21,7 @@ namespace HighVoltz.HBRelog.Remoting
 {
     [ServiceContract(CallbackContract = typeof(IRemotingApiCallback),
         SessionMode = SessionMode.Required)]
-    interface IRemotingApi
+    public interface IRemotingApi
     {
         [OperationContract]
         bool Init(int hbProcID);
@@ -88,7 +88,7 @@ namespace HighVoltz.HBRelog.Remoting
 namespace HighVoltz.HBRelogHelper
 {
 
-    internal class ServiceProxy : DuplexClientBase<IRemotingApi>, IRemotingApi
+    public class ServiceProxy : DuplexClientBase<IRemotingApi>, IRemotingApi
     {
         public ServiceProxy(InstanceContext c, Binding b, EndpointAddress a)
             : base(c, b, a) { }
@@ -260,7 +260,7 @@ namespace HighVoltz.HBRelogHelper
         static internal int HbProcId { get; private set; }
         static internal string CurrentProfileName { get; private set; }
         private static DispatcherTimer _monitorTimer;
-        private static ServiceProxy _proxy;
+        public static ServiceProxy Proxy;
         private static TreeRootState _lastTreeState;
         private static HBRelogHelperSettings MySettings;
 
@@ -275,7 +275,7 @@ namespace HighVoltz.HBRelogHelper
 
                 var hnd = new CallbackHandler();
                 var ctx = new InstanceContext(hnd);
-                _proxy = new ServiceProxy(ctx, new NetNamedPipeBinding(), new EndpointAddress(MySettings.RemotingUri));
+                Proxy = new ServiceProxy(ctx, new NetNamedPipeBinding(), new EndpointAddress(MySettings.RemotingUri));
 
                 HbProcId = Process.GetCurrentProcess().Id;
 
@@ -288,11 +288,11 @@ namespace HighVoltz.HBRelogHelper
                         _monitorTimer.Interval = TimeSpan.FromSeconds(2);
                         _monitorTimer.Start();
                     }));
-                IsConnected = _proxy.Init(HbProcId);
+                IsConnected = Proxy.Init(HbProcId);
 	            if (IsConnected)
 	            {
 		            Logging.Write("HBRelogHelper: Connected with HBRelog");
-		            CurrentProfileName = _proxy.GetCurrentProfileName(HbProcId);
+		            CurrentProfileName = Proxy.GetCurrentProfileName(HbProcId);
 	            }
 	            else
 	            {
@@ -313,11 +313,11 @@ namespace HighVoltz.HBRelogHelper
         {
             try
             {
-                if (_proxy.ChannelFactory.State == CommunicationState.Opened ||
-                    _proxy.State == CommunicationState.Opening)
+                if (Proxy.ChannelFactory.State == CommunicationState.Opened ||
+                    Proxy.State == CommunicationState.Opening)
                 {
-                    _proxy.ChannelFactory.Close();
-                    _proxy.ChannelFactory.Abort();
+                    Proxy.ChannelFactory.Close();
+                    Proxy.ChannelFactory.Abort();
                 }
             }
             catch
@@ -349,20 +349,20 @@ namespace HighVoltz.HBRelogHelper
 
                 if (TreeRoot.State == TreeRootState.Stopped && _lastTreeState != TreeRoot.State)
                 {
-                    _proxy.NotifyBotStopped("");
+                    Proxy.NotifyBotStopped("");
                     _lastTreeState = TreeRootState.Stopped;
                 }
                 if (TreeRoot.StatusText != _lastStatus && !string.IsNullOrEmpty(TreeRoot.StatusText))
                 {
                     _lastTreeState = TreeRoot.State;
-                    _proxy.SetProfileStatusText(HbProcId, TreeRoot.StatusText);
+                    Proxy.SetProfileStatusText(HbProcId, TreeRoot.StatusText);
                     _lastStatus = TreeRoot.StatusText;
                 }
 
 
                 if (HeartbeatTimer.IsFinished)
                 {
-                    _proxy.Heartbeat(HbProcId);
+                    Proxy.Heartbeat(HbProcId);
                     HeartbeatTimer.Reset();
                 }
 
@@ -410,13 +410,13 @@ namespace HighVoltz.HBRelogHelper
                 }
                 if (tooltip != _lastTooltip)
                 {
-                    _proxy.SetBotInfoToolTip(HbProcId, tooltip);
+                    Proxy.SetBotInfoToolTip(HbProcId, tooltip);
                     _lastTooltip = tooltip;
                 }
             }
             catch (Exception ex)
             {
-                // Logging.WriteException(ex);
+                Logging.WriteException(ex);
             }
         }
 
@@ -444,10 +444,10 @@ namespace HighVoltz.HBRelogHelper
         public override void OnButtonPress()
         {
             Logging.Write("IsConnected: {0}", IsConnected);
-            foreach (string name in _proxy.GetProfileNames())
+            foreach (string name in Proxy.GetProfileNames())
             {
-                Logging.Write("{1}: GetProfileStatus: {0}", _proxy.GetProfileStatus(name), name);
-                _proxy.SetProfileStatusText(HbProcId, TreeRoot.StatusText);
+                Logging.Write("{1}: GetProfileStatus: {0}", Proxy.GetProfileStatus(name), name);
+                Proxy.SetProfileStatusText(HbProcId, TreeRoot.StatusText);
             }
         }
     }
@@ -472,6 +472,71 @@ namespace HighVoltz.HBRelogHelper
             {
                 InvokeOn(dispatcher, action);
             });
+        }
+    }
+
+    static public class HBRelogApi
+    {
+        private static int HbProcID
+        { get { return HBRelogHelper.HbProcId; } }
+        private static IRemotingApi HBRelogRemoteApi
+        { get { return HBRelogHelper.Proxy; } }
+        public static bool IsConnected { get { return HBRelogHelper.IsConnected; } }
+        public static string CurrentProfileName { get { return HBRelogHelper.CurrentProfileName; } }
+
+        public static void RestartWow()
+        {
+            HBRelogRemoteApi.RestartWow(HbProcID);
+        }
+
+        public static void RestartHB()
+        {
+            HBRelogRemoteApi.RestartHB(HbProcID);
+        }
+
+        public static string[] GetProfileNames()
+        {
+            return HBRelogRemoteApi.GetProfileNames();
+        }
+
+        public static void StartProfile(string profileName)
+        {
+            HBRelogRemoteApi.StartProfile(profileName);
+        }
+
+        public static void StopProfile(string profileName)
+        {
+            HBRelogRemoteApi.StopProfile(profileName);
+        }
+
+        public static void PauseProfile(string profileName)
+        {
+            HBRelogRemoteApi.PauseProfile(profileName);
+        }
+
+        public static void IdleProfile(string profileName, TimeSpan time)
+        {
+            HBRelogRemoteApi.IdleProfile(profileName, time);
+        }
+
+        public static void Logon(string character, string server, string customClass, string botBase, string profilePath)
+        {
+            HBRelogRemoteApi.Logon(HbProcID, character, server, customClass, botBase, profilePath);
+        }
+
+        public static int GetProfileStatus(string profileName)
+        {
+            return HBRelogRemoteApi.GetProfileStatus(profileName);
+        }
+
+        public static void SetProfileStatusText(string status)
+        {
+            HBRelogRemoteApi.SetProfileStatusText(HbProcID, status);
+        }
+
+        public static void SkipCurrentTask(string profileName)
+        {
+            HBRelogRemoteApi.SkipCurrentTask(profileName);
         }
     }
 }
