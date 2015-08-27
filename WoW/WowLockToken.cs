@@ -61,6 +61,7 @@ namespace HighVoltz.HBRelog.WoW
 		/// <exception cref="System.InvalidOperationException">Lock token is not valid</exception>
 		public void StartWoW()
 		{
+            // TODO: check if HBRelog has enough rights to start/inspect other processes
 			lock (LockObject)
 			{
 				if (!IsValid)
