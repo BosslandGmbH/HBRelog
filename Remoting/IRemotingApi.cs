@@ -46,7 +46,7 @@ namespace HighVoltz.HBRelog.Remoting
     internal interface IRemotingApiCallback
     {
         [OperationContract]
-        void StartBot();
+        void StartBot(string botname, string profile);
         [OperationContract]
         void StopBot();
         [OperationContract]

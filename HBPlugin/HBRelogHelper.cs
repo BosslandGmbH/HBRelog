@@ -15,7 +15,11 @@ using System.ServiceModel.Channels;
 using Styx.CommonBot.Profiles;
 using Styx.Helpers;
 using System.IO;
+using System.Linq;
 using System.Threading;
+using System.Windows.Controls;
+using System.Xml;
+using Styx.WoWInternals;
 
 namespace HighVoltz.HBRelog.Remoting
 {
@@ -76,7 +80,7 @@ namespace HighVoltz.HBRelog.Remoting
     interface IRemotingApiCallback
     {
         [OperationContract]
-        void StartBot();
+        void StartBot(string botname, string profile);
         [OperationContract]
         void StopBot();
         [OperationContract]
@@ -217,11 +221,39 @@ namespace HighVoltz.HBRelogHelper
 
     class CallbackHandler : IRemotingApiCallback
     {
-        public void StartBot()
+        public void StartBot(string botname, string profile)
         {
             Util.QueueUserWorkItemOn(Application.Current.Dispatcher, () =>
             {
                 if (TreeRoot.IsRunning || TreeRoot.IsPaused) return;
+                // NB: If Honorbuddy main window renames the control or changes its type,
+                // this application will need adjustment also...
+                var controlName = "cmbBotSelector";
+                var control = (ComboBox)Application.Current.MainWindow.FindName(controlName);
+                if (control == null)
+                {
+                    var message = String.Format("Unable to locate \"{0}\" control", controlName);
+                    Logging.Write(message);
+                    throw new ArgumentException(message);
+                }
+                foreach (var i in control.Items)
+                {
+                    if (i.ToString().StartsWith(botname))
+                    {
+                        Logging.Write("changing botbase to " + control.SelectedItem);
+                        control.SelectedItem = i;
+                        break;
+                    }
+                }
+                ObjectManager.Update();
+                try
+                {
+                    ProfileManager.LoadNew(profile);
+                }
+                catch (Exception e)
+                {
+                    Logging.Write(e.ToString());
+                }
                 TreeRoot.Start();
             });
         }

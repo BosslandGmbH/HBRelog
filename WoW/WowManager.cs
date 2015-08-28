@@ -296,6 +296,7 @@ namespace HighVoltz.HBRelog.WoW
                     CloseGameProcess();
                 }
                 GameProcess = null;
+                _globals = null;
                 ProcessIsReadyForInput = false;
                 IsRunning = false;
                 StartupSequenceIsComplete = false;

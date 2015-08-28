@@ -92,7 +92,11 @@ namespace HighVoltz.HBRelog
                             if (args.PropertyName != "Status" || profile.Status != "Honorbuddy Startup Complete")
                                 return;
                             if (profile.TaskManager.HonorbuddyManager.Settings.AutoStartBot)
-                                Clients[pid].StartBot();
+                            {
+                                Clients[pid].StartBot(
+                                    profile.TaskManager.HonorbuddyManager.Settings.BotBase,
+                                    profile.TaskManager.HonorbuddyManager.Settings.HonorbuddyProfile);
+                            }
                         }
                         catch (Exception)
                         {
