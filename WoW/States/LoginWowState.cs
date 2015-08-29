@@ -41,93 +41,90 @@ namespace HighVoltz.HBRelog.WoW.States
 
         public override void Run()
         {
-            if (_wowManager.LuaManager.Globals == null)
-		        return;
-
-            if (_wowManager.Throttled)
-                return;
-
-            if (_wowManager.StalledLogin)
-            {
-                _wowManager.Profile.Log("Failed to login wow, lets restart");
-                _wowManager.GameProcess.Kill();
-                return;
-            }
-
-            bool isBanned = IsBanned, isSuspended = IsSuspended, isFrozen = IsFrozen, isSuspiciousLocked = IsLockedSuspiciousActivity, isLockedLicense = IsLockedLicense;
-
-            if (isBanned || isSuspended || isFrozen || isSuspiciousLocked || isLockedLicense)
-            {
-                string reason = isBanned ? "banned" : isSuspended ? "suspended" : isFrozen ? "frozen" : isSuspiciousLocked ? "locked due to suspicious activity" : "locked license";
-                _wowManager.Profile.Status = string.Format("Account is {0}", reason);
-                _wowManager.Profile.Log("Pausing profile because account is {0}.", reason);
-                _wowManager.Profile.Pause();
-                return;
-            }
-
-            if (IncorrectPassword)
-            {
-                _wowManager.Profile.Status = string.Format("Incorrect login information entered");
-                _wowManager.Profile.Log("Pausing profile because incorrect login information was entered");
-                _wowManager.Profile.Pause();
-                return;
-            }
-
-            //  press 'Enter' key if popup dialog with an 'Okay' button is visible
-            if (IsErrorDialogVisible)
-            {
-                _wowManager.Profile.Log("Clicking okay on dialog.");
-                Utility.SendBackgroundKey(_wowManager.GameProcess.MainWindowHandle, (char)Keys.Enter, false);
-                return;
-            }
-
-            if (_wowManager.ServerHasQueue)
-            {
-                var status = QueueStatus;
-                _wowManager.Profile.Status = string.IsNullOrEmpty(status) ? status : "Waiting in server queue";
-                _wowManager.Profile.Log("Waiting in server queue");
-                return;
-            }
-
-            // Select account from the account selection dialog.
-            bool res = false;
             try
             {
-                res = Retry.Do<bool>(HandleAccountSelectionDialog, TimeSpan.FromSeconds(1), 5);
+                if (_wowManager.LuaManager.Globals == null)
+                    return;
+
+                if (_wowManager.Throttled)
+                    return;
+
+                if (_wowManager.StalledLogin)
+                {
+                    _wowManager.Profile.Log("Failed to login wow, lets restart");
+                    _wowManager.GameProcess.Kill();
+                    return;
+                }
+
+                bool isBanned = IsBanned, isSuspended = IsSuspended, isFrozen = IsFrozen, isSuspiciousLocked = IsLockedSuspiciousActivity, isLockedLicense = IsLockedLicense;
+
+                if (isBanned || isSuspended || isFrozen || isSuspiciousLocked || isLockedLicense)
+                {
+                    string reason = isBanned ? "banned" : isSuspended ? "suspended" : isFrozen ? "frozen" : isSuspiciousLocked ? "locked due to suspicious activity" : "locked license";
+                    _wowManager.Profile.Status = string.Format("Account is {0}", reason);
+                    _wowManager.Profile.Log("Pausing profile because account is {0}.", reason);
+                    _wowManager.Profile.Pause();
+                    return;
+                }
+
+                if (IncorrectPassword)
+                {
+                    _wowManager.Profile.Status = string.Format("Incorrect login information entered");
+                    _wowManager.Profile.Log("Pausing profile because incorrect login information was entered");
+                    _wowManager.Profile.Pause();
+                    return;
+                }
+
+                //  press 'Enter' key if popup dialog with an 'Okay' button is visible
+                if (IsErrorDialogVisible)
+                {
+                    _wowManager.Profile.Log("Clicking okay on dialog.");
+                    Utility.SendBackgroundKey(_wowManager.GameProcess.MainWindowHandle, (char)Keys.Enter, false);
+                    return;
+                }
+
+                if (_wowManager.ServerHasQueue)
+                {
+                    var status = QueueStatus;
+                    _wowManager.Profile.Status = string.IsNullOrEmpty(status) ? status : "Waiting in server queue";
+                    _wowManager.Profile.Log("Waiting in server queue");
+                    return;
+                }
+
+                // Select account from the account selection dialog.
+                HandleAccountSelectionDialog();
+
+                if (_wowManager.IsConnectiongOrLoading || IsConnecting)
+                {
+                    _wowManager.Profile.Log("Connecting...");
+                    return;
+                }
+
+                if (HandleBattleNetToken())
+                    return;
+
+                // enter Battlenet email..
+                if (EnterTextInEditBox("AccountLoginAccountEdit", _wowManager.Settings.Login))
+                    return;
+
+                // enter password
+                if (EnterTextInEditBox("AccountLoginPasswordEdit", _wowManager.Settings.Password))
+                    return;
+
+                SetGameTitle();
+
+                // everything looks good. Press 'Enter' key to login.
+                Utility.SendBackgroundKey(_wowManager.GameProcess.MainWindowHandle, (char)Keys.Enter, false);
             }
-            catch (Exception e)
+            catch (AccessViolationException e)
             {
-                Log.Write(e.ToString());
                 if (_wowManager.LuaManager.Memory != null)
                 {
-                    _wowManager.LuaManager.Memory.Dispose();
                     _wowManager.LuaManager.Globals = null;
+                    _wowManager.LuaManager.Memory.Dispose();
                     _wowManager.LuaManager.Memory = new ExternalProcessReader(_wowManager.GameProcess);
                 }
-                return;
             }
-
-            if (_wowManager.IsConnectiongOrLoading || IsConnecting)
-            {
-                _wowManager.Profile.Log("Connecting...");
-                return;
-            }
-
-            if (HandleBattleNetToken())
-                return;
-
-            // enter Battlenet email..
-            if (EnterTextInEditBox("AccountLoginAccountEdit", _wowManager.Settings.Login))
-                return;
-
-            // enter password
-            if (EnterTextInEditBox("AccountLoginPasswordEdit", _wowManager.Settings.Password))
-                return;
-
-            SetGameTitle();
-
-            // everything looks good. Press 'Enter' key to login.
-            Utility.SendBackgroundKey(_wowManager.GameProcess.MainWindowHandle, (char)Keys.Enter, false);
         }
 
 
