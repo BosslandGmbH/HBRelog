@@ -51,6 +51,8 @@ namespace HighVoltz.HBRelog.Remoting
         void StopBot();
         [OperationContract]
         void ChangeProfile(string profileName);
+        [OperationContract]
+        void WowLogout();
     }
 
 }
