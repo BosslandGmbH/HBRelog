@@ -75,6 +75,7 @@ namespace HighVoltz.HBRelog.Tasks
 
         public override void Reset()
         {
+            IsDone = false;
         }
 
         #endregion
