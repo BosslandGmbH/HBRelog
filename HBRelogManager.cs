@@ -28,6 +28,19 @@ namespace HighVoltz.HBRelog
 {
     class HbRelogManager
     {
+
+        public static Visibility HiddenIfDebug
+        {
+            get
+            {
+#if DEBUG
+                return Visibility.Visible;
+#else
+                return Visibility.Hidden;
+#endif
+            }
+        }
+
         public static GlobalSettings Settings { get; internal set; }
         static public Thread WorkerThread { get; private set; }
         public static bool IsInitialized { get; private set; }

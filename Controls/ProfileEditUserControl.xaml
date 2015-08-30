@@ -95,11 +95,11 @@
                             <TextBlock Text="WoW Args" Grid.Row="10" HorizontalAlignment="Left" Height="20" Margin="5,0,0,1" />
                             <TextBox x:Name="WoWParms" Grid.Column="2" Grid.Row="10" Text="{Binding Path=WowSettings.WowArgs}"
                                      ToolTip="Command-line arguments to pass to WoW or launcher (Advanced)"/>
-                            <TextBlock Text="Reuse WoW" Grid.Row="11" HorizontalAlignment="Left" Height="20" Margin="5,0,0,1" />
-                            <CheckBox x:Name="ReuseFreeWowProcess" Grid.Row="11" Grid.Column="2" HorizontalAlignment="Left"
-                                      VerticalAlignment="Center"
-                                      IsChecked="{Binding Path=WowSettings.ReuseFreeWowProcess}"
-                                      ToolTip="Reuse existing wow window which are not owned by HBRelog, thus not create new ones and save some time."/>
+                            <TextBlock Text="Reuse WoW" Grid.Row="11" HorizontalAlignment="Left" Height="20" Margin="5,0,0,1" Visibility="{x:Static HighVoltz:HbRelogManager.HiddenIfDebug}"/>
+                            <CheckBox x:Name="ReuseFreeWowProcess" Grid.Row="11" Grid.Column="2" HorizontalAlignment="Left" Visibility="{x:Static HighVoltz:HbRelogManager.HiddenIfDebug}"
+                                VerticalAlignment="Center"
+                                IsChecked="{Binding Path=WowSettings.ReuseFreeWowProcess}"
+                                ToolTip="Reuse existing wow window which are not owned by HBRelog, thus not create new ones and save some time."/>
                         </Grid>
                     </ScrollViewer>
                 </Border>

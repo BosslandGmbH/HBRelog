@@ -177,7 +177,14 @@ namespace HighVoltz.HBRelog.Settings
         private bool _reuseFreeWowProcess;
         public bool ReuseFreeWowProcess
         {
-            get { return _reuseFreeWowProcess; }
+            get
+            {
+#if DEBUG
+                return _reuseFreeWowProcess;
+#else
+                return false;
+#endif
+            }
             set { _reuseFreeWowProcess = value; NotifyPropertyChanged("ReuseFreeWowProcess"); }
         }
 
