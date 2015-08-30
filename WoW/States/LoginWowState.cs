@@ -98,12 +98,9 @@ namespace HighVoltz.HBRelog.WoW.States
             catch (Exception e)
             {
                 Log.Write(e.ToString());
-                if (_wowManager.LuaManager.Memory != null)
-                {
-                    _wowManager.LuaManager.Memory.Dispose();
-                    _wowManager.LuaManager.Globals = null;
-                    _wowManager.LuaManager.Memory = new ExternalProcessReader(_wowManager.GameProcess);
-                }
+                _wowManager.LuaManager.Memory.Dispose();
+                _wowManager.LuaManager.Globals = null;
+                _wowManager.LuaManager.Memory = new ExternalProcessReader(_wowManager.GameProcess);
                 return;
             }
 
