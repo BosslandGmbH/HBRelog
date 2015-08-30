@@ -60,8 +60,6 @@ namespace HighVoltz.HBRelog.WoW.Lua
             return new LuaNode(_memory, _luaTable.NodePtr + (int)(LuaNode.Size * idx));
         }
 
-
-
         public LuaTValue GetValue(string key)
         {
             var num = H(key);
