@@ -7,7 +7,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
-using GreyMagic;
 using HighVoltz.HBRelog.FiniteStateMachine;
 using HighVoltz.HBRelog.WoW.FrameXml;
 using Button = HighVoltz.HBRelog.WoW.FrameXml.Button;
@@ -42,40 +41,28 @@ namespace HighVoltz.HBRelog.WoW.States
 
         public override void Run()
         {
-            try
+            if (_wowManager.Throttled)
+                return;
+
+            if (ReactivateAccountDialogVisible)
             {
-                if (_wowManager.Throttled)
-                    return;
-
-                if (ReactivateAccountDialogVisible)
-                {
-                    _wowManager.Profile.Log("Account has no game time, pausing.");
-                    _wowManager.Profile.Pause();
-                    return;
-                }
-
-                // trial account will have a promotion frame that requires clicking a 'Play Trial' button to enter game.
-                if (ClickPlayTrial())
-                {
-                    return;
-                }
-
-                if (ShouldChangeRealm)
-                {
-                    ChangeRealm();
-                    return;
-                }
-                HandleCharacterSelect();
+                _wowManager.Profile.Log("Account has no game time, pausing.");
+                _wowManager.Profile.Pause();
+                return;
             }
-            catch (AccessViolationException e)
+	        
+			// trial account will have a promotion frame that requires clicking a 'Play Trial' button to enter game.
+			if (ClickPlayTrial())
+	        {
+		        return;
+	        }
+
+            if (ShouldChangeRealm)
             {
-                if (_wowManager.LuaManager.Memory != null)
-                {
-                    _wowManager.LuaManager.Globals = null;
-                    _wowManager.LuaManager.Memory.Dispose();
-                    _wowManager.LuaManager.Memory = new ExternalProcessReader(_wowManager.GameProcess);
-                }
+                ChangeRealm();
+                return;
             }
+            HandleCharacterSelect();
         }
 
         bool HandleCharacterSelect()
@@ -93,8 +80,6 @@ namespace HighVoltz.HBRelog.WoW.States
 
             if (!characterNames.Any())
                 return false;
-
-            characterNames.ForEach(c => Trace.WriteLine(c));
 
             var charName = _wowManager.Settings.CharacterName;
             var wantedCharIndex =
