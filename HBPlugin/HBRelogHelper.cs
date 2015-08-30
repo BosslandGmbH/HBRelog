@@ -71,7 +71,7 @@ namespace HighVoltz.HBRelog.Remoting
         void SkipCurrentTask(string profileName);
 
         [OperationContract(IsOneWay = true)]
-        void NotifyBotStopped(string reason);
+        void NotifyBotStopped(int hbProcId, string reason);
 
         [OperationContract(IsOneWay = true)]
         void NotifyBotEvent(string what);
@@ -201,9 +201,9 @@ namespace HighVoltz.HBRelogHelper
             Channel.SkipCurrentTask(profileName);
         }
 
-        public void NotifyBotStopped(string reason)
+        public void NotifyBotStopped(int hbProcId, string reason)
         {
-            Channel.NotifyBotStopped(reason);
+            Channel.NotifyBotStopped(hbProcId, reason);
         }
 
         public void NotifyBotEvent(string what)
@@ -246,15 +246,16 @@ namespace HighVoltz.HBRelogHelper
                         break;
                     }
                 }
-                if (ProfileManager.CurrentProfile.Path != profile)
+                if (!string.IsNullOrEmpty(profile) && ProfileManager.CurrentProfile.Path != profile)
                 {
-                    ObjectManager.Update();
                     try
                     {
+                        ObjectManager.Update();
                         ProfileManager.LoadNew(profile);
                     }
                     catch (Exception e)
                     {
+                        Logging.Write("could not change profile: " + profile);
                         Logging.Write(e.ToString());
                     }
                 }
@@ -347,7 +348,7 @@ namespace HighVoltz.HBRelogHelper
                     {
                         case TreeRootState.Stopped:
                         case TreeRootState.Stopping:
-                            Proxy.NotifyBotStopped("");
+                            Proxy.NotifyBotStopped(HbProcId, "");
                             break;
                         //case TreeRootState.Starting:
                         //case TreeRootState.Running:

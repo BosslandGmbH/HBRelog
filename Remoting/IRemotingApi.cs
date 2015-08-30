@@ -39,7 +39,7 @@ namespace HighVoltz.HBRelog.Remoting
         [OperationContract(IsOneWay = true)]
         void SkipCurrentTask(string profileName);
         [OperationContract(IsOneWay = true)]
-        void NotifyBotStopped(string reason);
+        void NotifyBotStopped(int hbProcId, string reason);
         [OperationContract(IsOneWay = true)]
         void NotifyBotEvent(string what);
     }

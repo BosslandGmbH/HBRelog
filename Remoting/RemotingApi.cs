@@ -221,10 +221,10 @@ namespace HighVoltz.HBRelog.Remoting
 			}
 		}
 
-        public void NotifyBotStopped(string reason)
+        public void NotifyBotStopped(int hbProcId, string reason)
         {
             if (OnBotStoppedEvent != null)
-                OnBotStoppedEvent(this, null);
+                OnBotStoppedEvent(this, new BotStoppedEventArgs() { HbProcessId = hbProcId, Reason = reason });
         }
 
         public void NotifyBotEvent(string what)
@@ -246,4 +246,10 @@ namespace HighVoltz.HBRelog.Remoting
         public event EventHandler OnBotEvent;
 
 	}
+
+    public class BotStoppedEventArgs : EventArgs
+    {
+        public int HbProcessId { get; set; }
+        public string Reason { get; set; }
+    }
 }

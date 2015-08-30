@@ -55,6 +55,8 @@ namespace HighVoltz.HBRelog.WoW
 		}
 
 
+	    private DateTime _wowProcessStartedTime;
+
 		/// <summary>
 		/// Starts Wow, assigns GameProcess and Memory after lauch and releases lock. Can only call from a valid token
 		/// </summary>
@@ -184,6 +186,7 @@ namespace HighVoltz.HBRelog.WoW
 						pi.Arguments = _lockOwner.Settings.WowArgs;
 					}
 
+                    _wowProcessStartedTime = DateTime.Now;
 					_launcherPid = Process.Start(pi).Id;
 					_lockOwner.ProcessIsReadyForInput = false;
 					_lockOwner.LoginTimer.Reset();
@@ -194,6 +197,7 @@ namespace HighVoltz.HBRelog.WoW
 					if (_wowProcess.MainWindowHandle == IntPtr.Zero)
 					{
 						_wowProcess.Refresh();
+
 						_lockOwner.Profile.Status = "Waiting for Wow to start";
 						_lockOwner.Profile.Log(_lockOwner.Profile.Status);
 						return;

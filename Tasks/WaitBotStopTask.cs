@@ -15,6 +15,7 @@ Copyright 2012 HighVoltz
 */
 using System;
 using System.Xml.Serialization;
+using HighVoltz.HBRelog.Remoting;
 
 namespace HighVoltz.HBRelog.Tasks
 {
@@ -69,8 +70,13 @@ namespace HighVoltz.HBRelog.Tasks
 
         void remoting_OnBotStoppedEvent(object sender, EventArgs e)
         {
-            IsDone = true;
-            Profile.Log("WaitBotStop complete");
+            var args = e as BotStoppedEventArgs;
+            if (args != null
+                && args.HbProcessId == Profile.TaskManager.HonorbuddyManager.BotProcess.Id)
+            {
+                IsDone = true;
+                Profile.Log("WaitBotStop complete");
+            }
         }
 
         public override void Reset()
