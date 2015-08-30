@@ -148,13 +148,21 @@ namespace HighVoltz.HBRelog
             }
         }
 
+        public string GetAssemblyAttribute<T>(Func<T, string> value)
+            where T : Attribute
+        {
+            T attribute = (T)Attribute.GetCustomAttribute(Assembly.GetExecutingAssembly(), typeof(T));
+            return value.Invoke(attribute);
+        }
+
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             OptionsTab.IsSelected = false;
             Version version = Assembly.GetExecutingAssembly().GetName().Version;
+            string title = GetAssemblyAttribute<AssemblyTitleAttribute>(a => a.Title);
             // add one to Revision because it uses current revision and we want this to use the next revision number.
             version = new Version(version.Major, version.Minor, version.Build);
-            Log.Write("HBRelog Version {0}", version);
+            Log.Write("{0} Version {1}", title, version);
             Log.Write("******* Settings ******** ");
             Log.Write("\t{0,-30} {1}", "Auto AcceptTosEula:", HbRelogManager.Settings.AutoAcceptTosEula);
             Log.Write("\t{0,-30} {1}","Auto Start:", HbRelogManager.Settings.AutoStart);
