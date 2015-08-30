@@ -82,23 +82,23 @@ namespace HighVoltz.HBRelog.WoW
                     {
                         try
                         {
-                            _lockOwner.Memory = new ExternalProcessReader(p);
+                            _lockOwner.LuaManager.Memory = new ExternalProcessReader(p);
                         }
                         catch (Exception)
                         {
                             continue;
                         }
-                        HbRelogManager.Settings.GameStateOffset = (uint)WowPatterns.GameStatePattern.Find(_lockOwner.Memory);
-                        HbRelogManager.Settings.LuaStateOffset = (uint)WowPatterns.LuaStatePattern.Find(_lockOwner.Memory);
-                        HbRelogManager.Settings.FocusedWidgetOffset = (uint)WowPatterns.FocusedWidgetPattern.Find(_lockOwner.Memory);
-                        HbRelogManager.Settings.LoadingScreenEnableCountOffset = (uint)WowPatterns.LoadingScreenEnableCountPattern.Find(_lockOwner.Memory);
-                        HbRelogManager.Settings.GlueStateOffset = (uint)WowPatterns.GlueStatePattern.Find(_lockOwner.Memory);
+                        HbRelogManager.Settings.GameStateOffset = (uint)WowPatterns.GameStatePattern.Find(_lockOwner.LuaManager.Memory);
+                        HbRelogManager.Settings.LuaStateOffset = (uint)WowPatterns.LuaStatePattern.Find(_lockOwner.LuaManager.Memory);
+                        HbRelogManager.Settings.FocusedWidgetOffset = (uint)WowPatterns.FocusedWidgetPattern.Find(_lockOwner.LuaManager.Memory);
+                        HbRelogManager.Settings.LoadingScreenEnableCountOffset = (uint)WowPatterns.LoadingScreenEnableCountPattern.Find(_lockOwner.LuaManager.Memory);
+                        HbRelogManager.Settings.GlueStateOffset = (uint)WowPatterns.GlueStatePattern.Find(_lockOwner.LuaManager.Memory);
                         if (_lockOwner.InGame)
                         {
                             var playerName = "";
                             try
                             {
-                                playerName = (from fontString in UIObject.GetUIObjectsOfType<FontString>(_lockOwner)
+                                playerName = (from fontString in UIObject.GetUIObjectsOfType<FontString>(_lockOwner.LuaManager)
                                               where fontString.IsShown && fontString.Name == "PlayerName"
                                               select fontString.Text).First();
                             }
@@ -154,7 +154,7 @@ namespace HighVoltz.HBRelog.WoW
 					_lockOwner.Profile.Status = "Starting WoW";
 
 					_lockOwner.StartupSequenceIsComplete = false;
-					_lockOwner.Memory = null;
+					_lockOwner.LuaManager.Memory = null;
 
 					bool lanchingWoW = _lockOwner.Settings.WowPath.IndexOf("WoW.exe", StringComparison.InvariantCultureIgnoreCase) != -1
                          || _lockOwner.Settings.WowPath.IndexOf("WoWB.exe", StringComparison.InvariantCultureIgnoreCase) != -1 // Beta WoW
@@ -200,7 +200,7 @@ namespace HighVoltz.HBRelog.WoW
 					}
 				    if (_lockOwner.ReusedGameProcess == null)
 				    {
-                        _lockOwner.Memory = new ExternalProcessReader(_wowProcess);
+                        _lockOwner.LuaManager.Memory = new ExternalProcessReader(_wowProcess);
                     }
                     _lockOwner.GameProcess = _wowProcess;
                     _wowProcess = null;

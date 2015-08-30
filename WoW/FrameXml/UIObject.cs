@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using GreyMagic;
@@ -10,12 +11,12 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
 {
     public class UIObject
     {
-        protected readonly WowManager WowManager;
+        protected readonly WowLuaManager LuaManager;
 
-        protected UIObject(WowManager wowManager, IntPtr address)
+        protected UIObject(WowLuaManager wowManager, IntPtr address)
         {
             Address = address;
-            WowManager = wowManager;
+            LuaManager = wowManager;
         }
 
         public readonly IntPtr Address;
@@ -29,8 +30,8 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
                 if (!_triedGetName)
                 {
                     var idx = Type != UIObjectType.Font ? Offsets.UIObject.NamePtrOffset : Offsets.UIObject.FontNamePtrOffset;
-                    var ptr = WowManager.Memory.Read<IntPtr>(Address + idx);
-                    _name = ptr != IntPtr.Zero ? WowManager.Memory.ReadString(ptr, Encoding.UTF8, 128) : "<unnamed>";
+                    var ptr = LuaManager.Memory.Read<IntPtr>(Address + idx);
+                    _name = ptr != IntPtr.Zero ? LuaManager.Memory.ReadString(ptr, Encoding.UTF8, 128) : "<unnamed>";
                     _triedGetName = true;
                 }
                 return _name;
@@ -154,8 +155,9 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
                 var bytes = memory.ReadBytes(ptr, 6);
                 return bytes[0] == 0xA1 /* mov */&& bytes[5] == 0xC3 /* retn */;
             }
-            catch
+            catch (AccessViolationException e)
             {
+                Trace.WriteLine(e);
                 return false;
             }
         }
@@ -163,7 +165,7 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
         // dictionary that caches vtm pointers for UIObject types
         private static readonly Dictionary<IntPtr, UIObjectType> UIObjectTypeCache = new Dictionary<IntPtr, UIObjectType>();
 
-        public static IEnumerable<UIObject> GetUIObjects(WowManager wowManager)
+        public static IEnumerable<UIObject> GetUIObjects(WowLuaManager wowManager)
         {
 			foreach (var node in wowManager.Globals.Nodes)
             {
@@ -181,7 +183,7 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
             }
         }
 
-        public static T GetUIObjectByName<T>(WowManager wowManager, string name) where T : UIObject
+        public static T GetUIObjectByName<T>(WowLuaManager wowManager, string name) where T : UIObject
         {
             if (wowManager == null) throw new ArgumentException("wowManager is null", "wowManager");
             if (wowManager.Globals == null) throw new ArgumentException("wowManager.Globals is null", "wowManager.Globals");
@@ -196,17 +198,17 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
             return null;
         }
 
-        public static IEnumerable<T> GetUIObjectsOfType<T>(WowManager wowManager) where T : UIObject
+        public static IEnumerable<T> GetUIObjectsOfType<T>(WowLuaManager wowManager) where T : UIObject
         {
             return GetUIObjects(wowManager).OfType<T>();
         }
 
-        public static T GetUIObjectFromPointer<T>(WowManager wowManager, IntPtr address) where T : UIObject
+        public static T GetUIObjectFromPointer<T>(WowLuaManager wowManager, IntPtr address) where T : UIObject
         {
             return (T)GetUIObjectFromPointer(wowManager, address);
         }
 
-        public static UIObject GetUIObjectFromPointer(WowManager wowManager, IntPtr address)
+        public static UIObject GetUIObjectFromPointer(WowLuaManager wowManager, IntPtr address)
         {
             var vtmPtr = wowManager.Memory.Read<IntPtr>(address);
             if (!UIObjectTypeCache.ContainsKey(vtmPtr))
