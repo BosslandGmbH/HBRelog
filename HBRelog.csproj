@@ -78,6 +78,8 @@
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
+    <Reference Include="UIAutomationClient" />
+    <Reference Include="UIAutomationTypes" />
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -285,16 +287,14 @@
   </PropertyGroup>
   <UsingTask TaskName="DownloadFile" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
     <ParameterGroup>
-      <Url ParameterType="System.String" Required="true"/>
+      <Url ParameterType="System.String" Required="true" />
       <FileName ParameterType="System.String" Required="true" />
     </ParameterGroup>
     <Task>
       <Reference Include="System" />
-      <Code Type="Fragment" Language="cs">
-        <![CDATA[
+      <Code Type="Fragment" Language="cs"><![CDATA[
         new System.Net.WebClient().DownloadFile(Url, FileName);
-        ]]>
-      </Code>
+        ]]></Code>
     </Task>
   </UsingTask>
   <Target Name="GetNuget">

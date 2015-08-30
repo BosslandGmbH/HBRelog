@@ -6,6 +6,7 @@ using System.Linq;
 using GreyMagic;
 using HighVoltz.HBRelog.WoW.FrameXml;
 using HighVoltz.Launcher;
+using System.Windows.Automation;
 
 namespace HighVoltz.HBRelog.WoW
 {
@@ -197,9 +198,33 @@ namespace HighVoltz.HBRelog.WoW
 					if (_wowProcess.MainWindowHandle == IntPtr.Zero)
 					{
 						_wowProcess.Refresh();
-
 						_lockOwner.Profile.Status = "Waiting for Wow to start";
 						_lockOwner.Profile.Log(_lockOwner.Profile.Status);
+
+					    if (DateTime.Now - _wowProcessStartedTime > TimeSpan.FromSeconds(5))
+					    {
+                            try
+                            {
+                                var e = AutomationElement.RootElement.FindFirst(TreeScope.Descendants,
+                                    new AndCondition(
+                                        new PropertyCondition(AutomationElement.ProcessIdProperty, _wowProcess.Id),
+                                        new PropertyCondition(AutomationElement.IsWindowPatternAvailableProperty, true)));
+                                if (e == null)
+                                    return;
+                                var b = e.FindFirst(TreeScope.Descendants, new PropertyCondition(AutomationElement.NameProperty, "OK"));
+                                if (b == null)
+                                    return;
+                                var p = b.GetCurrentPattern(InvokePattern.Pattern) as InvokePattern;
+                                if (p == null)
+                                    return;
+                                p.Invoke();
+                                _wowProcess.Kill();
+                            }
+                            catch (Exception e)
+                            {
+                                Trace.WriteLine(e);
+                            }
+					    }
 						return;
 					}
 				    if (_lockOwner.ReusedGameProcess == null)
