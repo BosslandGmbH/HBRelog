@@ -4,7 +4,7 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
 {
     public abstract class ParentedObject : UIObject
     {
-        protected ParentedObject(WowLuaManager wowManager, IntPtr address) : base(wowManager, address) { }
+        protected ParentedObject(WowManager wowManager, IntPtr address) : base(wowManager, address) { }
 
         private UIObject _parent;
         private bool _triedToGetParent;
@@ -14,8 +14,8 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
             {
                 if (!_triedToGetParent)
                 {
-                    var parentPtr = LuaManager.Memory.Read<IntPtr>(Address + Offsets.ParentedObject.ParentOffset);
-                    _parent = parentPtr != IntPtr.Zero ? GetUIObjectFromPointer(LuaManager, parentPtr) : null;
+                    var parentPtr = WowManager.Memory.Read<IntPtr>(Address + Offsets.ParentedObject.ParentOffset);
+                    _parent = parentPtr != IntPtr.Zero ? GetUIObjectFromPointer(WowManager, parentPtr) : null;
                     _triedToGetParent = true;
                 }
                 return _parent;

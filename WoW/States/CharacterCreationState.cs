@@ -35,7 +35,7 @@ namespace HighVoltz.HBRelog.WoW.States
 
         public override void Run()
         {
-            var characterCreateFrame = UIObject.GetUIObjectByName<Frame>(_wowManager.LuaManager, "CharacterCreateFrame");
+            var characterCreateFrame = UIObject.GetUIObjectByName<Frame>(_wowManager, "CharacterCreateFrame");
             if (characterCreateFrame != null && characterCreateFrame.IsVisible)
             {
                 Utility.SendBackgroundKey(_wowManager.GameProcess.MainWindowHandle, (char) Keys.Escape, false);

@@ -93,9 +93,6 @@ namespace HighVoltz.HBRelog
                                 return;
                             if (profile.TaskManager.HonorbuddyManager.Settings.AutoStartBot)
                             {
-                                Log.Write(string.Format("Starting bot {0} {1}",
-                                    profile.TaskManager.HonorbuddyManager.Settings.BotBase,
-                                    profile.TaskManager.HonorbuddyManager.Settings.HonorbuddyProfile));
                                 Clients[pid].StartBot(
                                     profile.TaskManager.HonorbuddyManager.Settings.BotBase,
                                     profile.TaskManager.HonorbuddyManager.Settings.HonorbuddyProfile);

@@ -4,7 +4,7 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
 {
     public abstract class VisibleRegion : Region
     {
-        protected VisibleRegion(WowLuaManager wowManager, IntPtr address) : base(wowManager, address) { }
+        protected VisibleRegion(WowManager wowManager, IntPtr address) : base(wowManager, address) { }
 
         /// <summary>
         /// Gets a value indicating whether this region is visible.
@@ -16,7 +16,7 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
         {
             get
             {
-                var flags = LuaManager.Memory.Read<uint>(Address + Offsets.VisibleRegion.FlagsOffset);
+                var flags = WowManager.Memory.Read<uint>(Address + Offsets.VisibleRegion.FlagsOffset);
                 return ((flags >> Offsets.VisibleRegion.IsVisibleRShiftAmount) & 1) != 0;
             }
         }
@@ -31,7 +31,7 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
         {
             get
             {
-                var flags = LuaManager.Memory.Read<uint>(Address + Offsets.VisibleRegion.FlagsOffset);
+                var flags = WowManager.Memory.Read<uint>(Address + Offsets.VisibleRegion.FlagsOffset);
                 return ((flags >> Offsets.VisibleRegion.IsShownRShiftAmount) & 1) != 0;
             }
         }

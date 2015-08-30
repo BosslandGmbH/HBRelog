@@ -85,8 +85,6 @@ namespace HighVoltz.HBRelog.Remoting
         void StopBot();
         [OperationContract]
         void ChangeProfile(string profileName);
-        [OperationContract]
-        void WowLogout();
     }
 
 }
@@ -225,7 +223,6 @@ namespace HighVoltz.HBRelogHelper
     {
         public void StartBot(string botname, string profile)
         {
-            Logging.Write("HBRelog: starting bot");
             Util.QueueUserWorkItemOn(Application.Current.Dispatcher, () =>
             {
                 if (TreeRoot.IsRunning || TreeRoot.IsPaused) return;
@@ -248,17 +245,14 @@ namespace HighVoltz.HBRelogHelper
                         break;
                     }
                 }
-                if (ProfileManager.CurrentProfile.Path != profile)
+                ObjectManager.Update();
+                try
                 {
-                    ObjectManager.Update();
-                    try
-                    {
-                        ProfileManager.LoadNew(profile);
-                    }
-                    catch (Exception e)
-                    {
-                        Logging.Write(e.ToString());
-                    }
+                    ProfileManager.LoadNew(profile);
+                }
+                catch (Exception e)
+                {
+                    Logging.Write(e.ToString());
                 }
                 TreeRoot.Start();
             });
@@ -276,11 +270,6 @@ namespace HighVoltz.HBRelogHelper
         public void ChangeProfile(string profileName)
         {
             ProfileManager.LoadNew(profileName);
-        }
-
-        public void WowLogout()
-        {
-            Lua.DoString("Logout()");
         }
     }
 
@@ -341,28 +330,6 @@ namespace HighVoltz.HBRelogHelper
 	            {
 					Logging.Write("HBRelogHelper: Could not connect to HBRelog");
 	            }
-
-                _lastTreeState = TreeRoot.State;
-
-                TreeRoot.OnStatusTextChanged += (sender, args) =>
-                {
-                    // exit if TreeRoot.State did not changed
-                    if (TreeRoot.State == _lastTreeState)
-                        return;
-
-                    switch (TreeRoot.State)
-                    {
-                        case TreeRootState.Stopped:
-                        case TreeRootState.Stopping:
-                            Proxy.NotifyBotStopped("");
-                            break;
-                        //case TreeRootState.Starting:
-                        //case TreeRootState.Running:
-                        //    Proxy.NotifyBotStarted();
-                        //    break;
-                    }
-                    _lastTreeState = TreeRoot.State;
-                };
             }
             catch (Exception ex)
             {
@@ -412,11 +379,18 @@ namespace HighVoltz.HBRelogHelper
                 if (!StyxWoW.IsInGame)
                     return;
 
+                if (TreeRoot.State == TreeRootState.Stopped && _lastTreeState != TreeRoot.State)
+                {
+                    Proxy.NotifyBotStopped("");
+                    _lastTreeState = TreeRootState.Stopped;
+                }
                 if (TreeRoot.StatusText != _lastStatus && !string.IsNullOrEmpty(TreeRoot.StatusText))
                 {
+                    _lastTreeState = TreeRoot.State;
                     Proxy.SetProfileStatusText(HbProcId, TreeRoot.StatusText);
                     _lastStatus = TreeRoot.StatusText;
                 }
+
 
                 if (HeartbeatTimer.IsFinished)
                 {

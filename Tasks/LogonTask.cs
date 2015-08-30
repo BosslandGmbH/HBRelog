@@ -14,11 +14,8 @@ Copyright 2012 HighVoltz
    limitations under the License.
 */
 
-using System;
-using System.Linq;
 using System.Xml.Serialization;
 using HighVoltz.HBRelog.Controls;
-using HighVoltz.HBRelog.WoW.FrameXml;
 
 namespace HighVoltz.HBRelog.Tasks
 {
@@ -93,48 +90,15 @@ namespace HighVoltz.HBRelog.Tasks
 
                 Profile.Log("Logging on different character.");
                 Profile.Status = "Logging on a different character";
-
-                var wowman = Profile.TaskManager.WowManager;
-                var hman = Profile.TaskManager.HonorbuddyManager;
-                var tman = Profile.TaskManager;
-                if (wowman.InGame)
-                {
-                    var playerName = "";
-                    try
-                    {
-                        playerName = (from str in UIObject.GetUIObjectsOfType<FontString>(wowman.LuaManager)
-                            where str.IsShown && str.Name == "PlayerName"
-                            select str.Text).FirstOrDefault();
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e);
-                    }
-                    if (CharacterName != playerName)
-                    {
-                        if (hman.BotProcess == null)
-                            return;
-                        var pid = Profile.TaskManager.HonorbuddyManager.BotProcess.Id;
-                        if (HbRelogManager.Clients.ContainsKey(pid))
-                        {
-                            HbRelogManager.Clients[pid].WowLogout();
-                        }
-                    }
-                }
-
                 Profile.TaskManager.HonorbuddyManager.Stop();
-                Profile.TaskManager.WowManager.Reset();
+                Profile.TaskManager.WowManager.Stop();
                 // assign new settings
                 Profile.TaskManager.HonorbuddyManager.SetSettings(hbSettings);
                 Profile.TaskManager.WowManager.SetSettings(wowSettings);
                 Profile.TaskManager.WowManager.Start();
                 _runOnce = true;
             }
-
-            // if wow login completed && ingame && honorbuddy started
-            if (Profile.TaskManager.WowManager.StartupSequenceIsComplete
-                && Profile.TaskManager.HonorbuddyManager.StartupSequenceIsComplete
-                && Profile.TaskManager.WowManager.InGame)
+            if (Profile.TaskManager.WowManager.InGame)
                 IsDone = true;
         }
 

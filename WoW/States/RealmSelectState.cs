@@ -115,12 +115,12 @@ namespace HighVoltz.HBRelog.WoW.States
 
 		private Button ScrollDownButton
 		{
-            get { return UIObject.GetUIObjectByName<Button>(_wowManager.LuaManager, "RealmListScrollFrameScrollBarScrollDownButton"); }
+			get { return UIObject.GetUIObjectByName<Button>(_wowManager, "RealmListScrollFrameScrollBarScrollDownButton"); }
 		}
 
 		private Button ScrollUpButton
 		{
-            get { return UIObject.GetUIObjectByName<Button>(_wowManager.LuaManager, "RealmListScrollFrameScrollBarScrollUpButton"); }
+			get { return UIObject.GetUIObjectByName<Button>(_wowManager, "RealmListScrollFrameScrollBarScrollUpButton"); }
 		}
 
 		private List<Button> RealmNameButtons
@@ -128,7 +128,7 @@ namespace HighVoltz.HBRelog.WoW.States
 			get
 			{
 				const string groupName = "RealmListRealmButton";
-                return UIObject.GetUIObjectsOfType<Button>(_wowManager.LuaManager).Where(b => b.IsVisible && b.Name.Contains(groupName)).ToList();
+				return UIObject.GetUIObjectsOfType<Button>(_wowManager).Where(b => b.IsVisible && b.Name.Contains(groupName)).ToList();
 			}
 		}
 
@@ -136,7 +136,7 @@ namespace HighVoltz.HBRelog.WoW.States
 		{
 			get
 			{
-                var glueDialogTextContol = UIObject.GetUIObjectByName<FontString>(_wowManager.LuaManager, "GlueDialogText");
+				var glueDialogTextContol = UIObject.GetUIObjectByName<FontString>(_wowManager, "GlueDialogText");
 				if (glueDialogTextContol != null && glueDialogTextContol.IsVisible)
 					return glueDialogTextContol.Text;
 				return string.Empty;
@@ -147,7 +147,7 @@ namespace HighVoltz.HBRelog.WoW.States
 		{
 			get
 			{
-                var realmList = UIObject.GetUIObjectByName<Frame>(_wowManager.LuaManager, "RealmList");
+				var realmList = UIObject.GetUIObjectByName<Frame>(_wowManager, "RealmList");
 				return realmList != null && realmList.IsVisible;
 			}
 		}
@@ -161,7 +161,7 @@ namespace HighVoltz.HBRelog.WoW.States
 				if (string.IsNullOrEmpty(dialogButtonText))
 					return false;
 				if (_cancelText == null)
-					_cancelText = _wowManager.LuaManager.Globals.GetValue("CANCEL").String.Value;
+					_cancelText = _wowManager.Globals.GetValue("CANCEL").String.Value;
 				return _cancelText == dialogButtonText;
 			}
 		}
@@ -170,7 +170,7 @@ namespace HighVoltz.HBRelog.WoW.States
 		{
 			get
 			{
-                var glueDialogButton1Text = UIObject.GetUIObjectByName<Button>(_wowManager.LuaManager, "GlueDialogButton1");
+				var glueDialogButton1Text = UIObject.GetUIObjectByName<Button>(_wowManager, "GlueDialogButton1");
 				if (glueDialogButton1Text != null && glueDialogButton1Text.IsVisible)
 					return glueDialogButton1Text.Text;
 				return string.Empty;
@@ -198,7 +198,7 @@ namespace HighVoltz.HBRelog.WoW.States
 				var list = new List<Button>();
 				for (int i = 1; i <= 8; i++)
 				{
-					var tab = _wowManager.LuaManager.Globals.GetValue("RealmListTab" + i);
+					var tab = _wowManager.Globals.GetValue("RealmListTab" + i);
 					if (tab == null) continue;
 					var disabled = tab.Table.GetValue("disabled");
 					if (disabled.Type == LuaType.Boolean && disabled.Boolean == true)
@@ -206,7 +206,7 @@ namespace HighVoltz.HBRelog.WoW.States
 					IntPtr lightUserDataPtr;
 					if (UIObject.IsUIObject(tab.Table, out lightUserDataPtr))
 					{
-                        var button = UIObject.GetUIObjectFromPointer<Button>(_wowManager.LuaManager, lightUserDataPtr);
+						var button = UIObject.GetUIObjectFromPointer<Button>(_wowManager, lightUserDataPtr);
 						if (button != null && button.IsVisible)
 							list.Add(button);
 					}

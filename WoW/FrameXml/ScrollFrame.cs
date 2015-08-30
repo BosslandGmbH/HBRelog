@@ -4,13 +4,13 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
 {
     public class ScrollFrame : Frame
     {
-        public ScrollFrame(WowLuaManager wowManager, IntPtr address) : base(wowManager, address) { }
+        public ScrollFrame(WowManager wowManager, IntPtr address) : base(wowManager, address) { }
 
         public float HorizontalScroll
         {
             get
             {
-                return ToActualSize(LuaManager.Memory.Read<float>(Address + Offsets.ScrollFrame.HorizontalScrollOffset));
+                return ToActualSize(WowManager.Memory.Read<float>(Address + Offsets.ScrollFrame.HorizontalScrollOffset));
             }
         }
 
@@ -18,7 +18,7 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
         {
             get
             {
-                return ToActualSize(LuaManager.Memory.Read<float>(Address + Offsets.ScrollFrame.HorizontalScrollRangeOffset));
+                return ToActualSize(WowManager.Memory.Read<float>(Address + Offsets.ScrollFrame.HorizontalScrollRangeOffset));
             }
         }
 
@@ -26,7 +26,7 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
         {
             get
             {
-                return ToActualSize(LuaManager.Memory.Read<float>(Address + Offsets.ScrollFrame.VerticalScrollOffset));
+                return ToActualSize(WowManager.Memory.Read<float>(Address + Offsets.ScrollFrame.VerticalScrollOffset));
             }
         }
 
@@ -34,7 +34,7 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
         {
             get
             {
-                return ToActualSize(LuaManager.Memory.Read<float>(Address + Offsets.ScrollFrame.VerticalScrollRangeOffset));
+                return ToActualSize(WowManager.Memory.Read<float>(Address + Offsets.ScrollFrame.VerticalScrollRangeOffset));
             }
         }
 
@@ -42,8 +42,8 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
         {
             get
             {
-                var ptr = LuaManager.Memory.Read<IntPtr>(Address + Offsets.ScrollFrame.ScrollChildOffset);
-                return ptr != IntPtr.Zero ? GetUIObjectFromPointer<Frame>(LuaManager, ptr) : null;
+                var ptr = WowManager.Memory.Read<IntPtr>(Address + Offsets.ScrollFrame.ScrollChildOffset);
+                return ptr != IntPtr.Zero ? GetUIObjectFromPointer<Frame>(WowManager, ptr) : null;
             }
         }
     }

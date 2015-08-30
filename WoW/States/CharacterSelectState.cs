@@ -69,7 +69,7 @@ namespace HighVoltz.HBRelog.WoW.States
         {
             // CharSelectCharacterButton5ButtonTextName
             const string groupName = "ButtonTextName";
-            var characterNames = (from fontString in UIObject.GetUIObjectsOfType<FontString>(_wowManager.LuaManager)
+            var characterNames = (from fontString in UIObject.GetUIObjectsOfType<FontString>(_wowManager)
                                   where fontString.IsVisible && fontString.Name.Contains(groupName)
                                   let parent = fontString.Parent as Frame
                                   where parent != null
@@ -112,7 +112,7 @@ namespace HighVoltz.HBRelog.WoW.States
         // 1-based.
         int SelectedCharacterIndex
         {
-            get { return (int)_wowManager.LuaManager.Globals.GetValue("CharacterSelect").Table.GetValue("selectedIndex").Number; }
+            get { return (int)_wowManager.Globals.GetValue("CharacterSelect").Table.GetValue("selectedIndex").Number; }
         }
 
         bool ShouldChangeRealm
@@ -130,7 +130,7 @@ namespace HighVoltz.HBRelog.WoW.States
         {
             get
             {
-                var realmName = UIObject.GetUIObjectByName<FontString>(_wowManager.LuaManager, "CharSelectRealmName");
+                var realmName = UIObject.GetUIObjectByName<FontString>(_wowManager, "CharSelectRealmName");
                 return realmName != null ? realmName.Text.Trim() : string.Empty;
             }
         }
@@ -140,7 +140,7 @@ namespace HighVoltz.HBRelog.WoW.States
         {
             if (_realmChangeSw.IsRunning && _realmChangeSw.Elapsed < TimeSpan.FromSeconds(5))
                 return;
-            var changeRealmButton = UIObject.GetUIObjectByName<Button>(_wowManager.LuaManager, "CharSelectChangeRealmButton");
+            var changeRealmButton = UIObject.GetUIObjectByName<Button>(_wowManager, "CharSelectChangeRealmButton");
             var clickPos = _wowManager.ConvertWidgetCenterToWin32Coord(changeRealmButton);
             Utility.LeftClickAtPos(_wowManager.GameProcess.MainWindowHandle, (int)clickPos.X, (int)clickPos.Y);
             _wowManager.Profile.Log("Changing server.");
@@ -149,7 +149,7 @@ namespace HighVoltz.HBRelog.WoW.States
 
 	    bool ClickPlayTrial()
 	    {
-            var promotionFrame = UIObject.GetUIObjectByName<Frame>(_wowManager.LuaManager, "PromotionFrame");
+		    var promotionFrame = UIObject.GetUIObjectByName<Frame>(_wowManager, "PromotionFrame");
 			if (promotionFrame == null || !promotionFrame.IsVisible)
 				return false;
 
@@ -170,7 +170,7 @@ namespace HighVoltz.HBRelog.WoW.States
         {
             get
             {
-                var promotionFrame = UIObject.GetUIObjectByName<Frame>(_wowManager.LuaManager, "ReactivateAccountDialog");
+                var promotionFrame = UIObject.GetUIObjectByName<Frame>(_wowManager, "ReactivateAccountDialog");
                 return promotionFrame != null && promotionFrame.IsVisible;
             }
         }

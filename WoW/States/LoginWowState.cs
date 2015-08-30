@@ -6,9 +6,7 @@ using System.Text;
 using System.IO;
 using System.Threading;
 using System.Windows.Forms;
-using GreyMagic;
 using HighVoltz.HBRelog.FiniteStateMachine;
-using HighVoltz.HBRelog.Tasks;
 using HighVoltz.HBRelog.WoW.FrameXml;
 using WinAuth;
 using Button = HighVoltz.HBRelog.WoW.FrameXml.Button;
@@ -41,7 +39,7 @@ namespace HighVoltz.HBRelog.WoW.States
 
         public override void Run()
         {
-            if (_wowManager.LuaManager.Globals == null)
+	        if (_wowManager.Globals == null)
 		        return;
 
             if (_wowManager.Throttled)
@@ -90,19 +88,8 @@ namespace HighVoltz.HBRelog.WoW.States
             }
 
             // Select account from the account selection dialog.
-            bool res = false;
-            try
-            {
-                res = Retry.Do<bool>(HandleAccountSelectionDialog, TimeSpan.FromSeconds(1), 5);
-            }
-            catch (Exception e)
-            {
-                Log.Write(e.ToString());
-                _wowManager.LuaManager.Memory.Dispose();
-                _wowManager.LuaManager.Globals = null;
-                _wowManager.LuaManager.Memory = new ExternalProcessReader(_wowManager.GameProcess);
+            if (!HandleAccountSelectionDialog())
                 return;
-            }
 
             if (_wowManager.IsConnectiongOrLoading || IsConnecting)
             {
@@ -137,7 +124,7 @@ namespace HighVoltz.HBRelog.WoW.States
                 if (string.IsNullOrEmpty(dialogButtonText))
                     return false;
                 if (_cancelText == null)
-                    _cancelText = _wowManager.LuaManager.Globals.GetValue("CANCEL").String.Value;
+                    _cancelText = _wowManager.Globals.GetValue("CANCEL").String.Value;
                 return _cancelText == dialogButtonText;
             }
         }
@@ -160,7 +147,7 @@ namespace HighVoltz.HBRelog.WoW.States
         {
             get
             {
-                var glueDialogTitleFontString = UIObject.GetUIObjectByName<FontString>(_wowManager.LuaManager, "GlueDialogTitle");
+                var glueDialogTitleFontString = UIObject.GetUIObjectByName<FontString>(_wowManager, "GlueDialogTitle");
                 if (glueDialogTitleFontString != null && glueDialogTitleFontString.IsVisible)
                     return glueDialogTitleFontString.Text;
                 return string.Empty;
@@ -171,7 +158,7 @@ namespace HighVoltz.HBRelog.WoW.States
         {
             get
             {
-                var glueDialogTextContol = UIObject.GetUIObjectByName<FontString>(_wowManager.LuaManager, "GlueDialogText");
+                var glueDialogTextContol = UIObject.GetUIObjectByName<FontString>(_wowManager, "GlueDialogText");
                 if (glueDialogTextContol != null && glueDialogTextContol.IsVisible)
                     return glueDialogTextContol.Text;
                 return string.Empty;
@@ -182,7 +169,7 @@ namespace HighVoltz.HBRelog.WoW.States
         {
             get
             {
-                var glueDialogButton1Text = UIObject.GetUIObjectByName<Button>(_wowManager.LuaManager, "GlueDialogButton1");
+                var glueDialogButton1Text = UIObject.GetUIObjectByName<Button>(_wowManager, "GlueDialogButton1");
                 if (glueDialogButton1Text != null && glueDialogButton1Text.IsVisible)
                     return glueDialogButton1Text.Text;
                 return string.Empty;
@@ -275,7 +262,7 @@ namespace HighVoltz.HBRelog.WoW.States
                 if (string.IsNullOrEmpty(dialogButtonText))
                     return false;
                 if (_okayText == null)
-                    _okayText = _wowManager.LuaManager.Globals.GetValue("OKAY").String.Value;
+                    _okayText = _wowManager.Globals.GetValue("OKAY").String.Value;
                 return _okayText == dialogButtonText;
             }
         }
@@ -291,10 +278,10 @@ namespace HighVoltz.HBRelog.WoW.States
 			if (string.IsNullOrEmpty(_wowManager.Settings.AuthenticatorSerial))
 				return false;
 
-            var frame = UIObject.GetUIObjectByName<Frame>(_wowManager.LuaManager, "TokenEnterDialogBackgroundEdit");
+            var frame = UIObject.GetUIObjectByName<Frame>(_wowManager, "TokenEnterDialogBackgroundEdit");
             if (frame == null || !frame.IsVisible || !frame.IsShown) return false;
 
-            var editBox = UIObject.GetUIObjectByName<EditBox>(_wowManager.LuaManager, "AccountLoginTokenEdit");
+            var editBox = UIObject.GetUIObjectByName<EditBox>(_wowManager, "AccountLoginTokenEdit");
 
 	        var auth = new BattleNetAuthenticator();
 
@@ -324,7 +311,7 @@ namespace HighVoltz.HBRelog.WoW.States
         bool HandleAccountSelectionDialog()
         {
             const string buttonGroupName = "WoWAccountSelectDialogBackgroundContainerButton";
-            var accountButtons = UIObject.GetUIObjectsOfType<Button>(_wowManager.LuaManager).Where(b => b.IsVisible && b.Name.Contains(buttonGroupName)).ToList();
+            var accountButtons = UIObject.GetUIObjectsOfType<Button>(_wowManager).Where(b => b.IsVisible && b.Name.Contains(buttonGroupName)).ToList();
             if (accountButtons.Any())
             {
                 var wantedAccountButton =
@@ -358,13 +345,13 @@ namespace HighVoltz.HBRelog.WoW.States
         {
             get
             {
-                return (int)_wowManager.LuaManager.Globals.GetValue("CURRENT_SELECTED_WOW_ACCOUNT").Value.Number;
+                return (int)_wowManager.Globals.GetValue("CURRENT_SELECTED_WOW_ACCOUNT").Value.Number;
             }
         }
 
         bool EnterTextInEditBox(string editBoxName, string text)
         {
-            var editBox = UIObject.GetUIObjectByName<EditBox>(_wowManager.LuaManager, editBoxName);
+            var editBox = UIObject.GetUIObjectByName<EditBox>(_wowManager, editBoxName);
             if (editBox == null || !editBox.IsVisible || !editBox.IsEnabled)
                 return false;
 
