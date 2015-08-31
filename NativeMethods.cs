@@ -213,9 +213,9 @@ namespace HighVoltz.HBRelog
         public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy,
                                                SetWindowPosFlags uFlags);
 
-        [DllImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool GetWindowPlacement(IntPtr hWnd, ref Windowplacement lpwndpl);
+        //[DllImport("user32.dll")]
+        //[return: MarshalAs(UnmanagedType.Bool)]
+        //public static extern bool GetWindowPlacement(IntPtr hWnd, ref Windowplacement lpwndpl);
 
         [DllImport("wininet.dll", SetLastError = true)]
         public static extern bool InternetGetConnectedState(out int lpdwFlags, int dwReserved);
@@ -1162,15 +1162,15 @@ namespace HighVoltz.HBRelog
 
         #region Nested Type: Windowplacement
 
-        public struct Windowplacement
-        {
-            public int length;
-            public int flags;
-            public int showCmd;
-            public Point ptMinPosition;
-            public Point ptMaxPosition;
-            public Rectangle rcNormalPosition;
-        }
+        //public struct Windowplacement
+        //{
+        //    public int length;
+        //    public int flags;
+        //    public int showCmd;
+        //    public Point ptMinPosition;
+        //    public Point ptMaxPosition;
+        //    public Rectangle rcNormalPosition;
+        //}
 
         #endregion
 

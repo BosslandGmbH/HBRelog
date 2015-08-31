@@ -106,7 +106,7 @@ namespace GreyMagic
                 }
                 return (T) ret;
             }
-            catch (AccessViolationException ex)
+            catch (AccessViolationException)
             {
                 Trace.WriteLine("Access Violation on " + address + " with type " + typeof (T).Name);
                 return default(T);
