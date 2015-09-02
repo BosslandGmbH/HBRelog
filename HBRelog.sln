@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Launcher", "Launcher\Launch
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Authenticator", "Libs\Authenticator\Authenticator.csproj", "{EAF2D5CE-D817-453A-8A32-3D531570AE04}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WowClient", "WowClient\WowClient.csproj", "{1E765EB9-5DCF-4A28-AA1A-03F83968363F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -135,6 +137,24 @@ Global
 		{EAF2D5CE-D817-453A-8A32-3D531570AE04}.Release|x64.ActiveCfg = Release|x86
 		{EAF2D5CE-D817-453A-8A32-3D531570AE04}.Release|x86.ActiveCfg = Release|x86
 		{EAF2D5CE-D817-453A-8A32-3D531570AE04}.Release|x86.Build.0 = Release|x86
+		{1E765EB9-5DCF-4A28-AA1A-03F83968363F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E765EB9-5DCF-4A28-AA1A-03F83968363F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E765EB9-5DCF-4A28-AA1A-03F83968363F}.Debug|Any CPU and x64.ActiveCfg = Debug|Any CPU
+		{1E765EB9-5DCF-4A28-AA1A-03F83968363F}.Debug|Any CPU and x86.ActiveCfg = Debug|Any CPU
+		{1E765EB9-5DCF-4A28-AA1A-03F83968363F}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{1E765EB9-5DCF-4A28-AA1A-03F83968363F}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{1E765EB9-5DCF-4A28-AA1A-03F83968363F}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{1E765EB9-5DCF-4A28-AA1A-03F83968363F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1E765EB9-5DCF-4A28-AA1A-03F83968363F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1E765EB9-5DCF-4A28-AA1A-03F83968363F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E765EB9-5DCF-4A28-AA1A-03F83968363F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E765EB9-5DCF-4A28-AA1A-03F83968363F}.Release|Any CPU and x64.ActiveCfg = Release|Any CPU
+		{1E765EB9-5DCF-4A28-AA1A-03F83968363F}.Release|Any CPU and x86.ActiveCfg = Release|Any CPU
+		{1E765EB9-5DCF-4A28-AA1A-03F83968363F}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{1E765EB9-5DCF-4A28-AA1A-03F83968363F}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{1E765EB9-5DCF-4A28-AA1A-03F83968363F}.Release|Win32.ActiveCfg = Release|Any CPU
+		{1E765EB9-5DCF-4A28-AA1A-03F83968363F}.Release|x64.ActiveCfg = Release|Any CPU
+		{1E765EB9-5DCF-4A28-AA1A-03F83968363F}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
