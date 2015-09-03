@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Authenticator", "Libs\Authe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WowClient", "WowClient\WowClient.csproj", "{1E765EB9-5DCF-4A28-AA1A-03F83968363F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "Shared\Shared.csproj", "{E175600B-3279-425B-9B6C-94B4613C71A8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -155,6 +157,24 @@ Global
 		{1E765EB9-5DCF-4A28-AA1A-03F83968363F}.Release|Win32.ActiveCfg = Release|Any CPU
 		{1E765EB9-5DCF-4A28-AA1A-03F83968363F}.Release|x64.ActiveCfg = Release|Any CPU
 		{1E765EB9-5DCF-4A28-AA1A-03F83968363F}.Release|x86.ActiveCfg = Release|Any CPU
+		{E175600B-3279-425B-9B6C-94B4613C71A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E175600B-3279-425B-9B6C-94B4613C71A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E175600B-3279-425B-9B6C-94B4613C71A8}.Debug|Any CPU and x64.ActiveCfg = Debug|Any CPU
+		{E175600B-3279-425B-9B6C-94B4613C71A8}.Debug|Any CPU and x86.ActiveCfg = Debug|Any CPU
+		{E175600B-3279-425B-9B6C-94B4613C71A8}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{E175600B-3279-425B-9B6C-94B4613C71A8}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{E175600B-3279-425B-9B6C-94B4613C71A8}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{E175600B-3279-425B-9B6C-94B4613C71A8}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E175600B-3279-425B-9B6C-94B4613C71A8}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E175600B-3279-425B-9B6C-94B4613C71A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E175600B-3279-425B-9B6C-94B4613C71A8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E175600B-3279-425B-9B6C-94B4613C71A8}.Release|Any CPU and x64.ActiveCfg = Release|Any CPU
+		{E175600B-3279-425B-9B6C-94B4613C71A8}.Release|Any CPU and x86.ActiveCfg = Release|Any CPU
+		{E175600B-3279-425B-9B6C-94B4613C71A8}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{E175600B-3279-425B-9B6C-94B4613C71A8}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{E175600B-3279-425B-9B6C-94B4613C71A8}.Release|Win32.ActiveCfg = Release|Any CPU
+		{E175600B-3279-425B-9B6C-94B4613C71A8}.Release|x64.ActiveCfg = Release|Any CPU
+		{E175600B-3279-425B-9B6C-94B4613C71A8}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
