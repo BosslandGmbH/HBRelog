@@ -45,11 +45,13 @@ namespace WowClient
         string ReadString(IRelativeAddress address, uint size, Encoding encoding);
         IRelativeAddress GetRelativeAddress(int address);
         IAbsoluteAddress GetAbsoluteAddress(IntPtr address);
+        IAbsoluteAddress FindPattern(string pattern);
     }
 
     public class ReadOnlyMemory : IReadOnlyMemory, IDisposable
     {
         private readonly ExternalProcessMemory _mem;
+        private readonly PatternFinder _patternFinder;
         public ReadOnlyMemory(Process process)
         {
             _mem = new ExternalProcessMemory(
@@ -58,6 +60,7 @@ namespace WowClient
                     Process = process,
                     DefaultCacheValue = true,
                 });
+            _patternFinder = new PatternFinder(_mem);
         }
 
         internal class AbsoluteAddress : IAbsoluteAddress
@@ -158,6 +161,11 @@ namespace WowClient
         public IAbsoluteAddress GetAbsoluteAddress(IntPtr address)
         {
             return new AbsoluteAddress(_mem, address);
+        }
+
+        public IAbsoluteAddress FindPattern(string pattern)
+        {
+            return GetAbsoluteAddress(_patternFinder.Find(pattern));
         }
 
         public void Dispose()
