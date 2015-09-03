@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace HighVoltz.HBRelog.WoW.FrameXml
+namespace WowClient.Lua.UI
 {
     public enum ButtonState
     {
@@ -12,7 +12,7 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
 
     public class Button : Frame
     {
-        public Button(WowLuaManager wowManager, IntPtr address) : base(wowManager, address) { }
+        public Button(WowLua wow, IAbsoluteAddress address) : base(wow, address) { }
 
         public string Text
         {
@@ -33,7 +33,7 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
             get
             {
                 var state = ButtonState.Disabled;
-                var stateInt = LuaManager.Memory.Read<int>(Address + Offsets.Button.FlagsOffset) << 28 >> 28;
+                var stateInt = Address.Deref<int>(Offsets.Button.FlagsOffset) << 28 >> 28;
                 if (stateInt != 0)
                 {
                     var pushed = stateInt - 1;
@@ -52,8 +52,8 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
         {
             get
             {
-                var ptr = LuaManager.Memory.Read<IntPtr>(Address + Offsets.Button.FontStringOffset);
-                return ptr == IntPtr.Zero ? null : GetUIObjectFromPointer<FontString>(LuaManager, ptr);
+                var ptr = Address.Deref(Offsets.Button.FontStringOffset);
+                return ptr.Value == IntPtr.Zero ? null : GetUIObjectFromPointer<FontString>(Lua, ptr);
             }
         }
 
@@ -61,8 +61,8 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
         {
             get
             {
-                var ptr = LuaManager.Memory.Read<IntPtr>(Address + Offsets.Button.HighlightTextureOffset);
-                return ptr == IntPtr.Zero ? null : GetUIObjectFromPointer<Texture>(LuaManager, ptr);
+                var ptr = Address.Deref(Offsets.Button.HighlightTextureOffset);
+                return ptr.Value == IntPtr.Zero ? null : GetUIObjectFromPointer<Texture>(Lua, ptr);
             }
         }
     }

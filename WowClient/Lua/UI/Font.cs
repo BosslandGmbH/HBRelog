@@ -1,10 +1,10 @@
 ﻿using System;
 
-namespace HighVoltz.HBRelog.WoW.FrameXml
+namespace WowClient.Lua.UI
 {
     public class Font: UIObject, IFontInstance
     {
-        public Font(WowLuaManager wowManager, IntPtr address) : base(wowManager, address) { }
+        public Font(WowLua wow, IAbsoluteAddress address) : base(wow, address) { }
 
         public Font FontObject { get { throw new NotImplementedException(); } }
 

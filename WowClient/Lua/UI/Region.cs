@@ -2,7 +2,7 @@
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace HighVoltz.HBRelog.WoW.FrameXml
+namespace WowClient.Lua.UI
 {
     public abstract class Region : ParentedObject
     {
@@ -23,7 +23,7 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
             return SizeCo*value/SizeRatio;
         }
 
-        protected Region(WowLuaManager wowManager, IntPtr address) : base(wowManager, address) { }
+        protected Region(WowLua wow, IAbsoluteAddress address) : base(wow, address) { }
 
         /// <summary>
         /// Gets the the distance from bottom of WoW window to bottom of region in pixels
@@ -36,7 +36,7 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
             get
             {
                 float scale = UIScale;
-                var bot = LuaManager.Memory.Read<float>(Address + Offsets.Region.BottomOffset);
+                var bot = Address.Deref<float>(Offsets.Region.BottomOffset);
                 return ToActualSize(bot / scale);
             }
         }
@@ -52,7 +52,7 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
             get
             {
                 float scale = UIScale;
-                var left = LuaManager.Memory.Read<float>(Address + Offsets.Region.LeftOffset);
+                var left = Address.Deref<float>(Offsets.Region.LeftOffset);
                 return ToActualSize(left / scale);
             }
         }
@@ -68,7 +68,7 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
             get
             {
                 float scale = UIScale;
-                var top = LuaManager.Memory.Read<float>(Address + Offsets.Region.TopOffset);
+                var top = Address.Deref<float>(Offsets.Region.TopOffset);
                 return ToActualSize(top / scale);
             }
         }
@@ -84,11 +84,10 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
             get
             {
                 float scale = UIScale;
-                var right = LuaManager.Memory.Read<float>(Address + Offsets.Region.RightOffset);
+                var right = Address.Deref<float>(Offsets.Region.RightOffset);
                 return ToActualSize(right / scale);
             }
         }
-
 
         /// <summary>
         /// Gets width of the region in pixels
@@ -164,7 +163,10 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
 
         float UIScale
         {
-            get { return LuaManager.Memory.Read<float>(Address + Offsets.Region.UIScaleOffset); }
+            get
+            {
+                return Address.Deref<float>(Offsets.Region.UIScaleOffset);
+            }
         }
     }
 }

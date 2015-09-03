@@ -1,20 +1,20 @@
 ﻿using System;
 using System.Text;
 
-namespace HighVoltz.HBRelog.WoW.FrameXml
+namespace WowClient.Lua.UI
 {
     public class FontString : VisibleRegion, IFontInstance
     {
-        public FontString(WowLuaManager wowManager, IntPtr address) : base(wowManager, address) { }
+        public FontString(WowLua wow, IAbsoluteAddress address) : base(wow, address) { }
 
         public string Text
         {
             get
             {
-                var ptr = LuaManager.Memory.Read<IntPtr>(Address + Offsets.FontString.TextOffset);
-                if (ptr == IntPtr.Zero)
+                var ptr = Address.Deref(Offsets.FontString.TextOffset);
+                if (ptr.Value == IntPtr.Zero)
                     return string.Empty;
-                return LuaManager.Memory.ReadString(ptr, Encoding.UTF8);
+                return Lua.Memory.ReadString(ptr, 512, Encoding.UTF8);
             }
         }
 

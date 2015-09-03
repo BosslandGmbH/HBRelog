@@ -3,11 +3,11 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 
-namespace HighVoltz.HBRelog.WoW.FrameXml
+namespace WowClient.Lua.UI
 {
     public class EditBox : Frame, IFontInstance
     {
-        public EditBox(WowLuaManager wowManager, IntPtr address) : base(wowManager, address) { }
+        public EditBox(WowLua wow, IAbsoluteAddress address) : base(wow, address) { }
 
         /// <summary>
         /// Gets the cursor position. Works correctly with utf8 text.
@@ -21,7 +21,7 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
             {
                 var text = Text;
                 if (string.IsNullOrEmpty(text)) return 0;
-                var bytePos = LuaManager.Memory.Read<int>(Address + Offsets.EditBox.AsciiCursorPositionOffset);
+                var bytePos = Address.Deref<int>(Offsets.EditBox.AsciiCursorPositionOffset);
                 // calculate position in a utf8 string.
                 return text.Take(bytePos).Count();
             }
@@ -29,12 +29,12 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
 
         public int Flags
         {
-            get { return LuaManager.Memory.Read<int>(Address + Offsets.EditBox.FlagsOffset); }
+            get { return Address.Deref<int>(Offsets.EditBox.FlagsOffset); }
         }
 
         public bool HasFocus
         {
-            get { return Address == LuaManager.FocusedWidgetPtr; }
+            get { return Address == Lua.FocusedWidgetPtr; }
         }
 
         /// <summary>
@@ -43,9 +43,9 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
         /// <value>
         /// The max bytes.
         /// </value>
-        public int MaxBytes
+        public uint MaxBytes
         {
-            get { return LuaManager.Memory.Read<int>(Address + Offsets.EditBox.MaxBytesOffset) + 1; }
+            get { return Address.Deref<uint>(Offsets.EditBox.MaxBytesOffset) + 1; }
         }
 
         /// <summary>
@@ -54,9 +54,9 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
         /// <value>
         /// The max letters.
         /// </value>
-        public int MaxLetters
+        public uint MaxLetters
         {
-            get { return LuaManager.Memory.Read<int>(Address + Offsets.EditBox.MaxLettersOffset); }
+            get { return Address.Deref<uint>(Offsets.EditBox.MaxLettersOffset); }
         }
 
         public int NumLetters
@@ -76,11 +76,11 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
         {
             get
             {
-                var ptr = LuaManager.Memory.Read<IntPtr>(Address + Offsets.EditBox.TextOffset);
-                if (ptr == IntPtr.Zero) return string.Empty;
+                var ptr = Address.Deref(Offsets.EditBox.TextOffset);
+                if (ptr.Value == IntPtr.Zero) return string.Empty;
                 var maxBytes = MaxBytes;
                 var maxLetters = MaxLetters;
-                return LuaManager.Memory.ReadString(ptr, Encoding.UTF8, maxBytes > 0 ? maxBytes : maxLetters * 4);
+                return Lua.Memory.ReadString(ptr, maxBytes > 0 ? maxBytes : maxLetters * 4, Encoding.UTF8);
             }
         }
 
@@ -104,7 +104,7 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
 
         public bool IsEnabled
         {
-            get { return (LuaManager.Memory.Read<int>(Address + Offsets.EditBox.IsEnabledFlagOffset) & Offsets.EditBox.IsEnabledBit) == 0; }
+            get { return (Address.Deref<int>(Offsets.EditBox.IsEnabledFlagOffset) & Offsets.EditBox.IsEnabledBit) == 0; }
         }
 
         public bool IsNumeric

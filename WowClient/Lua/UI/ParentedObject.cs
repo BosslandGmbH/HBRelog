@@ -1,10 +1,10 @@
 ﻿using System;
 
-namespace HighVoltz.HBRelog.WoW.FrameXml
+namespace WowClient.Lua.UI
 {
     public abstract class ParentedObject : UIObject
     {
-        protected ParentedObject(WowLuaManager wowManager, IntPtr address) : base(wowManager, address) { }
+        protected ParentedObject(WowLua wow, IAbsoluteAddress address) : base(wow, address) { }
 
         private UIObject _parent;
         private bool _triedToGetParent;
@@ -14,8 +14,8 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
             {
                 if (!_triedToGetParent)
                 {
-                    var parentPtr = LuaManager.Memory.Read<IntPtr>(Address + Offsets.ParentedObject.ParentOffset);
-                    _parent = parentPtr != IntPtr.Zero ? GetUIObjectFromPointer(LuaManager, parentPtr) : null;
+                    var parentAddress = Address.Deref(Offsets.ParentedObject.ParentOffset); // Lua.Memory.Read<IntPtr>(Address + Offsets.ParentedObject.ParentOffset);
+                    _parent = parentAddress.Value != IntPtr.Zero ? Get(Lua, parentAddress) : null;
                     _triedToGetParent = true;
                 }
                 return _parent;

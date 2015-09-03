@@ -1,4 +1,4 @@
-﻿namespace HighVoltz.HBRelog.WoW.FrameXml
+﻿namespace WowClient.Lua.UI
 {
     static class Offsets
     {
