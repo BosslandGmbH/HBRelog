@@ -227,26 +227,29 @@ namespace HighVoltz.HBRelogHelper
             Util.QueueUserWorkItemOn(Application.Current.Dispatcher, () =>
             {
                 if (TreeRoot.IsRunning || TreeRoot.IsPaused) return;
-                // NB: If Honorbuddy main window renames the control or changes its type,
-                // this application will need adjustment also...
-                var controlName = "cmbBotSelector";
-                var control = (ComboBox)Application.Current.MainWindow.FindName(controlName);
-                if (control == null)
+                if (!string.IsNullOrWhiteSpace(botname) && BotManager.Current.Name != botname)
                 {
-                    var message = String.Format("Unable to locate \"{0}\" control", controlName);
-                    Logging.Write(message);
-                    throw new ArgumentException(message);
-                }
-                foreach (var i in control.Items)
-                {
-                    if (i.ToString().StartsWith(botname))
+                    // NB: If Honorbuddy main window renames the control or changes its type,
+                    // this application will need adjustment also...
+                    var controlName = "cmbBotSelector";
+                    var control = (ComboBox)Application.Current.MainWindow.FindName(controlName);
+                    if (control == null)
                     {
-                        Logging.Write("changing botbase to " + control.SelectedItem);
-                        control.SelectedItem = i;
-                        break;
+                        var message = String.Format("Unable to locate \"{0}\" control", controlName);
+                        Logging.Write(message);
+                        throw new ArgumentException(message);
+                    }
+                    foreach (var i in control.Items)
+                    {
+                        if (i.ToString().StartsWith(botname))
+                        {
+                            Logging.Write("changing botbase to " + control.SelectedItem);
+                            control.SelectedItem = i;
+                            break;
+                        }
                     }
                 }
-                if (!string.IsNullOrEmpty(profile) && ProfileManager.CurrentProfile.Path != profile)
+                if (!string.IsNullOrWhiteSpace(profile) && ProfileManager.CurrentProfile.Path != profile)
                 {
                     try
                     {
