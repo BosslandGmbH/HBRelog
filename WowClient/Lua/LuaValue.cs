@@ -1,14 +1,13 @@
 ﻿using System;
-using GreyMagic;
 
-namespace HighVoltz.HBRelog.WoW.Lua
+namespace WowClient.Lua
 {
     public class LuaValue
     {
         private LuaValueStruct _luaValue;
-        private readonly ExternalProcessReader _memory;
+        private readonly IReadOnlyMemory _memory;
 
-        internal LuaValue(ExternalProcessReader memory, LuaValueStruct luaValue)
+        internal LuaValue(IReadOnlyMemory memory, LuaValueStruct luaValue)
         {
             _luaValue = luaValue;
             _memory = memory;
@@ -32,13 +31,15 @@ namespace HighVoltz.HBRelog.WoW.Lua
         private LuaTable _table;
         public LuaTable Table
         {
-            get { return _table ?? (_table = new LuaTable(_memory, _luaValue.Pointer)); }
+            get { return _table ??
+                (_table = new LuaTable(_memory, _memory.GetAbsoluteAddress(_luaValue.Pointer))); }
         }
 
         private LuaTString _string;
         public LuaTString String
         {
-            get { return _string ?? (_string = new LuaTString(_memory, _luaValue.Pointer)); }
+            get { return _string ??
+                (_string = new LuaTString(_memory, _memory.GetAbsoluteAddress(_luaValue.Pointer))); }
         }
     }
 }

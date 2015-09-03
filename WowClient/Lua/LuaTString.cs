@@ -1,24 +1,23 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Text;
-using GreyMagic;
 
-namespace HighVoltz.HBRelog.WoW.Lua
+namespace WowClient.Lua
 {
     public class LuaTString
     {
         private LuaTStringHeader _luaTString;
         
-        private readonly ExternalProcessReader _memory;
+        private readonly IReadOnlyMemory _memory;
 
-        public LuaTString(ExternalProcessReader memory, IntPtr address)
+        public LuaTString(IReadOnlyMemory memory, IAbsoluteAddress address)
         {
             Address = address;
             _memory = memory;
             _luaTString = memory.Read<LuaTStringHeader>(address);
         }
 
-        public readonly IntPtr Address;
+        public IAbsoluteAddress Address { get; private set; }
 
         public uint Hash { get { return _luaTString.Hash; } }
 
@@ -27,7 +26,9 @@ namespace HighVoltz.HBRelog.WoW.Lua
         {
             get
             {
-                return (_string ?? (_string = _memory.ReadString(Address + Size, Encoding.UTF8, _luaTString.Length)));
+                var offs = _memory.GetRelativeAddress(DataOffset);
+                return _string ??
+                    (_string = _memory.ReadString(Address.Add(offs), (uint)_luaTString.Length, Encoding.UTF8));
             }
         }
 
@@ -36,12 +37,13 @@ namespace HighVoltz.HBRelog.WoW.Lua
             return Value;
         }
 
-        private const int Size = 20;
+        private const int HeaderSize = 20;
+        private const int DataOffset = HeaderSize;
 
-        [StructLayout(LayoutKind.Sequential, Size = 20, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential, Size = HeaderSize, Pack = 1)]
         struct LuaTStringHeader
         {
-            readonly public LuaCommonHeader Header;
+            private readonly LuaCommonHeader Header;
             private readonly byte reserved1;
             private readonly byte reserved2;
             public readonly uint Hash;

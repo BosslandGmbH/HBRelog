@@ -1,4 +1,4 @@
-﻿namespace HighVoltz.HBRelog.WoW.Lua
+﻿namespace WowClient.Lua
 {
     public enum LuaType
     {

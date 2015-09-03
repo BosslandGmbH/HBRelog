@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace HighVoltz.HBRelog.WoW.Lua
+namespace WowClient.Lua
 {
     [StructLayout(LayoutKind.Sequential, Size = 10, Pack = 1)]
     public struct LuaCommonHeader

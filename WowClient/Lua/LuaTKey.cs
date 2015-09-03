@@ -1,15 +1,14 @@
 ﻿using System;
-using GreyMagic;
 
-namespace HighVoltz.HBRelog.WoW.Lua
+namespace WowClient.Lua
 {
     public class LuaTKey
     {
         private LuaTKeyStruct _luaTKeyStruct;
 
-        private readonly ExternalProcessReader _memory;
+        private readonly IReadOnlyMemory _memory;
 
-        public LuaTKey(ExternalProcessReader memory, LuaTKeyStruct luaTKeyStruct)
+        public LuaTKey(IReadOnlyMemory memory, LuaTKeyStruct luaTKeyStruct)
         {
             _luaTKeyStruct = luaTKeyStruct;
             _memory = memory;
@@ -19,14 +18,9 @@ namespace HighVoltz.HBRelog.WoW.Lua
         {
             get
             {
-                try
-                {
-                    return _luaTKeyStruct.NextNodePtr != IntPtr.Zero ? new LuaNode(_memory, _luaTKeyStruct.NextNodePtr) : null;
-                }
-                catch (System.AccessViolationException)
-                {
-                    return null;
-                }
+                return _luaTKeyStruct.NextNodePtr != IntPtr.Zero ?
+                    new LuaNode(_memory, _memory.GetAbsoluteAddress(_luaTKeyStruct.NextNodePtr)) :
+                    null;
             }
         }
 

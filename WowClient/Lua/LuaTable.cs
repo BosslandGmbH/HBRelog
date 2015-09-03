@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using GreyMagic;
 
-namespace HighVoltz.HBRelog.WoW.Lua
+namespace WowClient.Lua
 {
     public class LuaTable
     {
         private readonly LuaTableStuct _luaTable;
 
-        private readonly ExternalProcessReader _memory;
+        private readonly IReadOnlyMemory _memory;
 
-        public LuaTable(ExternalProcessReader memory, IntPtr address)
+        public LuaTable(IReadOnlyMemory memory, IAbsoluteAddress address)
         {
             Address = address;
             _memory = memory;
@@ -21,7 +21,7 @@ namespace HighVoltz.HBRelog.WoW.Lua
 
         public byte Flags { get { return _luaTable.Flags; } }
 
-        public readonly IntPtr Address;
+        public readonly IAbsoluteAddress Address;
 
         public uint NodeCount { get { return _luaTable.NodesCount; } }
 
@@ -35,7 +35,9 @@ namespace HighVoltz.HBRelog.WoW.Lua
             {
                 if (!_triedGetMetaTable)
                 {
-                    _metaTable = (_luaTable.MetaTablePtr != IntPtr.Zero ? new LuaTable(_memory, _luaTable.MetaTablePtr) : null);
+                    _metaTable = _luaTable.MetaTablePtr != IntPtr.Zero ?
+                        new LuaTable(_memory, _memory.GetAbsoluteAddress(_luaTable.MetaTablePtr)) :
+                        null;
                     _triedGetMetaTable = true;
                 }
                 return _metaTable;
@@ -54,13 +56,11 @@ namespace HighVoltz.HBRelog.WoW.Lua
             return length;
         }
 
-
         private LuaNode GetNodeAtIndex(uint idx)
         {
-            return new LuaNode(_memory, _luaTable.NodePtr + (int)(LuaNode.Size * idx));
+            var nodeAddress = _memory.GetAbsoluteAddress(_luaTable.NodePtr);
+            return new LuaNode(_memory, nodeAddress.Deref((int)(LuaNode.Size * idx)));
         }
-
-
 
         public LuaTValue GetValue(string key)
         {
@@ -95,7 +95,26 @@ namespace HighVoltz.HBRelog.WoW.Lua
             }
         }
 
-        #region Embedded Type: LuaTableStruct
+        // TODO check if we can cache this value
+        private bool _triedGettingLightUserData;
+        private LuaNode _lightUserData;
+        public LuaNode LightUserData
+        {
+            get
+            {
+                if (!_triedGettingLightUserData)
+                {
+                    _lightUserData = Nodes.FirstOrDefault(n => n.Value.Type == LuaType.LightUserData);
+                    _triedGettingLightUserData = true;
+                }
+                return _lightUserData;
+            }
+        }
+
+        public bool IsUIObject
+        {
+            get { return LightUserData != null; }
+        }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         private struct LuaTableStuct
@@ -115,9 +134,6 @@ namespace HighVoltz.HBRelog.WoW.Lua
                 get { return 1u << Log2Sizenode; }
             }
         }
-
-        #endregion
-
 
     }
 }
