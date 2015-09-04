@@ -35,7 +35,7 @@ namespace WowClient
     /// <summary>
     /// Defines read* operations on immutable memory region.
     /// </summary>
-    public interface IReadOnlyMemory
+    public interface IReadOnlyMemory : IDisposable
     {
         T Read<T>(IAbsoluteAddress address) where T : struct;
         T Read<T>(IRelativeAddress address) where T : struct;
@@ -48,18 +48,13 @@ namespace WowClient
         IAbsoluteAddress FindPattern(string pattern);
     }
 
-    public class ReadOnlyMemory : IReadOnlyMemory, IDisposable
+    public class ReadOnlyMemory : IReadOnlyMemory
     {
         private readonly ExternalProcessMemory _mem;
         private readonly PatternFinder _patternFinder;
         public ReadOnlyMemory(Process process)
         {
-            _mem = new ExternalProcessMemory(
-                new ExternalProcessMemoryInitParams()
-                {
-                    Process = process,
-                    DefaultCacheValue = true,
-                });
+            _mem = new ExternalProcessMemory(process, false, true, false);
             _patternFinder = new PatternFinder(_mem);
         }
 
@@ -170,6 +165,7 @@ namespace WowClient
 
         public void Dispose()
         {
+            _patternFinder.Dispose();
             _mem.Dispose();
         }
     }
