@@ -43,7 +43,7 @@ namespace WowClient.Lua.UI
             get
             {
                 var ptr = Address.Deref(Offsets.ScrollFrame.ScrollChildOffset);
-                return ptr.Value != IntPtr.Zero ? GetUIObjectFromPointer<Frame>(Lua, ptr) : null;
+                return ptr.Value != IntPtr.Zero ? Get<Frame>(Lua, ptr) : null;
             }
         }
     }

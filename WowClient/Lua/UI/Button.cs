@@ -53,7 +53,7 @@ namespace WowClient.Lua.UI
             get
             {
                 var ptr = Address.Deref(Offsets.Button.FontStringOffset);
-                return ptr.Value == IntPtr.Zero ? null : GetUIObjectFromPointer<FontString>(Lua, ptr);
+                return ptr.Value == IntPtr.Zero ? null : Get<FontString>(Lua, ptr);
             }
         }
 
@@ -62,7 +62,7 @@ namespace WowClient.Lua.UI
             get
             {
                 var ptr = Address.Deref(Offsets.Button.HighlightTextureOffset);
-                return ptr.Value == IntPtr.Zero ? null : GetUIObjectFromPointer<Texture>(Lua, ptr);
+                return ptr.Value == IntPtr.Zero ? null : Get<Texture>(Lua, ptr);
             }
         }
     }

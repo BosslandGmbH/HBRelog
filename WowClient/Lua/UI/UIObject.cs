@@ -154,7 +154,7 @@ namespace WowClient.Lua.UI
         // dictionary that caches vtm pointers for UIObject types
         private static readonly Dictionary<IntPtr, UIObjectType> TypeCache = new Dictionary<IntPtr, UIObjectType>();
 
-        public static IEnumerable<UIObject> GetUIObjects(WowLua wow)
+        public static IEnumerable<UIObject> GetAll(WowLua wow)
         {
             return
                 from node in wow.Globals.Nodes
@@ -183,12 +183,12 @@ namespace WowClient.Lua.UI
             return null;
         }
 
-        public static IEnumerable<T> GetUIObjectsOfType<T>(WowLua wow) where T : UIObject
+        public static IEnumerable<T> GetAll<T>(WowLua wow) where T : UIObject
         {
-            return GetUIObjects(wow).OfType<T>();
+            return GetAll(wow).OfType<T>();
         }
 
-        public static T GetUIObjectFromPointer<T>(WowLua lua, IAbsoluteAddress address) where T : UIObject
+        public static T Get<T>(WowLua lua, IAbsoluteAddress address) where T : UIObject
         {
             return (T)Get(lua, address);
         }

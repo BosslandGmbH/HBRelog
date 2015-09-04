@@ -47,7 +47,7 @@ namespace WowClient.Lua.UI
             get
             {
                 var ptr = Address.Deref(Offsets.Slider.ThumbTextureOffset);
-                return ptr.Value != IntPtr.Zero ? GetUIObjectFromPointer<Texture>(Lua, ptr) : null;
+                return ptr.Value != IntPtr.Zero ? Get<Texture>(Lua, ptr) : null;
             }
         }
     }
