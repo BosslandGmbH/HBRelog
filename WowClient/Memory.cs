@@ -13,6 +13,7 @@ namespace WowClient
     public interface IAbsoluteAddress
     {
         IntPtr Value { get; }
+        bool IsNull { get; }
         IAbsoluteAddress Deref();
         IAbsoluteAddress Deref(int offset);
         T Deref<T>() where T : struct;
@@ -78,6 +79,10 @@ namespace WowClient
         {
             private ExternalProcessMemory _mem;
             public IntPtr Value { get; private set; }
+
+            public bool IsNull
+            { get { return Equals(null); } }
+
 #if DEBUG
             public ExternalProcessMemory Memory
             {

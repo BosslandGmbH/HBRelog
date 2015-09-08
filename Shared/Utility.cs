@@ -387,6 +387,22 @@ namespace Shared
             return !timeOut;
         }
 
+        public static async Task<bool> WaitUntilAsync(Func<Task<bool>> predicate, TimeSpan timeout, int pollDelayMilliseconds = 10)
+        {
+            // TODO implement adaptive waiting
+            // so predicate does not being polled too often
+            // if we far from timeout margin we can increase polling delay up to exp(x)
+            var t = Stopwatch.StartNew();
+            var isNotTimeout = true;
+            var ms = pollDelayMilliseconds;
+            while (!await predicate() && isNotTimeout)
+            {
+                isNotTimeout = t.ElapsedMilliseconds < timeout.TotalMilliseconds;
+                await Task.Delay(ms);
+            }
+            return isNotTimeout;
+        }
+
         public static async Task<bool> WaitUntilAsync(Func<bool> predicate, TimeSpan timeout, int pollDelayMilliseconds = 10)
         {
             // TODO implement adaptive waiting
@@ -402,18 +418,16 @@ namespace Shared
             }
             return isNotTimeout;
         }
-
         public static async Task<bool> WaitUntilAsync(Func<bool> predicate, int timeoutMilliseconds = 1000, int pollDelayMilliseconds = 10)
         {
-            var t = Stopwatch.StartNew();
-            var isNotTimeout = true;
-            var ms = pollDelayMilliseconds;
-            while (!predicate() && isNotTimeout)
-            {
-                isNotTimeout = t.ElapsedMilliseconds < timeoutMilliseconds;
-                await Task.Delay(ms);
-            }
-            return isNotTimeout;
+            return
+                await WaitUntilAsync(predicate, TimeSpan.FromMilliseconds(timeoutMilliseconds), pollDelayMilliseconds);
+        }
+
+        public static async Task<bool> WaitUntilAsync(Func<Task<bool>> predicate, int timeoutMilliseconds = 1000, int pollDelayMilliseconds = 10)
+        {
+            return
+                await WaitUntilAsync(predicate, TimeSpan.FromMilliseconds(timeoutMilliseconds), pollDelayMilliseconds);
         }
 
         private static IntPtr _originalForegroundWindow;

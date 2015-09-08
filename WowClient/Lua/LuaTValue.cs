@@ -32,7 +32,9 @@ namespace WowClient.Lua
 
         public IAbsoluteAddress Pointer
         {
-            get { return _memory.GetAbsoluteAddress(_luaTValue.Value.Pointer); }
+            get { return _luaTValue.Value.Pointer != IntPtr.Zero ?
+                _memory.GetAbsoluteAddress(_luaTValue.Value.Pointer) :
+                null; }
         }
 
         public bool Boolean

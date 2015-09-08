@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace WowClient
 {
-    class LoginScreen : WowWrapper, ILoginScreen
+    class LoginScreen : WowWrapper
     {
         public LoginScreen(WowWrapper wrapper)
             : base(wrapper)

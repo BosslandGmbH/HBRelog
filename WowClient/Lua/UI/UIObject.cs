@@ -171,14 +171,22 @@ namespace WowClient.Lua.UI
         }
 
         // dictionary that caches vtm pointers for UIObject types
-        private static readonly Dictionary<IntPtr, UIObjectType> TypeCache = new Dictionary<IntPtr, UIObjectType>();
+        public static readonly Dictionary<IntPtr, UIObjectType> TypeCache = new Dictionary<IntPtr, UIObjectType>();
+
+        public static IEnumerable<IAbsoluteAddress> GetAllAddresses(WowWrapper wow)
+        {
+            return wow.Globals.Nodes
+                .Where(node => node.Value.Type == LuaType.Table
+                               && node.Value.Table.IsUIObject)
+                .Select(node => node.Value.Table.LightUserData.Value.Pointer);
+        }
 
         public static IEnumerable<UIObject> GetAll(WowWrapper wow)
         {
             return
                 from node in wow.Globals.Nodes
                 where node.Value.Type == LuaType.Table
-                where node.Value.Table.IsUIObject
+                      && node.Value.Table.IsUIObject
                 select Get(wow, node.Value.Table.LightUserData.Value.Pointer);
         }
 
@@ -187,10 +195,22 @@ namespace WowClient.Lua.UI
             TypeCache.Clear();
         }
 
+        public static IAbsoluteAddress GetAddress(WowWrapper wrapper, string name)
+        {
+            if (wrapper == null) throw new ArgumentException("Wrapper is null", "wrapper");
+            if (wrapper.Globals == null) throw new ArgumentException("Wrapper.Globals is null", "wrapper.Globals");
+            var value = wrapper.Globals.GetValue(name);
+            if (value == null || value.Type != LuaType.Table)
+                return null;
+            return value.Table.IsUIObject ?
+                value.Table.LightUserData.Value.Pointer :
+                null;
+        }
+
         public static T Get<T>(WowWrapper wrapper, string name) where T : UIObject
         {
             if (wrapper == null) throw new ArgumentException("Wrapper is null", "wrapper");
-            if (wrapper.Globals == null) throw new ArgumentException("Wrapper.Globals is null", "Wrapper.Globals");
+            if (wrapper.Globals == null) throw new ArgumentException("Wrapper.Globals is null", "wrapper.Globals");
             var value = wrapper.Globals.GetValue(name);
             if (value == null || value.Type != LuaType.Table)
             {
@@ -213,7 +233,7 @@ namespace WowClient.Lua.UI
 
         public static UIObject Get(WowWrapper wrapper, IAbsoluteAddress address)
         {
-            if (address.Value == IntPtr.Zero)
+            if (address == null || address.IsNull)
                 return null;
             var vtmAddress = address.Deref();
             if (!TypeCache.ContainsKey(vtmAddress.Value))

@@ -14,7 +14,7 @@ using Shared;
 
 namespace WowClient
 {
-    public class WowWrapper : IScreen, IDisposable
+    public class WowWrapper : IDisposable
     {
         public WowWrapper()
         {}
@@ -150,43 +150,105 @@ namespace WowClient
             }
             catch (Exception e)
             {
-                Console.WriteLine("cound not get widget, message: {0}", e);
-            }
-            while (w == null)
-            {
-                Task.Delay(100).Wait();
-                ResetGlobals();
-                try
-                {
-                    w = UIObject.Get(this, address);
-                }
-                catch (Exception)
-                {
-                    Console.WriteLine("cound not get widget, retry");
-                    w = null;
-                }
+                Console.WriteLine("cound not get widget @{0}, message: {1}", address, e);
+                return null;
             }
             return w;
         }
 
         public T GetWidget<T>(IAbsoluteAddress address) where T : UIObject
         {
-            return UIObject.Get<T>(this, address);
+            return (T)GetWidget(address);
         }
 
-        public T GetWidget<T>(string name) where T : UIObject
+        public async Task<IAbsoluteAddress> GetWidgetAddressAsync(string name, int timeoutMilliseconds = 5000)
         {
-            return UIObject.Get<T>(this, name);
+            IAbsoluteAddress address;
+            bool needRetry = false;
+            try
+            {
+                address = UIObject.GetAddress(this, name);
+            }
+            catch (Exception)
+            {
+                address = null;
+                needRetry = true;
+            }
+
+            if (!needRetry)
+                return address;
+
+            var t = Stopwatch.StartNew();
+            var isNotTimeout = true;
+            while (address == null && isNotTimeout)
+            {
+                await Task.Delay(100);
+                ResetGlobals();
+                try
+                {
+                    address = UIObject.GetAddress(this, name);
+                }
+                catch (Exception)
+                {
+                    address = null;
+                }
+                isNotTimeout = t.ElapsedMilliseconds < timeoutMilliseconds;
+            }
+            return address;
         }
 
-        public IEnumerable<T> GetWidgets<T>() where T : UIObject
+        public async Task<T> GetWidgetAsync<T>(string name, int timeoutMilliseconds = 1000) where T : UIObject
         {
-            return UIObject.GetAll<T>(this);
+            IAbsoluteAddress address = await GetWidgetAddressAsync(name, timeoutMilliseconds);
+            if (address == null || address.IsNull)
+                return null;
+            return (T)GetWidget(address);
         }
 
-        public IEnumerable<UIObject> GetWidgets()
+        public async Task<IEnumerable<T>> GetWidgetsAsync<T>(int timeoutMilliseconds = 1000) where T : UIObject
         {
-            return UIObject.GetAll(this);
+            var r = await GetWidgetsAsync(timeoutMilliseconds);
+            return r.OfType<T>();
+        }
+
+        public async Task<IEnumerable<UIObject>> GetWidgetsAsync(int timeoutMilliseconds = 1000)
+        {
+            IEnumerable<UIObject> widgets;
+            bool needRetry = false;
+            try
+            {
+                var addresses = UIObject.GetAllAddresses(this);
+                widgets = addresses
+                    .Select(GetWidget);
+            }
+            catch (Exception)
+            {
+                widgets = null;
+                needRetry = true;
+            }
+
+            if (!needRetry)
+                return widgets;
+
+            var t = Stopwatch.StartNew();
+            var isNotTimeout = true;
+            while (widgets == null && isNotTimeout)
+            {
+                await Task.Delay(100);
+                ResetGlobals();
+                try
+                {
+                    var addresses = UIObject.GetAllAddresses(this);
+                    widgets = addresses
+                        .Select(GetWidget);
+                }
+                catch
+                {
+                    widgets = null;
+                }
+                isNotTimeout = t.ElapsedMilliseconds < timeoutMilliseconds;
+            }
+            return widgets;
         }
 
         private IScreen GetCurrnetScreen()
@@ -205,23 +267,23 @@ namespace WowClient
 
         public async Task<bool> TypeIntoEditBoxAsync(string editBoxName, string text)
         {
-            var editBox = GetWidget<EditBox>(editBoxName);
+            var editBox = await GetWidgetAsync<EditBox>(editBoxName);
 
             if (editBox == null || !editBox.IsVisible || !editBox.IsEnabled)
             {
-                // Console.WriteLine("editbox is not valid");
+                Console.WriteLine("editbox is not valid");
                 return false;
             }
 
             if (editBox.Text == text)
             {
-                // Console.WriteLine("editbox already got that text");
+                Console.WriteLine("editbox already got that text");
                 return true;
             }
 
             if (!editBox.HasFocus && !await FocusEditBoxAsync(editBoxName))
             {
-                // Console.WriteLine("cant focus");
+                Console.WriteLine("cant focus");
                 return false;
             }
 
@@ -233,18 +295,17 @@ namespace WowClient
 
             if (!await Utility.WaitUntilAsync(() => string.IsNullOrEmpty(editBox.Text), TimeSpan.FromMilliseconds(500)))
             {
-                // Console.WriteLine("cant clear text");
+                Console.WriteLine("cant clear text");
                 return false;
             }
 
             Utility.SendBackgroundString(WowProcess.MainWindowHandle, text);
-
             if (!await Utility.WaitUntilAsync(() => editBox.Text == text, TimeSpan.FromMilliseconds(500)))
             {
-                // Console.WriteLine("text verification fail");
+                Console.WriteLine("text verification fail");
                 return false;
             }
-
+            await Task.Delay(100);
             return true;
         }
 
@@ -261,10 +322,9 @@ namespace WowClient
         public async Task<UIObject> NextEditBoxAsync()
         {
             var curr = FocusedWidget;
-            // use async message post
-            Utility.SendBackgroundKey(WowProcess.MainWindowHandle, (char)Keys.Tab, false);
+            SendKey(Keys.Tab);
             var isNotTimeout = await Utility.WaitUntilAsync(() =>
-                FocusedWidget != null && !FocusedWidget.Equals(curr), TimeSpan.FromMilliseconds(50));
+                FocusedWidget != null && !FocusedWidget.Equals(curr), 50);
             if (curr == null)
                 return FocusedWidget != null && isNotTimeout ? FocusedWidget : null;
             return !curr.Equals(FocusedWidget) && isNotTimeout ? FocusedWidget : null;
@@ -296,27 +356,60 @@ namespace WowClient
             return res;
         }
 
-        public bool IsLoginScreen()
+        public async Task<bool> IsLoginScreenAsync()
         {
-            var t = GetWidget<FontString>("GlueDialogText");
+            if (IsInGame)
+                return false;
+            var t = await GetWidgetAsync<FontString>("GlueDialogText");
+            if (t == null)
+                return CurrentGlueState == GlueState.Disconnected;
             return CurrentGlueState == GlueState.Disconnected
-                && !IsInGame
                 && (t.Equals(null) || !t.IsVisible);
         }
 
-        public bool IsCharacterSelectionScreen()
+        private static int CountFrameDescendants(Frame obj)
+        {
+            return 1 + obj.Children.OfType<Frame>().Sum(cf => CountFrameDescendants(cf));
+        }
+
+        public async Task<bool> WaitGlueParentInitAsync()
+        {
+            // wait GlueParent is not null
+            await Utility.WaitUntilAsync(async () => await GetWidgetAsync<Frame>("GlueParent") != null, 1000, 100);
+            var glueParent = await GetWidgetAsync<Frame>("GlueParent");
+            if (glueParent == null)
+                return true;
+            var cnt = 0;
+            await Utility.WaitUntilAsync(() =>
+            {
+                var cnt1 = CountFrameDescendants(glueParent);
+                var f = cnt == cnt1;
+                cnt = cnt1;
+                return f;
+            }, 5000, 500);
+
+            ResetGlobals();
+            
+            return true;
+        }
+
+        public async Task<bool> IsCharacterSelectionScreenAsync()
         {
             if (IsInGame || IsConnectingOrLoading)
                 return false;
-            ResetGlobals();
-            var t = GetWidget<FontString>("GlueDialogText");
+            var t = await GetWidgetAsync<FontString>("GlueDialogText");
+            if (t == null)
+                return false;
             return CurrentGlueState == GlueState.CharacterSelection
-                && (t.Equals(null) || !t.IsVisible);
+                && !t.IsVisible;
         }
 
-        public void SendKey(Keys key)
+        public void SendKey(params Keys[] keys)
         {
-            Utility.SendBackgroundKey(WowProcess.MainWindowHandle, (char)key, false);
+            foreach (var key in keys)
+            {
+                Utility.SendBackgroundKey(WowProcess.MainWindowHandle, (char)key, false);
+            }
         }
         
         public void SendString(string str)
@@ -346,7 +439,10 @@ namespace WowClient
 
         public async Task<bool> SendChatAsync(string str)
         {
-            var chk = new Func<bool>( () => FocusedWidget != null
+            if (!IsInGame)
+                return false;
+
+            var chk = new Func<bool>(() => FocusedWidget != null
                     && Regex.IsMatch(FocusedWidget.Name, "^ChatFrame\\d+EditBox$"));
             if (!chk())
             {
@@ -378,35 +474,37 @@ namespace WowClient
             return true;
         }
 
-        public async Task<bool> Logout()
+        public async Task<bool> LogoutAsync()
         {
+            if (!IsInGame)
+                return false;
+
             if (!await SendChatAsync("/logout"))
             {
                 Console.WriteLine("could not send logout command");
                 return false;
             }
 
-            ResetGlobals();
-
             // transition to character select screen
-            if (!await Utility.WaitUntilAsync(IsCharacterSelectionScreen, TimeSpan.FromSeconds(30), 100))
+            if (!await Utility.WaitUntilAsync(async () => await IsCharacterSelectionScreenAsync(),
+                TimeSpan.FromSeconds(30), 100))
             {
                 Console.WriteLine("unexpected screen, it should be character select screen");
                 return false;
             }
 
+            await WaitGlueParentInitAsync();
 
             await Task.Delay(100);
             return true;
         }
 
-        public string CurrentCharacterName
+        public async Task<string> CurrentCharacterNameAsync()
         {
-            get
-            {
-                var w = GetWidget<FontString>("PlayerName");
-                return (IsInGame && w != null) ? w.Text : null;
-            }
+            if (!IsInGame)
+                return null;
+            var w = await GetWidgetAsync<FontString>("PlayerName");
+            return (w != null) ? w.Text : null;
         }
 
         /// <summary>
@@ -420,16 +518,16 @@ namespace WowClient
                 throw new ArgumentException("settings == null");
             if (!settings.IsValid())
                 throw new ArgumentException("settings.IsValid() == false");
-            var charName = CurrentCharacterName;
+            var charName = await CurrentCharacterNameAsync();
             if (charName != null && charName != settings.CharacterName)
             {
-                if (!await Logout())
+                if (!await LogoutAsync())
                 {
                     Console.WriteLine("could not logout");
                     return false;
                 }
             }
-            if (IsLoginScreen())
+            if (await IsLoginScreenAsync())
             {
                 // TODO factor out string constants
                 if (!await TypeIntoEditBoxAsync("AccountLoginAccountEdit", settings.Login)
@@ -440,15 +538,15 @@ namespace WowClient
                 }
                 // transition to character select screen
                 Utility.SendBackgroundKey(WowProcess.MainWindowHandle, (char)Keys.Enter, false);
-                if (!await Utility.WaitUntilAsync(IsCharacterSelectionScreen, TimeSpan.FromSeconds(30), 100))
+                if (!await Utility.WaitUntilAsync(async () => await IsCharacterSelectionScreenAsync(), TimeSpan.FromSeconds(30), 100))
                 {
                     Console.WriteLine("connection timed out");
                     return false;
                 }
             }
-            if (IsCharacterSelectionScreen())
+            if (await IsCharacterSelectionScreenAsync())
             {
-                var activeCharNames = GetWidgets<FontString>()
+                var activeCharNames = (await GetWidgetsAsync<FontString>())
                     .Where(w => w.IsVisible
                         && Regex.IsMatch(w.Name, "^CharSelectCharacterButton\\d+ButtonTextName")
                         // character name contains only word characters,
@@ -460,11 +558,12 @@ namespace WowClient
 
                 if (!activeCharNames.Contains(settings.CharacterName))
                 {
-                    Console.WriteLine("there's no character with specified name or it is inactive");
+                    Console.WriteLine("there's no character with specified name ({0}) or it is inactive", settings.CharacterName);
+                    activeCharNames.ForEach(n => Console.WriteLine("\'{0}\'", n));
                     return false;
                 }
-                
-                var selectedChar = GetWidget<FontString>("CharSelectCharacterName");
+
+                var selectedChar = await GetWidgetAsync<FontString>("CharSelectCharacterName");
                 while (selectedChar.Text != settings.CharacterName)
                 {
                     var str = selectedChar.Text;
@@ -481,6 +580,10 @@ namespace WowClient
                 }
             }
             await Task.Delay(100);
+
+
+
+
             return IsInGame;
         }
 
