@@ -18,6 +18,9 @@ namespace WowClient
         T Deref<T>() where T : struct;
         T Deref<T>(int offset) where T : struct;
         IAbsoluteAddress Add(IRelativeAddress address);
+#if DEBUG
+        ExternalProcessMemory Memory { get; }
+#endif
     }
 
     /// <summary>
@@ -30,6 +33,9 @@ namespace WowClient
         IAbsoluteAddress Deref();
         IAbsoluteAddress Deref(int offset);
         IRelativeAddress Add(IRelativeAddress address);
+#if DEBUG
+        ExternalProcessMemory Memory { get; }
+#endif
     }
 
     /// <summary>
@@ -46,75 +52,174 @@ namespace WowClient
         IRelativeAddress GetRelativeAddress(int address);
         IAbsoluteAddress GetAbsoluteAddress(IntPtr address);
         IAbsoluteAddress FindPattern(string pattern);
+#if DEBUG
+        ExternalProcessMemory Memory { get; }
+#endif
     }
 
     public class ReadOnlyMemory : IReadOnlyMemory
     {
-        private readonly ExternalProcessMemory _mem;
+        private ExternalProcessMemory _mem;
         private readonly PatternFinder _patternFinder;
         public ReadOnlyMemory(Process process)
         {
             _mem = new ExternalProcessMemory(process, false, true, false);
             _patternFinder = new PatternFinder(_mem);
+            _mem.DisableCache();
         }
+#if DEBUG
+        public ExternalProcessMemory Memory
+        {
+            get { return _mem; }
+        }
+#endif
 
         internal class AbsoluteAddress : IAbsoluteAddress
         {
-            private readonly ExternalProcessMemory _mem;
+            private ExternalProcessMemory _mem;
             public IntPtr Value { get; private set; }
-            public AbsoluteAddress(ExternalProcessMemory memory, IntPtr address)
+#if DEBUG
+            public ExternalProcessMemory Memory
+            {
+                get { return _mem; }
+            }
+#endif
+
+            public override int GetHashCode()
+            {
+                return (int)Value;
+            }
+
+            public override string ToString()
+            {
+                return "0x" + Value.ToString("x");
+            }
+
+            public override bool Equals(object obj)
+            {
+                var otherAbs = obj as AbsoluteAddress;
+                if (otherAbs != null)
+                    return otherAbs.Value == Value;
+                var otherRel = obj as RelativeAddress;
+                if (otherRel != null)
+                    return _mem.ImageBase + otherRel.Value == Value;
+                return Value == IntPtr.Zero;
+            }
+
+            public AbsoluteAddress(ref ExternalProcessMemory memory, IntPtr address)
             {
                 _mem = memory;
                 Value = address;
             }
             public IAbsoluteAddress Deref()
             {
-                return new AbsoluteAddress(_mem, _mem.Read<IntPtr>(Value));
+                IntPtr ret;
+                using (_mem.SaveCacheState())
+                {
+                    _mem.DisableCache();
+                    ret = _mem.Read<IntPtr>(Value);
+                }
+                return new AbsoluteAddress(ref _mem, ret);
             }
 
             public IAbsoluteAddress Deref(int offset)
             {
-                return new AbsoluteAddress(_mem, _mem.Read<IntPtr>(Value + offset));
+                IntPtr ret;
+                using (_mem.SaveCacheState())
+                {
+                    _mem.DisableCache();
+                    ret = _mem.Read<IntPtr>(Value + offset);
+                }
+                return new AbsoluteAddress(ref _mem, ret);
             }
 
             public T Deref<T>() where T : struct
             {
-                return _mem.Read<T>(Value);
+                T ret;
+                using (_mem.SaveCacheState())
+                {
+                    _mem.DisableCache();
+                    ret = _mem.Read<T>(Value);
+                }
+                return ret;
             }
 
             public T Deref<T>(int offset) where T : struct
             {
-                return _mem.Read<T>(Value + offset);
+                T ret;
+                using (_mem.SaveCacheState())
+                {
+                    _mem.DisableCache();
+                    ret = _mem.Read<T>(Value + offset);
+                }
+                return ret;
             }
 
             public IAbsoluteAddress Add(IRelativeAddress address)
             {
-                return new AbsoluteAddress(_mem, Value + address.Value);
+                return new AbsoluteAddress(ref _mem, Value + address.Value);
             }
         }
 
         internal class RelativeAddress : IRelativeAddress
         {
-            private readonly ExternalProcessMemory _mem;
+            private ExternalProcessMemory _mem;
             public int Value { get; private set; }
-            public RelativeAddress(ExternalProcessMemory memory, int address)
+#if DEBUG
+            public ExternalProcessMemory Memory
+            {
+                get { return _mem; }
+            }
+#endif
+            public RelativeAddress(ref ExternalProcessMemory memory, int address)
             {
                 _mem = memory;
+                _mem.DisableCache();
+                _mem.ClearCache();
+                _mem.SaveCacheState();
                 Value = address;
+                Base = _mem.ImageBase;
+            }
+
+            public IntPtr Base { get; private set; }
+            
+            public override int GetHashCode()
+            {
+                return (int)(Base + Value);
+            }
+
+            public override string ToString()
+            {
+                return "0x" + (Base + Value).ToString("x");
+            }
+
+            public override bool Equals(object obj)
+            {
+                var otherAbs = obj as AbsoluteAddress;
+                if (otherAbs != null)
+                    return otherAbs.Value == Base + Value;
+                var otherRel = obj as RelativeAddress;
+                if (otherRel != null)
+                    return otherRel.Base == Base && otherRel.Value == Value;
+                return Value == 0;
             }
             public IAbsoluteAddress Deref()
             {
-                return new AbsoluteAddress(_mem, _mem.Read<IntPtr>((IntPtr)Value, true));
+                _mem.DisableCache();
+                var v = _mem.Read<IntPtr>((IntPtr)Value, true);
+                return new AbsoluteAddress(ref _mem, v);
             }
 
             public IAbsoluteAddress Deref(int offset)
             {
-                return new AbsoluteAddress(_mem, _mem.Read<IntPtr>((IntPtr)(Value + offset), true));
+                _mem.DisableCache();
+                var v = _mem.Read<IntPtr>((IntPtr)(Value + offset), true);
+                return new AbsoluteAddress(ref _mem, v);
             }
 
             public IRelativeAddress Add(IRelativeAddress address)
             {
-                return new RelativeAddress(_mem, Value + address.Value);
+                return new RelativeAddress(ref _mem, Value + address.Value);
             }
         }
 
@@ -150,12 +255,12 @@ namespace WowClient
 
         public IRelativeAddress GetRelativeAddress(int address)
         {
-            return new RelativeAddress(_mem, address);
+            return new RelativeAddress(ref _mem, address);
         }
 
         public IAbsoluteAddress GetAbsoluteAddress(IntPtr address)
         {
-            return new AbsoluteAddress(_mem, address);
+            return new AbsoluteAddress(ref _mem, address);
         }
 
         public IAbsoluteAddress FindPattern(string pattern)
