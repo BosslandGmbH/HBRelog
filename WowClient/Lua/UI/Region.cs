@@ -23,7 +23,7 @@ namespace WowClient.Lua.UI
             return SizeCo*value/SizeRatio;
         }
 
-        protected Region(WowLua wow, IAbsoluteAddress address) : base(wow, address) { }
+        protected Region(WowWrapper wow, IAbsoluteAddress address) : base(wow, address) { }
 
         /// <summary>
         /// Gets the the distance from bottom of WoW window to bottom of region in pixels

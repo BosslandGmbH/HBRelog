@@ -12,10 +12,10 @@ namespace WowClient.Lua
         {
             Address = address;
             _memory = memory;
-            _luaNode = memory.Read<LuaNodeStruct>(address);
+            _luaNode = address.Deref<LuaNodeStruct>();
         }
 
-        public bool IsValid { get { return Address.Value != IntPtr.Zero; } }
+        public bool IsValid { get { return Address != null && Address.Value != IntPtr.Zero; } }
 
         private LuaTKey _key;
         public LuaTKey Key { get { return _key ?? (_key = new LuaTKey(_memory, _luaNode.Key)); } }

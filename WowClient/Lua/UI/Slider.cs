@@ -5,7 +5,7 @@ namespace WowClient.Lua.UI
 {
     public class Slider : Frame
     {
-        public Slider(WowLua wow, IAbsoluteAddress address) : base(wow, address) { }
+        public Slider(WowWrapper wow, IAbsoluteAddress address) : base(wow, address) { }
 
         public bool IsEnabled
         {
@@ -47,7 +47,7 @@ namespace WowClient.Lua.UI
             get
             {
                 var ptr = Address.Deref(Offsets.Slider.ThumbTextureOffset);
-                return ptr.Value != IntPtr.Zero ? Get<Texture>(Lua, ptr) : null;
+                return ptr.Value != IntPtr.Zero ? Get<Texture>(Wrapper, ptr) : null;
             }
         }
     }

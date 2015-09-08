@@ -5,7 +5,7 @@ namespace WowClient.Lua.UI
 {
     public class FontString : VisibleRegion, IFontInstance
     {
-        public FontString(WowLua wow, IAbsoluteAddress address) : base(wow, address) { }
+        public FontString(WowWrapper wow, IAbsoluteAddress address) : base(wow, address) { }
 
         public string Text
         {
@@ -14,8 +14,13 @@ namespace WowClient.Lua.UI
                 var ptr = Address.Deref(Offsets.FontString.TextOffset);
                 if (ptr.Value == IntPtr.Zero)
                     return string.Empty;
-                return Lua.Memory.ReadString(ptr, 512, Encoding.UTF8);
+                return Wrapper.Memory.ReadString(ptr, 512, Encoding.UTF8);
             }
+        }
+
+        public override string ToString()
+        {
+            return string.Format("{0} value: \"{1}\"", base.ToString(), Text);
         }
 
         public Font FontObject { get { throw new NotImplementedException(); } }

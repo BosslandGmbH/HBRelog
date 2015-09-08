@@ -5,7 +5,7 @@ namespace WowClient.Lua.UI
 {
     public class Frame : VisibleRegion
     {
-        public Frame(WowLua wow, IAbsoluteAddress address) : base(wow, address) { }
+        public Frame(WowWrapper wow, IAbsoluteAddress address) : base(wow, address) { }
 
         public int Level
         {
@@ -24,7 +24,7 @@ namespace WowClient.Lua.UI
                 var ptr = Address.Deref(Offsets.Frame.ChildrenOffset);
                 while (ptr.Value != IntPtr.Zero && ((uint)ptr.Value & 1) == 0)
                 {
-                    yield return Get(Lua, ptr.Deref(8));
+                    yield return Get(Wrapper, ptr.Deref(8));
                     ptr = ptr.Deref(4);
                 }
             }
@@ -41,7 +41,7 @@ namespace WowClient.Lua.UI
                 var size = Address.Deref<int>(Offsets.Frame.RegionsSizeOffset);
                 while (ptr.Value != IntPtr.Zero && ((uint)ptr.Value & 1) == 0)
                 {
-                    yield return Get(Lua, ptr);
+                    yield return Get(Wrapper, ptr);
                     ptr = ptr.Deref(4 + size);
                 }
             }

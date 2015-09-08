@@ -4,7 +4,7 @@ namespace WowClient.Lua.UI
 {
     public abstract class VisibleRegion : Region
     {
-        protected VisibleRegion(WowLua wow, IAbsoluteAddress address) : base(wow, address) { }
+        protected VisibleRegion(WowWrapper wow, IAbsoluteAddress address) : base(wow, address) { }
 
         /// <summary>
         /// Gets a value indicating whether this region is visible.

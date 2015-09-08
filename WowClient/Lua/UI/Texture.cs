@@ -5,7 +5,7 @@ namespace WowClient.Lua.UI
 {
     public class Texture : VisibleRegion
     {
-        public Texture(WowLua wow, IAbsoluteAddress address) : base(wow, address) { }
+        public Texture(WowWrapper wow, IAbsoluteAddress address) : base(wow, address) { }
 
         private bool _triedGetPath;
         private string _texturePath = string.Empty;
@@ -21,7 +21,7 @@ namespace WowClient.Lua.UI
                     {
                         ptr = ptr.Deref(Offsets.Texture.TexturePathOffset);
                         if (ptr.Value != IntPtr.Zero)
-                            _texturePath = Lua.Memory.ReadString(ptr, 260, Encoding.UTF8);
+                            _texturePath = Wrapper.Memory.ReadString(ptr, 260, Encoding.UTF8);
                     }
 	                _triedGetPath = true;
                 }

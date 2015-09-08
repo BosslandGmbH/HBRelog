@@ -4,7 +4,7 @@ namespace WowClient.Lua.UI
 {
     public abstract class ParentedObject : UIObject
     {
-        protected ParentedObject(WowLua wow, IAbsoluteAddress address) : base(wow, address) { }
+        protected ParentedObject(WowWrapper wow, IAbsoluteAddress address) : base(wow, address) { }
 
         private UIObject _parent;
         private bool _triedToGetParent;
@@ -14,8 +14,8 @@ namespace WowClient.Lua.UI
             {
                 if (!_triedToGetParent)
                 {
-                    var parentAddress = Address.Deref(Offsets.ParentedObject.ParentOffset); // Lua.Memory.Read<IntPtr>(Address + Offsets.ParentedObject.ParentOffset);
-                    _parent = parentAddress.Value != IntPtr.Zero ? Get(Lua, parentAddress) : null;
+                    var parentAddress = Address.Deref(Offsets.ParentedObject.ParentOffset); // Wrapper.Memory.Read<IntPtr>(Address + Offsets.ParentedObject.ParentOffset);
+                    _parent = parentAddress.Value != IntPtr.Zero ? Get(Wrapper, parentAddress) : null;
                     _triedToGetParent = true;
                 }
                 return _parent;

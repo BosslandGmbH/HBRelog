@@ -4,7 +4,7 @@ namespace WowClient.Lua.UI
 {
     public class Font: UIObject, IFontInstance
     {
-        public Font(WowLua wow, IAbsoluteAddress address) : base(wow, address) { }
+        public Font(WowWrapper wow, IAbsoluteAddress address) : base(wow, address) { }
 
         public Font FontObject { get { throw new NotImplementedException(); } }
 

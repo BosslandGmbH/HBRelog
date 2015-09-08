@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -9,12 +8,32 @@ namespace WowClient.Lua.UI
 
     public class UIObject
     {
-        protected readonly WowLua Lua;
-
-        protected UIObject(WowLua lua, IAbsoluteAddress address)
+        public override int GetHashCode()
         {
+            return Address.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            var other = obj as UIObject;
+            if (other != null)
+                return other.Address.Equals(Address);
+            return Address.Value == IntPtr.Zero;
+        }
+
+        public override string ToString()
+        {
+            return string.Format("{1}@{2}({0})", Type, Name, Address);
+        }
+
+        protected readonly WowWrapper Wrapper;
+
+        protected UIObject(WowWrapper wrapper, IAbsoluteAddress address)
+        {
+            if (address == null || address.Equals(null))
+                throw new ArgumentException("address == null || address.Equals(null)");
             Address = address;
-            Lua = lua;
+            Wrapper = wrapper;
         }
 
         public readonly IAbsoluteAddress Address;
@@ -31,7 +50,7 @@ namespace WowClient.Lua.UI
                     Offsets.UIObject.FontNamePtrOffset;
                 var ptr = Address.Deref(offs);
                 _name = ptr.Value != IntPtr.Zero ?
-                    Lua.Memory.ReadString(ptr, 128, Encoding.UTF8) :
+                    Wrapper.Memory.ReadString(ptr, 128, Encoding.UTF8) :
                     "<unnamed>";
                 return _name;
             }
@@ -145,7 +164,7 @@ namespace WowClient.Lua.UI
                 return bytes[0] == 0xA1 /* mov */
                     && bytes[5] == 0xC3 /* retn */;
             }
-            catch (AccessViolationException)
+            catch (Exception)
             {
                 return false;
             }
@@ -154,14 +173,13 @@ namespace WowClient.Lua.UI
         // dictionary that caches vtm pointers for UIObject types
         private static readonly Dictionary<IntPtr, UIObjectType> TypeCache = new Dictionary<IntPtr, UIObjectType>();
 
-        public static IEnumerable<UIObject> GetAll(WowLua wow)
+        public static IEnumerable<UIObject> GetAll(WowWrapper wow)
         {
             return
                 from node in wow.Globals.Nodes
                 where node.Value.Type == LuaType.Table
-                where node.Value.Pointer.Value != IntPtr.Zero
                 where node.Value.Table.IsUIObject
-                select Get(wow, node.Value.Table.LightUserData.Address);
+                select Get(wow, node.Value.Table.LightUserData.Value.Pointer);
         }
 
         public static void ResetTypeCache()
@@ -169,56 +187,58 @@ namespace WowClient.Lua.UI
             TypeCache.Clear();
         }
 
-        public static T Get<T>(WowLua lua, string name) where T : UIObject
+        public static T Get<T>(WowWrapper wrapper, string name) where T : UIObject
         {
-            if (lua == null) throw new ArgumentException("lua is null", "lua");
-            if (lua.Globals == null) throw new ArgumentException("lua.Globals is null", "lua.Globals");
-            var value = lua.Globals.GetValue(name);
+            if (wrapper == null) throw new ArgumentException("Wrapper is null", "wrapper");
+            if (wrapper.Globals == null) throw new ArgumentException("Wrapper.Globals is null", "Wrapper.Globals");
+            var value = wrapper.Globals.GetValue(name);
             if (value == null || value.Type != LuaType.Table)
             {
                 return null;
             }
             if (value.Table.IsUIObject)
-                return (T)Get(lua, value.Table.LightUserData.Address);
+                return (T)Get(wrapper, value.Table.LightUserData.Value.Pointer);
             return null;
         }
 
-        public static IEnumerable<T> GetAll<T>(WowLua wow) where T : UIObject
+        public static IEnumerable<T> GetAll<T>(WowWrapper wow) where T : UIObject
         {
             return GetAll(wow).OfType<T>();
         }
 
-        public static T Get<T>(WowLua lua, IAbsoluteAddress address) where T : UIObject
+        public static T Get<T>(WowWrapper wrapper, IAbsoluteAddress address) where T : UIObject
         {
-            return (T)Get(lua, address);
+            return (T)Get(wrapper, address);
         }
 
-        public static UIObject Get(WowLua lua, IAbsoluteAddress address)
+        public static UIObject Get(WowWrapper wrapper, IAbsoluteAddress address)
         {
-            var vtmAddress = address.Deref(); // lua.Memory.Read<IntPtr>(address));
+            if (address.Value == IntPtr.Zero)
+                return null;
+            var vtmAddress = address.Deref();
             if (!TypeCache.ContainsKey(vtmAddress.Value))
-                SetObjectType(lua.Memory, vtmAddress);
+                SetObjectType(wrapper.Memory, vtmAddress);
             var type = TypeCache[vtmAddress.Value];
             switch (type)
             {
                 case UIObjectType.Button:
-                    return new Button(lua, address) { Type = type };
+                    return new Button(wrapper, address) { Type = type };
                 case UIObjectType.EditBox:
-                    return new EditBox(lua, address) { Type = type };
+                    return new EditBox(wrapper, address) { Type = type };
                 case UIObjectType.Font:
-                    return new Font(lua, address) { Type = type };
+                    return new Font(wrapper, address) { Type = type };
                 case UIObjectType.FontString:
-                    return new FontString(lua, address) { Type = type };
+                    return new FontString(wrapper, address) { Type = type };
                 case UIObjectType.Frame:
-                    return new Frame(lua, address) { Type = type };
+                    return new Frame(wrapper, address) { Type = type };
                 case UIObjectType.ScrollFrame:
-                    return new ScrollFrame(lua, address) { Type = type };
+                    return new ScrollFrame(wrapper, address) { Type = type };
                 case UIObjectType.Slider:
-                    return new Slider(lua, address) { Type = type };
+                    return new Slider(wrapper, address) { Type = type };
                 case UIObjectType.Texture:
-                    return new Texture(lua, address) { Type = type };
+                    return new Texture(wrapper, address) { Type = type };
                 default:
-                    return new UIObject(lua, address) { Type = type };
+                    return new UIObject(wrapper, address) { Type = type };
             }
         }
 

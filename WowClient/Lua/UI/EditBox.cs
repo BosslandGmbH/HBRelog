@@ -7,7 +7,7 @@ namespace WowClient.Lua.UI
 {
     public class EditBox : Frame, IFontInstance
     {
-        public EditBox(WowLua wow, IAbsoluteAddress address) : base(wow, address) { }
+        public EditBox(WowWrapper wow, IAbsoluteAddress address) : base(wow, address) { }
 
         /// <summary>
         /// Gets the cursor position. Works correctly with utf8 text.
@@ -34,7 +34,7 @@ namespace WowClient.Lua.UI
 
         public bool HasFocus
         {
-            get { return Address == Lua.FocusedWidgetPtr; }
+            get { return Equals(Wrapper.FocusedWidget); }
         }
 
         /// <summary>
@@ -80,8 +80,13 @@ namespace WowClient.Lua.UI
                 if (ptr.Value == IntPtr.Zero) return string.Empty;
                 var maxBytes = MaxBytes;
                 var maxLetters = MaxLetters;
-                return Lua.Memory.ReadString(ptr, maxBytes > 0 ? maxBytes : maxLetters * 4, Encoding.UTF8);
+                return Wrapper.Memory.ReadString(ptr, maxBytes > 0 ? maxBytes : maxLetters * 4, Encoding.UTF8);
             }
+        }
+
+        public override string ToString()
+        {
+            return string.Format("{0} value: \"{1}\"", base.ToString(), Text);
         }
 
         public float Number

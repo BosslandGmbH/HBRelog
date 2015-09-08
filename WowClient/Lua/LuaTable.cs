@@ -58,8 +58,10 @@ namespace WowClient.Lua
 
         private LuaNode GetNodeAtIndex(uint idx)
         {
-            var nodeAddress = _memory.GetAbsoluteAddress(_luaTable.NodePtr);
-            return new LuaNode(_memory, nodeAddress.Deref((int)(LuaNode.Size * idx)));
+            var offset = _memory.GetRelativeAddress((int)(LuaNode.Size*idx));
+            var firstNodeAddress = _memory.GetAbsoluteAddress(_luaTable.NodePtr);
+            var addr = firstNodeAddress.Add(offset);
+            return new LuaNode(_memory, addr);
         }
 
         public LuaTValue GetValue(string key)

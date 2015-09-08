@@ -4,7 +4,7 @@ namespace WowClient.Lua.UI
 {
     public class ScrollFrame : Frame
     {
-        public ScrollFrame(WowLua wow, IAbsoluteAddress address) : base(wow, address) { }
+        public ScrollFrame(WowWrapper wow, IAbsoluteAddress address) : base(wow, address) { }
 
         public float HorizontalScroll
         {
@@ -43,7 +43,7 @@ namespace WowClient.Lua.UI
             get
             {
                 var ptr = Address.Deref(Offsets.ScrollFrame.ScrollChildOffset);
-                return ptr.Value != IntPtr.Zero ? Get<Frame>(Lua, ptr) : null;
+                return ptr.Value != IntPtr.Zero ? Get<Frame>(Wrapper, ptr) : null;
             }
         }
     }
