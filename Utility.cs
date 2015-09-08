@@ -23,6 +23,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
+using System.Security.Principal;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,6 +32,28 @@ namespace HighVoltz.HBRelog
 {
     internal static class Utility
     {
+        public static bool IsUserAdministrator()
+        {
+            //bool value to hold our return value
+            bool isAdmin;
+            try
+            {
+                //get the currently logged in user
+                WindowsIdentity user = WindowsIdentity.GetCurrent();
+                WindowsPrincipal principal = new WindowsPrincipal(user);
+                isAdmin = principal.IsInRole(WindowsBuiltInRole.Administrator);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                isAdmin = false;
+            }
+            catch (Exception)
+            {
+                isAdmin = false;
+            }
+            return isAdmin;
+        }
+
         public const uint WmKeydown = 0x0100;
         public const uint WmChar = 0x0102;
         public const uint WmKeyup = 0x0101;
