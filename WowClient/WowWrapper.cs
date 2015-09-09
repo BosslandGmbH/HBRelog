@@ -8,13 +8,15 @@ using System.Reactive.Threading.Tasks;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using WowClient.Lua;
 using WowClient.Lua.UI;
 using Shared;
+using Button = WowClient.Lua.UI.Button;
 
 namespace WowClient
 {
+    using Keys = System.Windows.Forms.Keys;
+
     public class WowWrapper : IDisposable
     {
         public WowWrapper()
