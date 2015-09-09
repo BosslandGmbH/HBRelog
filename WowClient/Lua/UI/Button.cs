@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using Shared;
 
 namespace WowClient.Lua.UI
 {
@@ -26,6 +29,11 @@ namespace WowClient.Lua.UI
         public override string ToString()
         {
             return string.Format("{0} value: \"{1}\"", base.ToString(), Text);
+        }
+
+        public async Task<bool> ClickAsync()
+        {
+            return await Wrapper.ClickAtAsync(ToWindowCoord());
         }
 
         public bool IsEnabled

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
@@ -410,6 +411,18 @@ namespace WowClient
             {
                 Utility.SendBackgroundKey(WowProcess.MainWindowHandle, (char)key, false);
             }
+        }
+
+        public async Task<bool> ClickAtAsync(PointF position, bool restore = true)
+        {
+            return await Utility.LeftClickAtPosAsync(
+                WowProcess.MainWindowHandle, (int) position.X, (int) position.Y, false, restore);
+        }
+        
+        public async Task<bool> DoubleClickAtAsync(PointF position, bool restore = true)
+        {
+            return await Utility.LeftClickAtPosAsync(
+                WowProcess.MainWindowHandle, (int)position.X, (int)position.Y, false, restore);
         }
         
         public void SendString(string str)

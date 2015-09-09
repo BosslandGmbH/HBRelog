@@ -343,6 +343,14 @@ namespace Shared
 
         private const int SizeOfInput = 28;
 
+        public static async Task<bool> LeftClickAtPosAsync(
+            IntPtr hWnd, int x, int y, bool doubleClick = false, bool restore = true, Func<bool> restoreCondition = null)
+        {
+            LeftClickAtPos(hWnd, x, y, doubleClick, restore, restoreCondition);
+            await Task.Delay(10);
+            return true;
+        }
+
         public static void LeftClickAtPos(
             IntPtr hWnd, int x, int y, bool doubleClick = false, bool restore = true, Func<bool> restoreCondition = null)
         {

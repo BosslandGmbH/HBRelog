@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace WowClient.Lua.UI
 {
@@ -82,6 +83,11 @@ namespace WowClient.Lua.UI
                 var maxLetters = MaxLetters;
                 return Wrapper.Memory.ReadString(ptr, maxBytes > 0 ? maxBytes : maxLetters * 4, Encoding.UTF8);
             }
+        }
+
+        public async Task<bool> ClickAsync()
+        {
+            return await Wrapper.ClickAtAsync(ToWindowCoord());
         }
 
         public override string ToString()

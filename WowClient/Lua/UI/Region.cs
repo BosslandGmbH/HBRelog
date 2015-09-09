@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
+using Shared;
 
 namespace WowClient.Lua.UI
 {
@@ -168,5 +169,37 @@ namespace WowClient.Lua.UI
                 return Address.Deref<float>(Offsets.Region.UIScaleOffset);
             }
         }
+
+        public PointF ToWindowCoord()
+        {
+            var ret = new PointF();
+            //var gameFullScreenFrame = UIObject.GetUIObjectByName<Frame>(LuaManager, "GlueParent") ?? UIObject.GetUIObjectByName<Frame>(LuaManager, "UIParent");
+            var gameFullScreenFrame = this;
+            while (gameFullScreenFrame != null
+                && gameFullScreenFrame.Parent != null)
+            {
+                gameFullScreenFrame = (Region)gameFullScreenFrame.Parent;
+            }
+            if (gameFullScreenFrame == null)
+                return ret;
+            var gameFullScreenFrameRect = gameFullScreenFrame.Rect;
+            var widget = this;
+            var widgetCenter = widget.Center;
+            var windowInfo = Utility.GetWindowInfo(Wrapper.WowProcess.MainWindowHandle);
+            var leftBorderWidth = windowInfo.rcClient.Left - windowInfo.rcWindow.Left;
+            var bottomBorderWidth = windowInfo.rcWindow.Bottom - windowInfo.rcClient.Bottom;
+            var winClientWidth = windowInfo.rcClient.Right - windowInfo.rcClient.Left;
+            var winClientHeight = windowInfo.rcClient.Bottom - windowInfo.rcClient.Top;
+            var xCo = winClientWidth / gameFullScreenFrameRect.Width;
+            var yCo = winClientHeight / gameFullScreenFrameRect.Height;
+
+            ret.X = widgetCenter.X * xCo + leftBorderWidth;
+            ret.Y = widgetCenter.Y * yCo + bottomBorderWidth;
+
+            // flip the Y coord around because in WoW's UI coord space the Y goes up where as in windows it goes down.
+            ret.Y = windowInfo.rcWindow.Bottom - windowInfo.rcWindow.Top - ret.Y;
+            return ret;
+        }
+
     }
 }
