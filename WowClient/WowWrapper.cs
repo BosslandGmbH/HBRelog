@@ -617,7 +617,11 @@ namespace WowClient
                 }
 
                 if (!await Utility.WaitUntilAsync(
-                    async () => !string.IsNullOrEmpty(await CurrentCharacterNameAsync()), TimeSpan.FromMinutes(1), 100))
+                    async () =>
+                    {
+                        ResetGlobals();
+                        return !string.IsNullOrEmpty(await CurrentCharacterNameAsync());
+                    }, TimeSpan.FromMinutes(1), 300))
                 {
                     Console.WriteLine("character name is not visible ingame");
                     return false;
