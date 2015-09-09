@@ -178,7 +178,16 @@ namespace WowClient.Lua.UI
             while (gameFullScreenFrame != null
                 && gameFullScreenFrame.Parent != null)
             {
-                gameFullScreenFrame = (Region)gameFullScreenFrame.Parent;
+                Region r;
+                try
+                {
+                    r = (Region)gameFullScreenFrame.Parent;
+                }
+                catch (Exception)
+                {
+                    break;
+                }
+                gameFullScreenFrame = r;
             }
             if (gameFullScreenFrame == null)
                 return ret;
