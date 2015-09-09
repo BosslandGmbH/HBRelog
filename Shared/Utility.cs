@@ -27,6 +27,7 @@ using System.Security.Principal;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace Shared
 {
@@ -258,12 +259,42 @@ namespace Shared
                    SendMessage(hWnd, NativeMethods.Message.KEY_UP, key, lParam);
         }
 
+        public static bool SendBackgroundKeyCombination(IntPtr hWnd, char key, params char[] modifiers)
+        {
+            var ret = true;
+            foreach (var mod in modifiers)
+            {
+                var scanCode = NativeMethods.MapVirtualKey(mod, 0);
+                var lParam = (UIntPtr)(0x00000001 | (scanCode << 16));
+                ret &= SendMessage(hWnd, NativeMethods.Message.KEY_DOWN, mod, lParam);
+            }
+            {
+                var scanCode = NativeMethods.MapVirtualKey(key, 0);
+                var lParam = (UIntPtr) (0x00000001 | (scanCode << 16));
+                ret &= SendMessage(hWnd, NativeMethods.Message.KEY_DOWN, key, lParam) &&
+                       SendMessage(hWnd, NativeMethods.Message.KEY_UP, key, lParam);
+            }
+            foreach (var mod in modifiers.Reverse())
+            {
+                var scanCode = NativeMethods.MapVirtualKey(mod, 0);
+                var lParam = (UIntPtr)(0x00000001 | (scanCode << 16));
+                ret &= SendMessage(hWnd, NativeMethods.Message.KEY_UP, mod, lParam);
+            }
+            return ret;
+        }
+
         public static void SendBackgroundString(IntPtr hWnd, string str, bool downUp = true)
         {
             foreach (var chr in str)
             {
                 SendBackgroundKey(hWnd, chr, downUp);
             }
+        }
+
+        public static void PasteBackgroundString(IntPtr hWnd, string str)
+        {
+            Clipboard.SetText(str);
+            SendBackgroundKeyCombination(hWnd, (char)Keys.V, (char)Keys.ControlKey);
         }
 
         public static void PostBackgroundKey(IntPtr hWnd, char key, bool useVmChar = true)
