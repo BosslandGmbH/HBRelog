@@ -293,7 +293,11 @@ namespace Shared
 
         public static void PasteBackgroundString(IntPtr hWnd, string str)
         {
-            Clipboard.SetText(str);
+            NativeMethods.OpenClipboard(IntPtr.Zero);
+            var ptr = Marshal.StringToHGlobalUni(str);
+            NativeMethods.SetClipboardData(13, ptr);
+            NativeMethods.CloseClipboard();
+            Marshal.FreeHGlobal(ptr);
             SendBackgroundKeyCombination(hWnd, (char)Keys.V, (char)Keys.ControlKey);
         }
 

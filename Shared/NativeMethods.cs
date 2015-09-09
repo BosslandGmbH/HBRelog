@@ -185,6 +185,15 @@ namespace Shared
 
         #endregion
 
+        [DllImport("user32.dll")]
+        public static extern bool OpenClipboard(IntPtr hWndNewOwner);
+
+        [DllImport("user32.dll")]
+        public static extern bool CloseClipboard();
+
+        [DllImport("user32.dll")]
+        public static extern bool SetClipboardData(uint uFormat, IntPtr data);
+
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         public static extern IntPtr SendMessage(IntPtr hWnd, uint wMsg, IntPtr wParam, UIntPtr lParam);
 
