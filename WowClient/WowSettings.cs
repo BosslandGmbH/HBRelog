@@ -16,7 +16,7 @@ namespace WowClient
         public WowSettings()
         {
             Login = "Email@battle.net";
-            Password = ServerName = AuthenticatorSerial = AuthenticatorRestoreCode = "";
+            Password = Realm = AuthenticatorSerial = AuthenticatorRestoreCode = "";
             AccountName = "WoW1";
             Region = WowRegion.Auto;
         }
@@ -164,14 +164,14 @@ namespace WowClient
             set { _accountCharacterNames = value; NotifyPropertyChanged("AccountCharacterNames"); }
         }
 
-        private string _serverName;
+        private string _realm;
         /// <summary>
         /// Name of the WoW server
         /// </summary>
-        public string ServerName
+        public string Realm
         {
-            get { return _serverName; }
-            set { _serverName = value; NotifyPropertyChanged("ServerName"); }
+            get { return _realm; }
+            set { _realm = value; NotifyPropertyChanged("Realm"); }
         }
 
         private int _wowWindowWidth;
