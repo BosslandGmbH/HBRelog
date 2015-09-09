@@ -299,7 +299,7 @@ namespace WowClient
                 return false;
             }
 
-            Utility.SendBackgroundString(WowProcess.MainWindowHandle, text);
+            SendString(text);
             if (!await Utility.WaitUntilAsync(() => editBox.Text == text, TimeSpan.FromMilliseconds(500)))
             {
                 Console.WriteLine("text verification fail");
@@ -397,7 +397,7 @@ namespace WowClient
         {
             if (IsInGame || IsConnectingOrLoading)
                 return false;
-            var t = await GetWidgetAsync<FontString>("GlueDialogText");
+            var t = await GetWidgetAsync<FontString>("GlueDialogText", 10000);
             if (t == null)
                 return false;
             return CurrentGlueState == GlueState.CharacterSelection
@@ -414,12 +414,14 @@ namespace WowClient
         
         public void SendString(string str)
         {
+            // no control chars
             if (Regex.IsMatch(str, "^[^\t\b\n\r]*$"))
             {
-                Utility.SendBackgroundString(WowProcess.MainWindowHandle, str);
+                Utility.PasteBackgroundString(WowProcess.MainWindowHandle, str);
             }
             else
             {
+                // split string into sequences of non-control and control chars
                 Regex.Matches(str, "([^\t\b\n\r]*)([\t\b\n\r]*)")
                 .Cast<Match>()
                 .Select(m => new
@@ -431,7 +433,7 @@ namespace WowClient
                 .ToList()
                 .ForEach(m =>
                 {
-                    Utility.SendBackgroundString(WowProcess.MainWindowHandle, m.noncontrolChars);
+                    Utility.PasteBackgroundString(WowProcess.MainWindowHandle, m.noncontrolChars);
                     Utility.SendBackgroundString(WowProcess.MainWindowHandle, m.controlChars, false);
                 });
             }
@@ -442,6 +444,8 @@ namespace WowClient
             if (!IsInGame)
                 return false;
 
+            //var chatFrame = await GetWidgetAddressAsync("ChatFrame")
+            
             var chk = new Func<bool>(() => FocusedWidget != null
                     && Regex.IsMatch(FocusedWidget.Name, "^ChatFrame\\d+EditBox$"));
             if (!chk())
@@ -485,6 +489,10 @@ namespace WowClient
                 return false;
             }
 
+            await Task.Delay(3000);
+
+            ResetGlobals();
+
             // transition to character select screen
             if (!await Utility.WaitUntilAsync(async () => await IsCharacterSelectionScreenAsync(),
                 TimeSpan.FromSeconds(30), 100))
@@ -495,16 +503,37 @@ namespace WowClient
 
             await WaitGlueParentInitAsync();
 
-            await Task.Delay(100);
             return true;
         }
 
-        public async Task<string> CurrentCharacterNameAsync()
+        public async Task<string> CurrentCharacterNameAsync(int timeoutMilliseconds = 5000)
         {
             if (!IsInGame)
                 return null;
-            var w = await GetWidgetAsync<FontString>("PlayerName");
+            var w = await GetWidgetAsync<FontString>("PlayerName", timeoutMilliseconds);
             return (w != null) ? w.Text : null;
+        }
+
+        public async Task<string> GetLuaResultAsync(string luaExpression, string outputVariableName = "outputVar", int timeoutMilliseconds = 5000)
+        {
+            if (!IsInGame)
+                return null;
+
+            var chatCommand = string.Format("/run _G[\'{0}\'] = tostring({1})", outputVariableName, luaExpression);
+            await SendChatAsync(chatCommand);
+            ResetGlobals();
+            if (!await Utility.WaitUntilAsync(() => Globals.GetValue(outputVariableName) != null, 1000, 100))
+            {
+                Console.WriteLine("check \"{0}\" variable failed", outputVariableName);
+                return null;
+            }
+            await Task.Delay(500);
+            return Globals.GetValue(outputVariableName).String.Value;
+        }
+
+        public async Task<string> CurrentCharacterRealmAsync(int timeoutMilliseconds = 5000)
+        {
+            return await GetLuaResultAsync("GetRealmName()");
         }
 
         /// <summary>
@@ -518,13 +547,21 @@ namespace WowClient
                 throw new ArgumentException("settings == null");
             if (!settings.IsValid())
                 throw new ArgumentException("settings.IsValid() == false");
-            var charName = await CurrentCharacterNameAsync();
-            if (charName != null && charName != settings.CharacterName)
+            if (IsInGame)
             {
-                if (!await LogoutAsync())
+                var charName = await CurrentCharacterNameAsync();
+                if (charName == null)
                 {
-                    Console.WriteLine("could not logout");
+                    Console.WriteLine("could not get character name ingame");
                     return false;
+                }
+                if (charName != settings.CharacterName)
+                {
+                    if (!await LogoutAsync())
+                    {
+                        Console.WriteLine("could not logout, to switch characters: {0} to {1}", charName, settings.CharacterName);
+                        return false;
+                    }
                 }
             }
             if (await IsLoginScreenAsync())
@@ -578,14 +615,25 @@ namespace WowClient
                     Console.WriteLine("get into the game timed out");
                     return false;
                 }
+
+                if (!await Utility.WaitUntilAsync(
+                    async () => !string.IsNullOrEmpty(await CurrentCharacterNameAsync()), TimeSpan.FromMinutes(1), 100))
+                {
+                    Console.WriteLine("character name is not visible ingame");
+                    return false;
+                }
             }
-            await Task.Delay(100);
 
+            if (IsInGame)
+            {
+                CurrentCharacterRealmCached = await CurrentCharacterRealmAsync();
+            }
 
-
-
+            await Task.Delay(1000);
             return IsInGame;
         }
+
+        public string CurrentCharacterRealmCached { get; private set; }
 
         public bool IsInGame
         {
