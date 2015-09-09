@@ -407,6 +407,16 @@ namespace WowClient
                 && !t.IsVisible;
         }
 
+        public async Task<bool> IsGlueDialogVisibleAsync()
+        {
+            if (IsInGame || IsConnectingOrLoading)
+                return false;
+            var t = await GetWidgetAsync<FontString>("GlueDialogText", 10000);
+            if (t == null)
+                return false;
+            return t.IsVisible;
+        }
+
         public void SendKey(params Keys[] keys)
         {
             foreach (var key in keys)
@@ -546,9 +556,94 @@ namespace WowClient
             return Globals.GetValue(outputVariableName).String.Value;
         }
 
+        public async Task<bool> IsRealmSelectScreenAsync()
+        {
+            if (CurrentGlueState == GlueState.ServerSelection)
+            {
+                var frame = await GetWidgetAsync<Frame>("RealmList");
+                return frame != null && frame.IsVisible;
+            }
+            return false;
+        }
+
         public async Task<string> CurrentCharacterRealmAsync(int timeoutMilliseconds = 5000)
         {
-            return await GetLuaResultAsync("GetRealmName()");
+            if (IsInGame)
+            {
+                return Globals.GetValue("realm").String.Value;
+            }
+            if (await IsCharacterSelectionScreenAsync())
+            {
+                var realmString = await GetWidgetAsync<FontString>("CharSelectRealmName");
+                if (realmString == null)
+                    return null;
+                // string in form of "Xxxxxx (PvP)", so we take the part before '('
+                return realmString.Text.Split('(')[0].TrimEnd();
+            }
+            return null;
+        }
+
+        public async Task<bool> IsCharacterCreationScreenAsync()
+        {
+            if (IsInGame || IsConnectingOrLoading)
+                return false;
+            var t = await GetWidgetAsync<Frame>("CharacterCreateFrame", 10000);
+            if (t == null)
+                return false;
+            return CurrentGlueState == GlueState.CharacterCreation
+                && t.IsVisible;
+        }
+
+        public async Task<bool> SelectRealmAsync(string realmName)
+        {
+            var currRealmName = await CurrentCharacterRealmAsync();
+
+            if (currRealmName == realmName)
+                return true;
+
+            Console.WriteLine("change realm {0} -> {1}", currRealmName, realmName);
+            if (!await IsRealmSelectScreenAsync())
+            {
+                if (!await IsCharacterSelectionScreenAsync())
+                {
+                    Console.WriteLine("character select screen should be active when selecting realm");
+                    return false;
+                }
+                var btn = await GetWidgetAsync<Button>("CharSelectChangeRealmButton");
+                if (btn != null)
+                {
+                    await btn.ClickAsync();
+                }
+            }
+            if (!await Utility.WaitUntilAsync(async () => await IsRealmSelectScreenAsync(), 10000, 100))
+            {
+                Console.WriteLine("could not open realm select screen");
+                return false;
+            }
+
+            var scrollDown = await GetWidgetAsync<Button>("RealmListScrollFrameScrollBarScrollDownButton");
+            var scrollUp = await GetWidgetAsync<Button>("RealmListScrollFrameScrollBarScrollUpButton");
+            if (scrollDown == null || scrollUp == null)
+            {
+                Console.WriteLine("no scroll buttons");
+                return false;
+            }
+            Button realmBtn = null;
+            while ((realmBtn = (await GetWidgetsAsync<Button>())
+                .FirstOrDefault(b => b.Text == realmName)) == null)
+            {
+                await scrollDown.ClickAsync();
+            }
+            await realmBtn.ClickAsync();
+            await realmBtn.ClickAsync();
+            if (!await Utility.WaitUntilAsync(async () => await IsCharacterSelectionScreenAsync(), 10000, 300))
+            {
+                Console.WriteLine("failed to detect character selection screen");
+                return false;
+            }
+            ResetGlobals();
+            await Task.Delay(1000);
+            return true;
         }
 
         /// <summary>
@@ -588,16 +683,38 @@ namespace WowClient
                     Console.WriteLine("can't enter credentials");
                     return false;
                 }
-                // transition to character select screen
-                Utility.SendBackgroundKey(WowProcess.MainWindowHandle, (char)Keys.Enter, false);
-                if (!await Utility.WaitUntilAsync(async () => await IsCharacterSelectionScreenAsync(), TimeSpan.FromSeconds(30), 100))
+                // transition to next screen
+                SendKey(Keys.Enter);
+                if (!await Utility.WaitUntilAsync(async () => !(await IsGlueDialogVisibleAsync()), TimeSpan.FromSeconds(30), 100))
                 {
+                    // TODO revisit message
+                    Console.WriteLine("connection timed out");
+                    return false;
+                }
+            }
+            if (await IsCharacterCreationScreenAsync())
+            {
+                SendKey(Keys.Escape);
+                if (!await Utility.WaitUntilAsync(async () => !(await IsGlueDialogVisibleAsync()), TimeSpan.FromSeconds(30), 100))
+                {
+                    // TODO revisit message
                     Console.WriteLine("connection timed out");
                     return false;
                 }
             }
             if (await IsCharacterSelectionScreenAsync())
             {
+                var currRealmName = await CurrentCharacterRealmAsync();
+
+                if (currRealmName != settings.Realm)
+                {
+                    if (!await SelectRealmAsync(settings.Realm))
+                    {
+                        Console.WriteLine("could not select realm");
+                        return false;
+                    }
+                }
+
                 var activeCharNames = (await GetWidgetsAsync<FontString>())
                     .Where(w => w.IsVisible
                         && Regex.IsMatch(w.Name, "^CharSelectCharacterButton\\d+ButtonTextName")
@@ -645,7 +762,12 @@ namespace WowClient
 
             if (IsInGame)
             {
-                CurrentCharacterRealmCached = await CurrentCharacterRealmAsync();
+                // init realm variable for future use
+                CurrentCharacterRealmCached = await GetLuaResultAsync("GetRealmName()", "realm");
+                if (CurrentCharacterRealmCached == null)
+                {
+                    return false;
+                }
             }
 
             await Task.Delay(1000);
