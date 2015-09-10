@@ -24,6 +24,9 @@ using System.Windows.Shell;
 using System.Linq;
 using System.Reflection;
 using System.IO;
+using System.Windows.Forms;
+using Application = System.Windows.Application;
+using MessageBox = System.Windows.MessageBox;
 
 namespace HighVoltz.HBRelog
 {
@@ -56,6 +59,9 @@ namespace HighVoltz.HBRelog
 
                     var app = new Application();
                     Window window = new MainWindow();
+                    if (!Utility.IsUserAdministrator())
+                        MessageBox.Show(window, "HBRelog must be run as Administrator!", "HBRelog",
+                            MessageBoxButton.OK);
                     window.Title = IsAssemblyDebugBuild() ? "HBRelog(Debug)" : "HBRelog";
                     window.Show();
                     app.Run(window);

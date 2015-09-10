@@ -275,6 +275,10 @@
       <Project>{29bee34e-8d6a-47bf-96fa-aba46f6e9b66}</Project>
       <Name>GreyMagic</Name>
     </ProjectReference>
+    <ProjectReference Include="Shared\Shared.csproj">
+      <Project>{e175600b-3279-425b-9b6c-94b4613c71a8}</Project>
+      <Name>Shared</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
