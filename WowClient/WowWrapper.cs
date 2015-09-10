@@ -601,7 +601,6 @@ namespace WowClient
             if (currRealmName == realmName)
                 return true;
 
-            Console.WriteLine("change realm {0} -> {1}", currRealmName, realmName);
             if (!await IsRealmSelectScreenAsync())
             {
                 if (!await IsCharacterSelectionScreenAsync())
