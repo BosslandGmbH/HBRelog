@@ -325,6 +325,8 @@ namespace HighVoltz.HBRelog.Settings
                     hbSettingsElement.Add(new XElement("HonorbuddyPath", profile.Settings.HonorbuddySettings.HonorbuddyPath));
                     hbSettingsElement.Add(new XElement("UseHBBeta", profile.Settings.HonorbuddySettings.UseHBBeta));
                     hbSettingsElement.Add(new XElement("AutoStartBot", profile.Settings.HonorbuddySettings.AutoStartBot));
+                    hbSettingsElement.Add(new XElement("HonorbuddyArgs", profile.Settings.HonorbuddySettings.HonorbuddyArgs));
+
 
                     settingsElement.Add(hbSettingsElement);
                     profileElement.Add(settingsElement);
@@ -481,6 +483,7 @@ namespace HighVoltz.HBRelog.Settings
                             profile.Settings.HonorbuddySettings.HonorbuddyPath = GetElementValue<string>(hbSettingsElement.Element("HonorbuddyPath"));
                             profile.Settings.HonorbuddySettings.UseHBBeta = GetElementValue<bool>(hbSettingsElement.Element("UseHBBeta"));
                             profile.Settings.HonorbuddySettings.AutoStartBot = GetElementValue<bool>(hbSettingsElement.Element("AutoStartBot"));
+                            profile.Settings.HonorbuddySettings.HonorbuddyArgs = GetElementValue<string>(hbSettingsElement.Element("HonorbuddyArgs"));
                         }
                         XElement tasksElement = profileElement.Element("Tasks");
                         // Load the Task list.
