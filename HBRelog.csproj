@@ -289,7 +289,19 @@
     <PostBuildEvent>
     </PostBuildEvent>
   </PropertyGroup>
-  <UsingTask TaskName="DownloadFile" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+  <Choose>
+    <When Condition="$(MSBuildToolsVersion)!='14.0'">
+      <PropertyGroup>
+        <ToolsDll>$(MSBuildToolsPath)\Microsoft.Build.Tasks.v$(MSBuildToolsVersion).dll</ToolsDll>
+      </PropertyGroup>
+    </When>
+    <When Condition="$(MSBuildToolsVersion)=='14.0'">
+      <PropertyGroup>
+        <ToolsDll>$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll</ToolsDll>
+      </PropertyGroup>
+    </When>
+  </Choose>
+  <UsingTask TaskName="DownloadFile" TaskFactory="CodeTaskFactory" AssemblyFile="$(ToolsDll)">
     <ParameterGroup>
       <Url ParameterType="System.String" Required="true" />
       <FileName ParameterType="System.String" Required="true" />
