@@ -108,9 +108,7 @@ namespace HighVoltz.HBRelog.WoW
 					_lockOwner.StartupSequenceIsComplete = false;
 					_lockOwner.Memory = null;
 
-					bool lanchingWoW = _lockOwner.Settings.WowPath.IndexOf("WoW.exe", StringComparison.InvariantCultureIgnoreCase) != -1
-                         || _lockOwner.Settings.WowPath.IndexOf("WoWB.exe", StringComparison.InvariantCultureIgnoreCase) != -1 // Beta WoW
-                         || _lockOwner.Settings.WowPath.IndexOf("WoWT.exe", StringComparison.InvariantCultureIgnoreCase) != -1;// PTR WoW
+					bool lanchingWoW = IsWoWPath(_lockOwner.Settings.WowPath);
 
 					// force 32 bit client to start.
 					if (lanchingWoW && _lockOwner.Settings.WowArgs.IndexOf("-noautolaunch64bit", StringComparison.InvariantCultureIgnoreCase) == -1)
@@ -156,6 +154,14 @@ namespace HighVoltz.HBRelog.WoW
 					_lockOwner.Profile.Log("Wow is ready to login.");
 				}
 			}
+		}
+
+		private bool IsWoWPath(string path)
+		{
+			var originalExeFileName = FileVersionInfo.GetVersionInfo(path).OriginalFilename;
+			return originalExeFileName == "WoW.exe"
+				|| originalExeFileName == "WoWB.exe" // Beta WoW
+				|| originalExeFileName == "WoWT.exe" ;// PTR WoW
 		}
 
 		bool IsWoWProcess(Process proc)
