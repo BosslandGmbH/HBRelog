@@ -97,8 +97,35 @@ namespace HighVoltz.HBRelog
         public static Process GetChildProcessByName(int parentPid, string processName)
         {
             var processes = Process.GetProcessesByName(processName);
-            return processes.FirstOrDefault(process => IsChildProcessOf(parentPid, process));
+            var result =  processes.FirstOrDefault(process => IsChildProcessOf(parentPid, process));
+
+	        if (result != null)
+		        return result;
+
+			// search for a process whose exe was renamed. 
+	        return (from proc in Process.GetProcesses()
+		        let procPath = GetProcessPath(proc)
+		        where !string.IsNullOrEmpty(procPath) && File.Exists(procPath)
+		        let exeOriginalNameWithExtention = FileVersionInfo.GetVersionInfo(procPath).OriginalFilename
+		        where !string.IsNullOrEmpty(exeOriginalNameWithExtention)
+				let exeOriginalName = Path.GetFileNameWithoutExtension(exeOriginalNameWithExtention)
+				where exeOriginalName != null && exeOriginalName.Equals(processName, StringComparison.OrdinalIgnoreCase)
+		        select proc).FirstOrDefault();
         }
+
+	    private static string GetProcessPath(Process proc)
+	    {
+			// Wrapped in a try/catch since some processes, such as those that are started in suspend state, 
+			// will throw exceptions when MainModule is accessed.
+		    try
+		    {
+			    return proc.MainModule.FileName;
+		    }
+		    catch (Exception)
+		    {
+				return null;
+		    }   
+	    }
 
         public static bool IsChildProcessOf(int parentPid, Process child)
         {

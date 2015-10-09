@@ -76,9 +76,11 @@ namespace HighVoltz.HBRelog.WoW
 
 				if (_launcherPid > 0)
 				{
+					var executablePath = Path.GetFileNameWithoutExtension(_lockOwner.Profile.Settings.WowSettings.WowPath);
                     Process wowProcess = Utility.GetChildProcessByName(_launcherPid, "Wow") 
                         ?? Utility.GetChildProcessByName(_launcherPid, "WowB")  // Beta
-                        ?? Utility.GetChildProcessByName(_launcherPid, "WowT"); // PTR
+                        ?? Utility.GetChildProcessByName(_launcherPid, "WowT")	// PTR
+						?? Utility.GetChildProcessByName(_launcherPid, executablePath);	// Renamed executables
 					if (wowProcess != null)
 					{
 						_launcherPid = 0;
