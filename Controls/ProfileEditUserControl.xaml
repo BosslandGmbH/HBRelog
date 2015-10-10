@@ -9,7 +9,7 @@
              xmlns:HighVoltz="clr-namespace:HighVoltz.HBRelog"
              mc:Ignorable="d" 
              x:Name="root"
-             d:DesignHeight="300" d:DesignWidth="300">
+             d:DesignHeight="500" d:DesignWidth="300">
     <UserControl.Resources>
         <Converters:SpacifierConverter x:Key="SpaceConverter" />
         <Converters:TaskIsRunningConverter x:Key="TaskIsRunningConverter" />
@@ -30,9 +30,10 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
-								<RowDefinition Height="Auto" />
-								<RowDefinition Height="Auto" />
-								<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
@@ -94,6 +95,11 @@
                             <TextBlock Text="WoW Args" Grid.Row="10" HorizontalAlignment="Left" Height="20" Margin="5,0,0,1" />
                             <TextBox x:Name="WoWParms" Grid.Column="2" Grid.Row="10" Text="{Binding Path=WowSettings.WowArgs}"
                                      ToolTip="Command-line arguments to pass to WoW or launcher (Advanced)"/>
+                            <TextBlock Text="Reuse WoW" Grid.Row="11" HorizontalAlignment="Left" Height="20" Margin="5,0,0,1" Visibility="{x:Static HighVoltz:HbRelogManager.HiddenIfDebug}"/>
+                            <CheckBox x:Name="ReuseFreeWowProcess" Grid.Row="11" Grid.Column="2" HorizontalAlignment="Left" Visibility="{x:Static HighVoltz:HbRelogManager.HiddenIfDebug}"
+                                VerticalAlignment="Center"
+                                IsChecked="{Binding Path=WowSettings.ReuseFreeWowProcess}"
+                                ToolTip="Reuse existing wow window which are not owned by HBRelog, thus not create new ones and save some time."/>
                         </Grid>
                     </ScrollViewer>
                 </Border>
@@ -104,13 +110,14 @@
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <Grid>
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
+                                <RowDefinition MinHeight="22" Height="Auto"/>
+                                <RowDefinition MinHeight="22" Height="Auto" />
+                                <RowDefinition MinHeight="22" Height="Auto" />
+                                <RowDefinition MinHeight="22" Height="Auto" />
+                                <RowDefinition MinHeight="22" Height="Auto" />
+                                <RowDefinition MinHeight="22" Height="Auto" />
+                                <RowDefinition MinHeight="22" Height="Auto" />
+                                <RowDefinition MinHeight="22" Height="Auto" />
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="18" />
@@ -118,26 +125,26 @@
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             <!--HBKey-->
-                            <TextBlock Text="Honorbuddy Key" HorizontalAlignment="Left" Height="20" Margin="5,0,0,1" Grid.Row="0" Grid.ColumnSpan="2" />
+                            <TextBlock Text="Honorbuddy Key" HorizontalAlignment="Left" Height="20" Margin="5,0,0,1" Grid.Row="0" Grid.ColumnSpan="2" VerticalAlignment="Center" />
                             <TextBox x:Name="HonorbuddyKeyText" Grid.Row="0" Grid.Column="2" Text="{Binding Path=HonorbuddySettings.HonorbuddyKey}"
                                      ToolTip="The key used to log into HB (optional)"/>
                             <!--CustomClass-->
-                            <TextBlock Text="Custom Class" HorizontalAlignment="Left" Height="20" Margin="5,1,0,0" Grid.Row="1" Grid.ColumnSpan="2" />
+                            <TextBlock Text="Custom Class" HorizontalAlignment="Left" Height="20" Margin="5,1,0,0" Grid.Row="1" Grid.ColumnSpan="2" VerticalAlignment="Center" />
                             <TextBox x:Name="CustomClassText" Grid.Row="1" Grid.Column="2" Text="{Binding Path=HonorbuddySettings.CustomClass}"
                                      ToolTip="The name of the CustomClass that you want to use e.g. Singular (optional)"/>
                             <!-- BotBase -->
-                            <TextBlock Text="Bot" Grid.Row="2" HorizontalAlignment="Left" Height="20" Margin="5,0,0,1" Grid.ColumnSpan="2" />
+                            <TextBlock Text="Bot" Grid.Row="2" HorizontalAlignment="Left" Height="20" Margin="5,0,0,1" Grid.ColumnSpan="2" VerticalAlignment="Center" />
                             <TextBox x:Name="BotBaseText" Grid.Row="2" Grid.Column="2" Text="{Binding Path=HonorbuddySettings.BotBase}"
                                      ToolTip="The name of the bot that you want to use e.g. ProfessionBuddy (optional)"/>
                             <!--HB Profile-->
-                            <TextBlock Text="Profile Path" HorizontalAlignment="Left" Height="20" Margin="5,1,0,0" Grid.Row="3" Grid.ColumnSpan="2" />
+                            <TextBlock Text="Profile Path" HorizontalAlignment="Left" Height="20" Margin="5,1,0,0" Grid.Row="3" Grid.ColumnSpan="2" VerticalAlignment="Center" />
                             <Controls:FileInputBox x:Name="HBProfileInput" Grid.Row="3" Grid.Column="2" 
                                                        FileNameChanged="HBProfileFileInputFileNameChanged"
                                                        Title="Browse to and select your Honorbuddyy profile"
                                                        DefaultExt=".xml" Filter=".xml|*.xml"
                                                        ToolTip="The path to a Honorbuddy/Professionbuddy profile that you want to use. (optional)"/>
                             <!--HB Path-->
-                            <TextBlock Text="Honorbuddy Path" HorizontalAlignment="Left" Height="20" Margin="5,0,0,1" Grid.Row="4" Grid.ColumnSpan="2" />
+                            <TextBlock Text="Honorbuddy Path" HorizontalAlignment="Left" Height="20" Margin="5,0,0,1" Grid.Row="4" Grid.ColumnSpan="2" VerticalAlignment="Center" />
                             <Controls:FileInputBox x:Name="HBPathInput" Grid.Row="4" Grid.Column="2" 
                                                        FileNameChanged="HBPathInputFileNameChanged"
                                                        Title="Browse to and select your WoW.exe file"
@@ -145,14 +152,18 @@
                                                        ToolTip=" Path to your honorbuddy.exe file (it can be renamed)"/>
 
                             <!-- BotBase -->
-                            <TextBlock Text="Honorbuddy Args" Grid.Row="5" HorizontalAlignment="Left" Height="20" Margin="5,1,0,0" Grid.ColumnSpan="2" />
+                            <TextBlock Text="Honorbuddy Args" Grid.Row="5" HorizontalAlignment="Left" Height="20" Margin="5,1,0,0" Grid.ColumnSpan="2" VerticalAlignment="Center" />
                             <TextBox x:Name="HBArgsText" Grid.Row="5" Grid.Column="2" Text="{Binding Path=HonorbuddySettings.HonorbuddyArgs}"
                                      ToolTip="The name of the bot that you want to use e.g. ProfessionBuddy (optional)"/>
                             <!-- Use HB Beta-->
-                            <TextBlock Text="Use HB Beta" Grid.Row="6" Grid.ColumnSpan="2" />
-                            <CheckBox x:Name="UseHBBetaCheck" Grid.Column="2" Grid.Row="6"
+                            <TextBlock Text="Use HB Beta" Grid.Row="6" Grid.ColumnSpan="2" Margin="5,1,0,0" VerticalAlignment="Center" />
+                            <CheckBox x:Name="UseHBBetaCheck" Grid.Column="2" Grid.Row="6" VerticalAlignment="Center"
                               ToolTip="Uses HB beta. Auto-update HB must be enabled."
                               IsChecked="{Binding Path=HonorbuddySettings.UseHBBeta}"/>
+                            <TextBlock Text="Auto start bot" Grid.Row="7" Grid.ColumnSpan="2" VerticalAlignment="Center" Margin="5,1,0,0" />
+                            <CheckBox x:Name="AutoStartBot" Grid.Column="2" Grid.Row="7" VerticalAlignment="Center" VerticalContentAlignment="Center"
+                              ToolTip="Start bot when Honorbuddy window initializes."
+                              IsChecked="{Binding Path=HonorbuddySettings.AutoStartBot}"/>
                         </Grid>
                     </ScrollViewer>
                 </Border>

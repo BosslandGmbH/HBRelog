@@ -6,8 +6,15 @@ using HighVoltz.HBRelog.Tasks;
 
 namespace HighVoltz.HBRelog.Remoting
 {
-	[ServiceBehavior(InstanceContextMode = InstanceContextMode.PerSession, IncludeExceptionDetailInFaults = true)]
-	class RemotingApi : MarshalByRefObject, IRemotingApi
+    class BotEventArgs : EventArgs
+    {
+        public string BotEvent { get; set; }
+    }
+
+    [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single,
+        ConcurrencyMode = ConcurrencyMode.Multiple, UseSynchronizationContext = false,
+        IncludeExceptionDetailInFaults = true)]
+    class RemotingApi : MarshalByRefObject, IRemotingApi
 	{
 		CharacterProfile GetProfileByHbProcID(int hbProcID)
 		{
@@ -29,6 +36,10 @@ namespace HighVoltz.HBRelog.Remoting
 			if (profile != null)
 			{
 				profile.TaskManager.HonorbuddyManager.SetStartupSequenceToComplete();
+			    if (HbRelogManager.Clients.ContainsKey(hbProcID))
+			        HbRelogManager.Clients.Remove(hbProcID);
+                HbRelogManager.Clients.Add(hbProcID,
+                    OperationContext.Current.GetCallbackChannel<IRemotingApiCallback>());
 				profile.Log("Opened communication with HBRelogHelper");
 				return true;
 			}
@@ -209,5 +220,36 @@ namespace HighVoltz.HBRelog.Remoting
 				Log.Write("Could not find a profile with the name: {0}", profileName);
 			}
 		}
+
+        public void NotifyBotStopped(int hbProcId, string reason)
+        {
+            if (OnBotStoppedEvent != null)
+                OnBotStoppedEvent(this, new BotStoppedEventArgs() { HbProcessId = hbProcId, Reason = reason });
+        }
+
+        public void NotifyBotEvent(string what)
+        {
+            var handler = OnBotEvent;
+            if (handler != null) handler(this, new BotEventArgs() { BotEvent = what });
+        }
+
+        IRemotingApiCallback Callback
+        {
+            get
+            {
+                return OperationContext.Current.GetCallbackChannel<IRemotingApiCallback>();
+            }
+        }
+
+        public event EventHandler OnBotStoppedEvent;
+
+        public event EventHandler OnBotEvent;
+
 	}
+
+    public class BotStoppedEventArgs : EventArgs
+    {
+        public int HbProcessId { get; set; }
+        public string Reason { get; set; }
+    }
 }

@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security;
-using Binarysharp.Assemblers.Fasm;
 using GreyMagic.Internals;
 using GreyMagic.Native;
 
@@ -23,7 +22,6 @@ namespace GreyMagic
             {
                 ThreadHandle = Imports.OpenThread(0x0001F03FF, false, (uint) proc.Threads[0].Id);
                 WindowHandle = Process.MainWindowHandle;
-	            Asm = new FasmNet();
             }
             else
             {
@@ -66,12 +64,6 @@ namespace GreyMagic
         /// <remarks>Created 2012-04-23</remarks>
         public bool IsProcessOpen { get { return ProcessHandle != null && !ProcessHandle.IsClosed && !ProcessHandle.IsInvalid; } }
 
-        #region FasmManaged stuff
-
-        public FasmNet Asm { get; private set; }
-
-        #endregion
-
         #region Imports
 
         [DllImport("kernel32.dll", SetLastError = true)]
@@ -93,6 +85,29 @@ namespace GreyMagic
         [SuppressUnmanagedCodeSecurity]
         private static extern bool VirtualProtectEx(SafeMemoryHandle hProcess, IntPtr lpAddress, IntPtr dwSize,
             uint flNewProtect, out uint lpflOldProtect);
+
+        [DllImport("kernel32.dll")]
+        [SuppressUnmanagedCodeSecurity]
+        private static extern bool VirtualProtectEx(SafeMemoryHandle hProcess, uint dwAddress, IntPtr dwSize,
+            uint flNewProtect, out uint lpflOldProtect);
+
+
+        public struct MEMORY_BASIC_INFORMATION
+        {
+            public int BaseAddress;
+            public int AllocationBase;
+            public int AllocationProtect;
+            public int RegionSize;
+            public int State;
+            public int Protect;
+            public int lType;
+        }
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern int VirtualQueryEx(SafeMemoryHandle hProcess, IntPtr lpAddress, out MEMORY_BASIC_INFORMATION lpBuffer, uint dwLength);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern int VirtualQueryEx(SafeMemoryHandle hProcess, uint dwAddress, out MEMORY_BASIC_INFORMATION lpBuffer, uint dwLength);
 
         #endregion
 
@@ -121,6 +136,9 @@ namespace GreyMagic
             if (isRelative)
                 address = GetAbsolute(address);
 
+            MEMORY_BASIC_INFORMATION meminfo;
+            VirtualQueryEx(ProcessHandle, address, out meminfo, 28);
+
             var buffer = new byte[count];
             fixed (byte* buf = buffer)
             {
@@ -131,8 +149,16 @@ namespace GreyMagic
                 }
             }
 
-            throw new AccessViolationException(string.Format("Could not read bytes from {0} [{1}]!",
-                isRelative ? GetRelative(address).ToString("X8") : address.ToString("X8"), Marshal.GetLastWin32Error()));
+            var protFlags = ((MemoryProtectionType)meminfo.Protect)
+                .GetFlags()
+                .Aggregate("", (s, e) => s + ", " + e);
+
+            var stateFlags = ((MemoryAllocationType)meminfo.State)
+                .GetFlags()
+                .Aggregate("", (s, e) => s + ", " + e);
+
+            throw new AccessViolationException(string.Format("Could not read bytes from {0} [{1}]! Protect = {2}, State = {3}",
+                isRelative ? GetRelative(address).ToString("X8") : address.ToString("X8"), Marshal.GetLastWin32Error(), protFlags, stateFlags));
         }
 
         /// <summary>
@@ -173,9 +199,22 @@ namespace GreyMagic
         public new int ReadBytes(uint dwAddress, void* buffer, int count)
         {
             int lpBytesRead;
+            MEMORY_BASIC_INFORMATION meminfo;
+            VirtualQueryEx(ProcessHandle, dwAddress, out meminfo, 28);
+
             if (!ReadProcessMemory(ProcessHandle, dwAddress, new IntPtr(buffer), count, out lpBytesRead))
-                throw new AccessViolationException(string.Format("Could not read {2} byte(s) from {0} [{1}]!",
-                    dwAddress.ToString("X8"), Marshal.GetLastWin32Error(), count));
+            {
+                var protFlags = ((MemoryProtectionType)meminfo.Protect)
+                    .GetFlags()
+                    .Aggregate("", (s, e) => s + ", " + e);
+
+                var stateFlags = ((MemoryAllocationType)meminfo.State)
+                    .GetFlags()
+                    .Aggregate("", (s, e) => s + ", " + e);
+
+                throw new AccessViolationException(string.Format("Could not read {2} byte(s) from {0} [{1}]! Protect = {3}, State = {4}",
+                    dwAddress.ToString("X8"), Marshal.GetLastWin32Error(), count, protFlags, stateFlags));
+            }
 
             return lpBytesRead;
         }
@@ -226,12 +265,25 @@ namespace GreyMagic
             int numRead = bytes.Length;
             fixed (byte* bytesPtr = bytes)
             {
+                MEMORY_BASIC_INFORMATION meminfo;
+                VirtualQueryEx(ProcessHandle, address, out meminfo, 28);
+
                 if (!ReadProcessMemory(ProcessHandle, relative ? GetAbsolute(address) : address, bytesPtr, bytes.Length, out numRead))
                 {
+                    var protFlags = ((MemoryProtectionType)meminfo.Protect)
+                        .GetFlags()
+                        .Aggregate("", (s, e) => s + ", " + e);
+
+                    var stateFlags = ((MemoryAllocationType)meminfo.State)
+                        .GetFlags()
+                        .Aggregate("", (s, e) => s + ", " + e);
+
                     const uint STATUS_PARTIAL_COPY = 299;
                     int error = Marshal.GetLastWin32Error();
                     if (error != STATUS_PARTIAL_COPY)
-                        throw new AccessViolationException(string.Format("Could not read bytes from {0} [{1}]!", address.ToString("X8"), error), new Win32Exception());
+                        throw new AccessViolationException(
+                            string.Format("Could not read bytes from {0} [{1}]! Protect = {2}, State = {3}",
+                                address.ToString("X8"), error, protFlags, stateFlags), new Win32Exception());
                 }
             }
 
@@ -286,9 +338,6 @@ namespace GreyMagic
             ProcessHandle.Dispose();
             ProcessHandle = null;
             SafeMemoryHandle.CloseHandle(ThreadHandle);
-            if (Asm != null)
-                Asm.Clear();
-            Asm = null;
             base.Dispose();
         }
 

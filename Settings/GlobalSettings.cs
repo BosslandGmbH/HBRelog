@@ -47,6 +47,8 @@ namespace HighVoltz.HBRelog.Settings
         private bool _useDarkStyle;
 		private bool _setGameWindowTitle;
         private int _wowDelay;
+        private string _hbKeyPool;
+        private List<string> _freeHBKeyPool = null;
 
         private GlobalSettings()
         {
@@ -58,7 +60,8 @@ namespace HighVoltz.HBRelog.Settings
         }
 
 	    public static readonly string DefaultSettingsPath =
-		    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "HighVoltz\\HBRelog\\Setting.xml");
+		    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), string.Format("HighVoltz\\HBRelog\\Setting{0}.xml",
+                Program.IsAssemblyDebugBuild() ? ".debug" : ""));
 
 	    public string SettingsPath { get; private set; }
 
@@ -102,6 +105,27 @@ namespace HighVoltz.HBRelog.Settings
 				NotifyPropertyChanged("GameWindowTitle");
 			}
 		}
+
+        public string HBKeyPool
+        {
+            get { return _hbKeyPool; }
+            set
+            {
+                _hbKeyPool = value;
+                NotifyPropertyChanged("HBKeyPool");
+            }
+        }
+
+        // not serialized
+        public List<string> FreeHBKeyPool
+        {
+            get { return _freeHBKeyPool ?? (_freeHBKeyPool = new List<string>()); }
+            set
+            {
+                _freeHBKeyPool = value;
+                NotifyPropertyChanged("FreeHBKeyPool");
+            }
+        }
 
         // delay in seconds between starting multiple Honorbuddy instance
 
@@ -256,7 +280,8 @@ namespace HighVoltz.HBRelog.Settings
                 root.Add(new XElement("AutoUpdateHB", AutoUpdateHB));
                 root.Add(new XElement("AutoAcceptTosEula", AutoAcceptTosEula));
 				root.Add(new XElement("SetGameWindowTitle", SetGameWindowTitle));
-				root.Add(new XElement("GameWindowTitle", GameWindowTitle));
+                root.Add(new XElement("GameWindowTitle", GameWindowTitle));
+                root.Add(new XElement("HBKeyPool", HBKeyPool));
 
                 root.Add(new XElement("WowVersion", WowVersion));
 
@@ -289,6 +314,7 @@ namespace HighVoltz.HBRelog.Settings
                     wowSettingsElement.Add(new XElement("WowWindowHeight", profile.Settings.WowSettings.WowWindowHeight));
                     wowSettingsElement.Add(new XElement("WowWindowX", profile.Settings.WowSettings.WowWindowX));
                     wowSettingsElement.Add(new XElement("WowWindowY", profile.Settings.WowSettings.WowWindowY));
+                    wowSettingsElement.Add(new XElement("ReuseFreeWowProcess", profile.Settings.WowSettings.ReuseFreeWowProcess));
                     settingsElement.Add(wowSettingsElement);
                     var hbSettingsElement = new XElement("HonorbuddySettings");
                     // Honorbuddy Settings
@@ -298,6 +324,9 @@ namespace HighVoltz.HBRelog.Settings
                     hbSettingsElement.Add(new XElement("HonorbuddyProfile", profile.Settings.HonorbuddySettings.HonorbuddyProfile));
                     hbSettingsElement.Add(new XElement("HonorbuddyPath", profile.Settings.HonorbuddySettings.HonorbuddyPath));
                     hbSettingsElement.Add(new XElement("UseHBBeta", profile.Settings.HonorbuddySettings.UseHBBeta));
+                    hbSettingsElement.Add(new XElement("AutoStartBot", profile.Settings.HonorbuddySettings.AutoStartBot));
+                    hbSettingsElement.Add(new XElement("HonorbuddyArgs", profile.Settings.HonorbuddySettings.HonorbuddyArgs));
+
 
                     settingsElement.Add(hbSettingsElement);
                     profileElement.Add(settingsElement);
@@ -402,7 +431,8 @@ namespace HighVoltz.HBRelog.Settings
                     settings.MinimizeHbOnStart = GetElementValue(root.Element("MinimizeHbOnStart"), false);
                     settings.AutoAcceptTosEula = GetElementValue(root.Element("AutoAcceptTosEula"), false);
 					settings.SetGameWindowTitle = GetElementValue(root.Element("SetGameWindowTitle"), true);
-					settings.GameWindowTitle = GetElementValue(root.Element("GameWindowTitle"), "{name} - {pid}");
+                    settings.GameWindowTitle = GetElementValue(root.Element("GameWindowTitle"), "{name} - {pid}");
+                    settings.HBKeyPool = GetElementValue(root.Element("HBKeyPool"), "");
 
                     settings.GameStateOffset = GetElementValue(root.Element("GameStateOffset"), 0u);
                     // settings.FrameScriptExecuteOffset = GetElementValue(root.Element("FrameScriptExecuteOffset"), 0u);
@@ -435,6 +465,7 @@ namespace HighVoltz.HBRelog.Settings
 							profile.Settings.WowSettings.AuthenticatorRestoreCodeData = GetElementValue<string>(wowSettingsElement.Element("AuthenticatorRestoreCodeData"));
                             profile.Settings.WowSettings.Region = GetElementValue<WowSettings.WowRegion>(wowSettingsElement.Element("Region"));
                             profile.Settings.WowSettings.WowPath = GetElementValue<string>(wowSettingsElement.Element("WowPath"));
+                            profile.Settings.WowSettings.ReuseFreeWowProcess = GetElementValue<bool>(wowSettingsElement.Element("ReuseFreeWowProcess"));
                             profile.Settings.WowSettings.WowArgs = GetElementValue<string>(wowSettingsElement.Element("WowArgs"));
                             profile.Settings.WowSettings.WowWindowWidth = GetElementValue<int>(wowSettingsElement.Element("WowWindowWidth"));
                             profile.Settings.WowSettings.WowWindowHeight = GetElementValue<int>(wowSettingsElement.Element("WowWindowHeight"));
@@ -451,6 +482,8 @@ namespace HighVoltz.HBRelog.Settings
                             profile.Settings.HonorbuddySettings.HonorbuddyProfile = GetElementValue<string>(hbSettingsElement.Element("HonorbuddyProfile"));
                             profile.Settings.HonorbuddySettings.HonorbuddyPath = GetElementValue<string>(hbSettingsElement.Element("HonorbuddyPath"));
                             profile.Settings.HonorbuddySettings.UseHBBeta = GetElementValue<bool>(hbSettingsElement.Element("UseHBBeta"));
+                            profile.Settings.HonorbuddySettings.AutoStartBot = GetElementValue<bool>(hbSettingsElement.Element("AutoStartBot"));
+                            profile.Settings.HonorbuddySettings.HonorbuddyArgs = GetElementValue<string>(hbSettingsElement.Element("HonorbuddyArgs"));
                         }
                         XElement tasksElement = profileElement.Element("Tasks");
                         // Load the Task list.

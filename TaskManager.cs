@@ -60,7 +60,7 @@ namespace HighVoltz.HBRelog
             if (WowManager.IsRunning)
             {
                 WowManager.Pulse();
-                if (WowManager.InGame && !HonorbuddyManager.IsRunning)
+                if (WowManager.StartupSequenceIsComplete && !HonorbuddyManager.IsRunning)
                 {
                     if (!StartupSequenceIsComplete)
                         HonorbuddyManager.SetSettings(Profile.Settings.HonorbuddySettings);

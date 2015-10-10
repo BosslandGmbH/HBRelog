@@ -11,12 +11,12 @@ using System.Windows;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("HBRelog")]
+[assembly: AssemblyTitle("aash/HBRelog")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("HBRelog")]
-[assembly: AssemblyCopyright("Copyright © 2015 by HighVoltz")]
+[assembly: AssemblyProduct("aash/HBRelog")]
+[assembly: AssemblyCopyright("Copyright © 2015 by HighVoltz, aash")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

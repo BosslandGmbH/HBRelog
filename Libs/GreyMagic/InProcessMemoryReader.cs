@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using GreyMagic.Internals;
+using GreyMagic.Native;
 
 namespace GreyMagic
 {
@@ -104,7 +106,7 @@ namespace GreyMagic
                 }
                 return (T) ret;
             }
-            catch (AccessViolationException ex)
+            catch (AccessViolationException)
             {
                 Trace.WriteLine("Access Violation on " + address + " with type " + typeof (T).Name);
                 return default(T);
@@ -134,9 +136,24 @@ namespace GreyMagic
         public int ReadBytes(uint dwAddress, void* buffer, int count)
         {
             int lpBytesRead;
+
+            ExternalProcessReader.MEMORY_BASIC_INFORMATION meminfo;
+            ExternalProcessReader.VirtualQueryEx(ProcessHandle, dwAddress, out meminfo, 28);
+
             if (!ReadProcessMemory(ProcessHandle, dwAddress, new IntPtr(buffer), count, out lpBytesRead))
-                throw new AccessViolationException(string.Format("Could not read bytes from {0} [{1}]!",
-                    dwAddress.ToString("X8"), Marshal.GetLastWin32Error()));
+            {
+
+                var protFlags = ((MemoryProtectionType)meminfo.Protect)
+                    .GetFlags()
+                    .Aggregate("", (s, e) => s + ", " + e);
+
+                var stateFlags = ((MemoryAllocationType)meminfo.State)
+                    .GetFlags()
+                    .Aggregate("", (s, e) => s + ", " + e);
+
+                throw new AccessViolationException(string.Format("Could not read bytes from {0} [{1}]! Protect = {2}, State = {3}",
+                    dwAddress.ToString("X8"), Marshal.GetLastWin32Error(), protFlags, stateFlags));
+            }
 
             return lpBytesRead;
         }

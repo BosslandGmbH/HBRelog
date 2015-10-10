@@ -1,0 +1,40 @@
+[font=Segoe UI][size=3]Hello Buddies,
+Every true developer has his own vision on how things should look like. So I've decided from the permission of Highvoltz to provide support for my own github branch of the well known HBRelog utility.
+
+[size=4][i][b]What you can get from it?[/b][/i][/size]
+Right now I'm [i]very[/i] motivated to keep implementing new features and tune UI, so you can get free support here, get issues fixed in a near-week-time frame, discuss your ideas or what you wanna see in the change log.
+
+[size=4][i][b]How to use.[/b][/i][/size]
+It is illegal to post of DLLs/EXEs nor links to them so to take advantage of aash/HBRelog you should build it from sources, especially that it is easy like eat a piece of cake:
+[list]
+[*]Install Honorbuddy dependencies. Generally you should have it installed already if you got honorbuddy running. Got problems? Use [url=https://www.thebuddyforum.com/honorbuddy-forum/68254-install-buddy-product-buddy-dependency-wizard.html]Buddy Dependency Wizard[/url]!
+[*]Download and extract [url=https://github.com/aash/HBRelog]aash/HBRelog[/url] sources.
+[*]Run build.cmd script to build the HBRelog binary. It is located in the sources folder.
+[*][i]Or[/i] build it by hand issuing the following commands in cmd interpreter: Win + R, type "cmd", enter
+[code]
+set PATH=C:\Windows\Microsoft.NET\Framework\v4.0.30319;%PATH%
+set HB_HOME=<enter Honorbuddy installation path here>
+msbuild HBRelog.csproj /t:NugetRestore;Rebuild /p:Configuration=Release /p:AllowUnsafeBlocks=true /p:ReferencePath="%HB_HOME%"[/code][/list]Done, find the binary in the bin\Release folder. You can copy binary with DLLs anywhere you want. If you stuck at the build process drop me PM and we will resolve the problems.
+
+[i][b][size=4]Changelog.[/size][/b][/i]
+[list]
+[*]Reuse existing wow process / character profile option
+[size=2]If there's exists wow32 process with valid game session then it will be reused. It helps to save some time when you test your configuration around single character profile.[/size]
+[*]Bot autostart / character profile option
+[size=2]Honorbuddy.exe does not handle /autostart + /hbkey correctly so this is a way to workaround it.[/size]
+[*]Waitbotstop task / character profile option
+[size=2]It is handy when you wanna proceed to the next task as soon as profile ends.[/size]
+[*]HB keys pool / global option
+[size=2]If HB key is not specified explicitly in the profile settings it is picked from the global list. There's the option `HB key pool` to keep that list.[/size]
+[/list]
+[i][b][size=4]Credits (in alphabet order).[/size][/b][/i]
+[list]
+[*]Apoc, Main — For explaining various things on Community Dev forum.
+[*]Chinajade — Took several code snippets and ideas from BuddyControlPanel.
+[*]Bobby53 — Singular CR author, I've learned a lot from his sources.
+[*]Highvoltz — Original idea.
+[/list]
+[i][b][size=4]Links / attachments.[/size][/b][/i]
+[list]
+[*][url=https://github.com/aash/HBRelog]sources[/url]
+[*][url=https://github.com/aash/HBRelog/issues]issues list[/url][/list][/size][/font]

@@ -24,17 +24,25 @@ using System.Windows.Shell;
 using System.Linq;
 using System.Reflection;
 using System.IO;
+using System.Windows.Forms;
+using Application = System.Windows.Application;
+using MessageBox = System.Windows.MessageBox;
 
 namespace HighVoltz.HBRelog
 {
     public class Program
     {
+
+        private static string mutexName = IsAssemblyDebugBuild()
+            ? "HBRelogDebug"
+            : "HBRelog";
+
         static Dictionary<string, string> CmdLineArgs = new Dictionary<string, string>();
         [STAThread]
         public static void Main(params string[] args)
         {
             bool newInstance;
-            using (Mutex m = new Mutex(true, "HBRelog", out newInstance))
+            using (Mutex m = new Mutex(true, mutexName, out newInstance))
             {
                 if (newInstance)
                 {
@@ -51,6 +59,10 @@ namespace HighVoltz.HBRelog
 
                     var app = new Application();
                     Window window = new MainWindow();
+                    if (!Utility.IsUserAdministrator())
+                        MessageBox.Show(window, "HBRelog must be run as Administrator!", "HBRelog",
+                            MessageBoxButton.OK);
+                    window.Title = IsAssemblyDebugBuild() ? "HBRelog(Debug)" : "HBRelog";
                     window.Show();
                     app.Run(window);
                 }
@@ -100,6 +112,14 @@ namespace HighVoltz.HBRelog
                 Log.Err("Unable to convert {0} to type: {1}\n{2}", arg, typeof(T), ex);
                 return default(T);
             }
+        }
+
+        public static bool IsAssemblyDebugBuild()
+        {
+            ICustomAttributeProvider assembly = Assembly.GetExecutingAssembly();
+            var dbgAttrs = assembly.GetCustomAttributes(false).Where(
+                att => att.GetType() == Type.GetType("System.Diagnostics.DebuggableAttribute"));
+            return dbgAttrs.Cast<DebuggableAttribute>().Aggregate(false, (current, att) => current | att.IsJITTrackingEnabled);
         }
     }
 }

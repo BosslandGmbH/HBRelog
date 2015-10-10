@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using GreyMagic;
+using HighVoltz.HBRelog.WoW.FrameXml;
 using HighVoltz.Launcher;
+using System.Windows.Automation;
 
 namespace HighVoltz.HBRelog.WoW
 {
@@ -55,18 +56,68 @@ namespace HighVoltz.HBRelog.WoW
 		}
 
 
+	    private DateTime _wowProcessStartedTime;
+
 		/// <summary>
 		/// Starts Wow, assigns GameProcess and Memory after lauch and releases lock. Can only call from a valid token
 		/// </summary>
 		/// <exception cref="System.InvalidOperationException">Lock token is not valid</exception>
 		public void StartWoW()
 		{
+            // TODO: check if HBRelog has enough rights to start/inspect other processes
 			lock (LockObject)
 			{
 				if (!IsValid)
 					throw new InvalidOperationException("Lock token is not valid");
 
-				if (_wowProcess != null && Utility.Is64BitProcess(_wowProcess))
+                // get valid Wow process which is logged in and PlayerName the same
+                // as the CharacterName of current profile
+                if (_lockOwner.Settings.ReuseFreeWowProcess && _wowProcess == null)
+			    {
+                    var attachedWoW32Pids = HbRelogManager.Settings.CharacterProfiles.Where(
+                        p => p.TaskManager.WowManager.GameProcess != null).Select(
+                        p => p.TaskManager.WowManager.GameProcess.Id).ToList();
+                    if (_wowProcess != null)
+                        attachedWoW32Pids.Add(_wowProcess.Id);
+                    var wow32Processes = Process.GetProcessesByName("Wow").Where(
+                        p => !Utility.Is64BitProcess(p) && p.Responding && !attachedWoW32Pids.Contains(p.Id));
+                    foreach (var p in wow32Processes)
+                    {
+                        try
+                        {
+                            _lockOwner.LuaManager.Memory = new ExternalProcessReader(p);
+                        }
+                        catch (Exception)
+                        {
+                            continue;
+                        }
+                        HbRelogManager.Settings.GameStateOffset = (uint)WowPatterns.GameStatePattern.Find(_lockOwner.LuaManager.Memory);
+                        HbRelogManager.Settings.LuaStateOffset = (uint)WowPatterns.LuaStatePattern.Find(_lockOwner.LuaManager.Memory);
+                        HbRelogManager.Settings.FocusedWidgetOffset = (uint)WowPatterns.FocusedWidgetPattern.Find(_lockOwner.LuaManager.Memory);
+                        HbRelogManager.Settings.LoadingScreenEnableCountOffset = (uint)WowPatterns.LoadingScreenEnableCountPattern.Find(_lockOwner.LuaManager.Memory);
+                        HbRelogManager.Settings.GlueStateOffset = (uint)WowPatterns.GlueStatePattern.Find(_lockOwner.LuaManager.Memory);
+                        if (_lockOwner.InGame)
+                        {
+                            var playerName = "";
+                            try
+                            {
+                                playerName = (from fontString in UIObject.GetUIObjectsOfType<FontString>(_lockOwner.LuaManager)
+                                              where fontString.IsShown && fontString.Name == "PlayerName"
+                                              select fontString.Text).First();
+                            }
+                            catch (Exception e)
+                            {
+                                _lockOwner.Profile.Log(e.ToString());
+                            }
+                            if (playerName != _lockOwner.Settings.CharacterName) continue;
+                            _wowProcess = p;
+                            _lockOwner.ReusedGameProcess = p;
+                            break;
+                        }
+                    }
+			    }
+                
+                if (_wowProcess != null && Utility.Is64BitProcess(_wowProcess))
 				{
 					_lockOwner.Profile.Log("64 bit Wow is not supported. Delete or rename the WoW-64.exe file in your WoW install folder");
 					_lockOwner.Stop();
@@ -108,7 +159,7 @@ namespace HighVoltz.HBRelog.WoW
 					_lockOwner.Profile.Status = "Starting WoW";
 
 					_lockOwner.StartupSequenceIsComplete = false;
-					_lockOwner.Memory = null;
+					_lockOwner.LuaManager.Memory = null;
 
 					bool lanchingWoW = IsWoWPath(_lockOwner.Settings.WowPath);
 
@@ -136,6 +187,7 @@ namespace HighVoltz.HBRelog.WoW
 						pi.Arguments = _lockOwner.Settings.WowArgs;
 					}
 
+                    _wowProcessStartedTime = DateTime.Now;
 					_launcherPid = Process.Start(pi).Id;
 					_lockOwner.ProcessIsReadyForInput = false;
 					_lockOwner.LoginTimer.Reset();
@@ -148,12 +200,40 @@ namespace HighVoltz.HBRelog.WoW
 						_wowProcess.Refresh();
 						_lockOwner.Profile.Status = "Waiting for Wow to start";
 						_lockOwner.Profile.Log(_lockOwner.Profile.Status);
+
+					    if (DateTime.Now - _wowProcessStartedTime > TimeSpan.FromSeconds(5))
+					    {
+                            try
+                            {
+                                var e = AutomationElement.RootElement.FindFirst(TreeScope.Descendants,
+                                    new AndCondition(
+                                        new PropertyCondition(AutomationElement.ProcessIdProperty, _wowProcess.Id),
+                                        new PropertyCondition(AutomationElement.IsWindowPatternAvailableProperty, true)));
+                                if (e == null)
+                                    return;
+                                var b = e.FindFirst(TreeScope.Descendants, new PropertyCondition(AutomationElement.NameProperty, "OK"));
+                                if (b == null)
+                                    return;
+                                var p = b.GetCurrentPattern(InvokePattern.Pattern) as InvokePattern;
+                                if (p == null)
+                                    return;
+                                p.Invoke();
+                                _wowProcess.Kill();
+                            }
+                            catch (Exception e)
+                            {
+                                Trace.WriteLine(e);
+                            }
+					    }
 						return;
 					}
-					_lockOwner.GameProcess = _wowProcess;
-					_lockOwner.Memory = new ExternalProcessReader(_wowProcess);
-					_wowProcess = null;
-					_lockOwner.Profile.Log("Wow is ready to login.");
+				    if (_lockOwner.ReusedGameProcess == null)
+				    {
+                        _lockOwner.LuaManager.Memory = new ExternalProcessReader(_wowProcess);
+                    }
+                    _lockOwner.GameProcess = _wowProcess;
+                    _wowProcess = null;
+				    _lockOwner.Profile.Log(_lockOwner.Settings.ReuseFreeWowProcess ? "Wow is ready." : "Wow is ready to login.");
 				}
 			}
 		}

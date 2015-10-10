@@ -3,8 +3,9 @@ using System.ServiceModel;
 
 namespace HighVoltz.HBRelog.Remoting
 {
-    [ServiceContract]
-    interface IRemotingApi
+    [ServiceContract(CallbackContract = typeof(IRemotingApiCallback),
+        SessionMode = SessionMode.Required)]
+    public interface IRemotingApi
     {
         [OperationContract]
         bool Init(int hbProcID);
@@ -27,7 +28,8 @@ namespace HighVoltz.HBRelog.Remoting
         [OperationContract(IsOneWay = true)]
         void IdleProfile(string profileName, TimeSpan time);
         [OperationContract(IsOneWay = true)]
-        void Logon(int hbProcID, string character, string server, string customClass, string botBase, string profilePath);
+        void Logon(int hbProcID, string character, string server,
+            string customClass, string botBase, string profilePath);
         [OperationContract]
         int GetProfileStatus(string profileName);
         [OperationContract(IsOneWay = true)]
@@ -36,5 +38,19 @@ namespace HighVoltz.HBRelog.Remoting
         void SetBotInfoToolTip(int hbProcID, string tooltip);
         [OperationContract(IsOneWay = true)]
         void SkipCurrentTask(string profileName);
+        [OperationContract(IsOneWay = true)]
+        void NotifyBotStopped(int hbProcId, string reason);
+        [OperationContract(IsOneWay = true)]
+        void NotifyBotEvent(string what);
     }
+    internal interface IRemotingApiCallback
+    {
+        [OperationContract]
+        void StartBot(string botname, string profile);
+        [OperationContract]
+        void StopBot();
+        [OperationContract]
+        void ChangeProfile(string profileName);
+    }
+
 }

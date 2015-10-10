@@ -14,6 +14,7 @@ Copyright 2012 HighVoltz
    limitations under the License.
 */
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using HighVoltz.HBRelog.Remoting;
@@ -27,6 +28,19 @@ namespace HighVoltz.HBRelog
 {
     class HbRelogManager
     {
+
+        public static Visibility HiddenIfDebug
+        {
+            get
+            {
+#if DEBUG
+                return Visibility.Visible;
+#else
+                return Visibility.Hidden;
+#endif
+            }
+        }
+
         public static GlobalSettings Settings { get; internal set; }
         static public Thread WorkerThread { get; private set; }
         public static bool IsInitialized { get; private set; }
@@ -34,6 +48,11 @@ namespace HighVoltz.HBRelog
         private static Stopwatch _updateRealmStatusTimer = Stopwatch.StartNew();
         static readonly ServiceHost _host;
         public static WowRealmStatus WowRealmStatus { get; private set; }
+
+        public static Dictionary<int, IRemotingApiCallback> Clients =
+		    new Dictionary<int, IRemotingApiCallback>();
+
+        public static RemotingApi remoting;
 
         static HbRelogManager()
         {
@@ -43,14 +62,23 @@ namespace HighVoltz.HBRelog
                 if (MainWindow.Instance == null || DesignerProperties.GetIsInDesignMode(MainWindow.Instance))
                     return; 
                 Settings = GlobalSettings.Load();
+
+                Settings.FreeHBKeyPool.Clear();
+                if (!string.IsNullOrEmpty(Settings.HBKeyPool))
+                {
+                    foreach (var key in Settings.HBKeyPool.Split(','))
+                    {
+                        Settings.FreeHBKeyPool.Add(key);
+                    }
+                }
+
                 WorkerThread = new Thread(DoWork) { IsBackground = true };
                 WorkerThread.Start();
                 try
                 {
-                    _host = new ServiceHost(typeof(RemotingApi), new Uri("net.pipe://localhost/HBRelog"));
-                    _host.AddServiceEndpoint(typeof(IRemotingApi),
-                        new NetNamedPipeBinding() { ReceiveTimeout = TimeSpan.MaxValue },
-                        "Server");
+                    remoting = new RemotingApi();
+                    _host = new ServiceHost(remoting, new Uri(string.Format("net.pipe://localhost/HBRelog{0}", Program.IsAssemblyDebugBuild() ? "_debug" : "")));
+                    _host.AddServiceEndpoint(typeof(IRemotingApi), new NetNamedPipeBinding { ReceiveTimeout = TimeSpan.MaxValue }, "Server");
                     _host.Open();
                 }
                 catch (Exception ex)
@@ -63,6 +91,35 @@ namespace HighVoltz.HBRelog
                 // update Wow Realm status
                 if (Settings.CheckRealmStatus)
                     WowRealmStatus.Update();
+
+                Settings.CharacterProfiles.ToList().ForEach(cp => cp.PropertyChanged += (sender, args) =>
+                {
+                    var profile = (CharacterProfile)sender;
+                    if (profile.TaskManager.HonorbuddyManager.BotProcess == null)
+                        return;
+                    var pid = profile.TaskManager.HonorbuddyManager.BotProcess.Id;
+                    if (Clients.ContainsKey(pid))
+                    {
+                        try
+                        {
+                            if (args.PropertyName != "Status" || profile.Status != "Honorbuddy Startup Complete")
+                                return;
+                            if (profile.TaskManager.HonorbuddyManager.Settings.AutoStartBot)
+                            {
+                                Log.Write(string.Format("Starting bot {0} {1}",
+                                    profile.TaskManager.HonorbuddyManager.Settings.BotBase,
+                                    profile.TaskManager.HonorbuddyManager.Settings.HonorbuddyProfile));
+                                Clients[pid].StartBot(
+                                    profile.TaskManager.HonorbuddyManager.Settings.BotBase,
+                                    profile.TaskManager.HonorbuddyManager.Settings.HonorbuddyProfile);
+                            }
+                        }
+                        catch (Exception)
+                        {
+                            Clients.Remove(pid);
+                        }
+                    }
+                });
                 IsInitialized = true;
             }
             catch (Exception ex)

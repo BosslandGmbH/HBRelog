@@ -65,6 +65,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Data.Entity" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Runtime.Remoting" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Security" />
@@ -77,6 +78,8 @@
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
+    <Reference Include="UIAutomationClient" />
+    <Reference Include="UIAutomationTypes" />
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -88,6 +91,7 @@
     <Compile Include="Honorbuddy\States\UpdateHonorbuddyState.cs" />
     <Compile Include="Tasks\CustomTaskEditControlAttribute.cs" />
     <Compile Include="Tasks\ICustomTaskEditControlDataBound.cs" />
+    <Compile Include="Tasks\WaitBotStopTask.cs" />
     <Compile Include="WoW\States\CharacterCreationState.cs" />
     <Compile Include="WoW\States\CharacterSelectState.cs" />
     <Compile Include="WoW\States\MonitorState.cs" />
@@ -102,47 +106,6 @@
     </Compile>
     <Compile Include="FiniteStateMachine\Engine.cs" />
     <Compile Include="FiniteStateMachine\State.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Checksums\Adler32.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Checksums\CRC32.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Checksums\IChecksum.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Checksums\StrangeCRC.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Core\FileSystemScanner.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Core\INameTransform.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Core\IScanFilter.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Core\NameFilter.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Core\PathFilter.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Core\StreamUtils.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Core\WindowsPathUtils.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Encryption\PkzipClassic.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Encryption\ZipAESStream.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Encryption\ZipAESTransform.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\SharpZipBaseException.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Zip\Compression\Deflater.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Zip\Compression\DeflaterConstants.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Zip\Compression\DeflaterEngine.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Zip\Compression\DeflaterHuffman.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Zip\Compression\DeflaterPending.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Zip\Compression\Inflater.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Zip\Compression\InflaterDynHeader.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Zip\Compression\InflaterHuffmanTree.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Zip\Compression\PendingBuffer.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Zip\Compression\Streams\DeflaterOutputStream.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Zip\Compression\Streams\InflaterInputStream.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Zip\Compression\Streams\OutputWindow.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Zip\Compression\Streams\StreamManipulator.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Zip\FastZip.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Zip\IEntryFactory.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Zip\WindowsNameTransform.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Zip\ZipConstants.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Zip\ZipEntry.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Zip\ZipEntryFactory.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Zip\ZipException.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Zip\ZipExtraData.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Zip\ZipFile.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Zip\ZipHelperStream.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Zip\ZipInputStream.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Zip\ZipNameTransform.cs" />
-    <Compile Include="ICSharpCode.SharpZLib\Zip\ZipOutputStream.cs" />
     <Compile Include="Remoting\IRemotingApi.cs" />
     <Compile Include="Controls\ProfileEditUserControl.xaml.cs">
       <DependentUpon>ProfileEditUserControl.xaml</DependentUpon>
@@ -292,10 +255,8 @@
     <Resource Include="Images\Logo.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="bin\Debug\fasmdll_managed.dll" />
     <Content Include="bin\Debug\HBRelog.exe" />
     <Content Include="bin\Debug\HBRelog.pdb" />
-    <Content Include="bin\Release\fasmdll_managed.dll" />
     <Content Include="bin\Release\HBRelog.exe" />
     <None Include="CREDITS.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -314,6 +275,10 @@
       <Project>{29bee34e-8d6a-47bf-96fa-aba46f6e9b66}</Project>
       <Name>GreyMagic</Name>
     </ProjectReference>
+    <ProjectReference Include="Shared\Shared.csproj">
+      <Project>{e175600b-3279-425b-9b6c-94b4613c71a8}</Project>
+      <Name>Shared</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
@@ -324,11 +289,34 @@
     <PostBuildEvent>
     </PostBuildEvent>
   </PropertyGroup>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
+  <Choose>
+    <When Condition="$(MSBuildToolsVersion)!='14.0'">
+      <PropertyGroup>
+        <ToolsDll>$(MSBuildToolsPath)\Microsoft.Build.Tasks.v$(MSBuildToolsVersion).dll</ToolsDll>
+      </PropertyGroup>
+    </When>
+    <When Condition="$(MSBuildToolsVersion)=='14.0'">
+      <PropertyGroup>
+        <ToolsDll>$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll</ToolsDll>
+      </PropertyGroup>
+    </When>
+  </Choose>
+  <UsingTask TaskName="DownloadFile" TaskFactory="CodeTaskFactory" AssemblyFile="$(ToolsDll)">
+    <ParameterGroup>
+      <Url ParameterType="System.String" Required="true" />
+      <FileName ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Reference Include="System" />
+      <Code Type="Fragment" Language="cs"><![CDATA[
+        new System.Net.WebClient().DownloadFile(Url, FileName);
+        ]]></Code>
+    </Task>
+  </UsingTask>
+  <Target Name="GetNuget">
+    <DownloadFile Url="https://nuget.org/nuget.exe" FileName="nuget.exe" />
   </Target>
-  <Target Name="AfterBuild">
+  <Target Name="NugetRestore" DependsOnTargets="GetNuget">
+    <Exec Command="nuget.exe restore HBRelog.sln" />
   </Target>
-  -->
 </Project>
