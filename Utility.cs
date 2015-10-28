@@ -109,8 +109,8 @@ namespace HighVoltz.HBRelog
 		        let exeOriginalNameWithExtention = FileVersionInfo.GetVersionInfo(procPath).OriginalFilename
 		        where !string.IsNullOrEmpty(exeOriginalNameWithExtention)
 				let exeOriginalName = Path.GetFileNameWithoutExtension(exeOriginalNameWithExtention)
-				where exeOriginalName != null && exeOriginalName.Equals(processName, StringComparison.OrdinalIgnoreCase)
-		        select proc).FirstOrDefault();
+				where exeOriginalName != null && exeOriginalName.Equals(processName, StringComparison.OrdinalIgnoreCase) && IsChildProcessOf(parentPid, proc)
+					select proc).FirstOrDefault();
         }
 
 	    private static string GetProcessPath(Process proc)

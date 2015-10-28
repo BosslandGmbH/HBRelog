@@ -15,7 +15,7 @@ namespace HighVoltz.HBRelog.WoW
 		private WowManager _lockOwner;
 		private readonly string _key;
 		private Process _wowProcess;
-		private int _launcherPid;
+		private Process _launcherProc;
 
 		private WowLockToken(string key, DateTime startTime, WowManager lockOwner)
 		{
@@ -49,7 +49,7 @@ namespace HighVoltz.HBRelog.WoW
 					_wowProcess.Kill();
 				}
 				_wowProcess = null;
-				_launcherPid = 0;
+				_launcherProc = null;
 				_lockOwner = null;
 			}
 		}
@@ -74,17 +74,34 @@ namespace HighVoltz.HBRelog.WoW
 
 				// check if a batch file or any .exe besides WoW.exe is used and try to get the child WoW process started by this process.
 
-				if (_launcherPid > 0)
+				if (_launcherProc != null)
 				{
-					var executablePath = Path.GetFileNameWithoutExtension(_lockOwner.Profile.Settings.WowSettings.WowPath);
-                    Process wowProcess = Utility.GetChildProcessByName(_launcherPid, "Wow") 
-                        ?? Utility.GetChildProcessByName(_launcherPid, "WowB")  // Beta
-                        ?? Utility.GetChildProcessByName(_launcherPid, "WowT")	// PTR
-						?? Utility.GetChildProcessByName(_launcherPid, executablePath);	// Renamed executables
+					Process wowProcess;
+					// Two methods are used to find the WoW process if a launcher is used;
+					// Method one: launcher exit code return the WoW process ID or a negative if an error occured. 
+					//			   If launcher does not use return the expected return values then a batch file or console app
+					//			   must be used to start the launcher and return the expected return codes.	
+					// Method two: Find a child WoW process of the launcher process.
+
+					if (_launcherProc.HasExited && _launcherProc.ExitCode < 0)
+					{
+						_lockOwner.Profile.Log("Pausing profile because launcher exited with error code: {0}", _launcherProc.ExitCode);
+						_lockOwner.Profile.Pause();
+						return;
+					}
+
+					if (!_launcherProc.HasExited || _launcherProc.ExitCode  == 0 || (wowProcess = TryGetProcessById(_launcherProc.ExitCode)) == null)
+					{
+						var executablePath = Path.GetFileNameWithoutExtension(_lockOwner.Profile.Settings.WowSettings.WowPath);
+						wowProcess = Utility.GetChildProcessByName(_launcherProc.Id, "Wow") 
+							?? Utility.GetChildProcessByName(_launcherProc.Id, "WowB")  // Beta
+							?? Utility.GetChildProcessByName(_launcherProc.Id, "WowT")	// PTR
+							?? Utility.GetChildProcessByName(_launcherProc.Id, executablePath); // Renamed executables
+					}
 					if (wowProcess != null)
 					{
-						_launcherPid = 0;
-						Helpers.ResumeProcess(wowProcess.Id);
+						_launcherProc = null;
+                        Helpers.ResumeProcess(wowProcess.Id);
 						_wowProcess = wowProcess;
 					}
 					else
@@ -136,7 +153,7 @@ namespace HighVoltz.HBRelog.WoW
 						pi.Arguments = _lockOwner.Settings.WowArgs;
 					}
 
-					_launcherPid = Process.Start(pi).Id;
+					_launcherProc = Process.Start(pi);
 					_lockOwner.ProcessIsReadyForInput = false;
 					_lockOwner.LoginTimer.Reset();
 				}
@@ -155,6 +172,18 @@ namespace HighVoltz.HBRelog.WoW
 					_wowProcess = null;
 					_lockOwner.Profile.Log("Wow is ready to login.");
 				}
+			}
+		}
+
+		private Process TryGetProcessById(int procId)
+		{
+			try
+			{
+				return Process.GetProcessById(procId);
+			}
+			catch (Exception)
+			{
+				return null;
 			}
 		}
 
