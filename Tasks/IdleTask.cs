@@ -72,10 +72,7 @@ namespace HighVoltz.HBRelog.Tasks
 		    ToolTip = Profile.Status;
 		    if (DateTime.Now - _timeStamp >= _waitTime)
 		    {
-			    IsDone = true;
-			    // if next task is not a LogonTask then we log back in game on same character.
-			    if (!(NextTask is LogonTask))
-				    Profile.Start();
+				Stop();
 			    Profile.Log("Idle complete");
 		    }
 	    }
@@ -85,6 +82,14 @@ namespace HighVoltz.HBRelog.Tasks
 		    base.Reset();
 		    _waitTime = new TimeSpan(0);
 		    ToolTip = string.Format("Idle: {0} minutes", Minutes);
+	    }
+
+	    public override void Stop()
+	    {
+			// if next task is not a LogonTask then we log back in game on same character.
+			if (!(NextTask is LogonTask))
+				Profile.Start();
+			base.Stop();
 	    }
 
 	    #endregion

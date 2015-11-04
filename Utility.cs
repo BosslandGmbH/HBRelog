@@ -44,17 +44,6 @@ namespace HighVoltz.HBRelog
             }
         }
 
-        public static string EncodeToUTF8(this string text)
-        {
-            var buffer = new StringBuilder(Encoding.UTF8.GetByteCount(text)*2);
-            var utf8Encoded = Encoding.UTF8.GetBytes(text);
-            foreach (var b in utf8Encoded)
-            {
-                buffer.Append(string.Format("\\{0:D3}", b));
-            }
-            return buffer.ToString();
-        }
-
         public static void UnblockFileIfZoneRestricted(string file)
         {
             if (!File.Exists(file))

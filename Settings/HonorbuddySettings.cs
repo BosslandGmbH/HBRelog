@@ -14,10 +14,7 @@ Copyright 2012 HighVoltz
    limitations under the License.
 */
 
-using System;
 using System.ComponentModel;
-using System.Security.Cryptography;
-using System.Text;
 using System.Windows;
 
 namespace HighVoltz.HBRelog.Settings
@@ -26,11 +23,8 @@ namespace HighVoltz.HBRelog.Settings
     {
         public HonorbuddySettings()
         {
-            HonorbuddyPath = string.Empty;
             CustomClass = "Singular";
-            BotBase = string.Empty;
-            HonorbuddyProfile = string.Empty;
-	        HonorbuddyArgs = string.Empty;
+			HonorbuddyPath = HonorbuddyProfile = HonorbuddyKey = HonorbuddyArgs =  "";
         }
 
         private string _honorbuddyPath;
@@ -40,8 +34,9 @@ namespace HighVoltz.HBRelog.Settings
         public string HonorbuddyPath
         {
             get { return _honorbuddyPath; }
-            set { _honorbuddyPath = value; NotifyPropertyChanged("HonorbuddyPath"); }
+			set { NotifyPropertyChanged(ref _honorbuddyPath, ref value, nameof(HonorbuddyPath)); }
         }
+
         string _botBase;
         /// <summary>
         /// Name of the bot to use
@@ -49,32 +44,44 @@ namespace HighVoltz.HBRelog.Settings
         public string BotBase
         {
             get { return _botBase; }
-            set { _botBase = value; NotifyPropertyChanged("BotBase"); }
+			set { NotifyPropertyChanged(ref _botBase, ref value, nameof(BotBase)); }
         }
 
-        public string HonorbuddyKeyData { get; set; }
-        /// <summary>
-        /// The Honorbuddy Key to use. It can be left empty
-        /// </summary>
-        public string HonorbuddyKey
+		private string _honorbuddyKeyData;
+
+	    public string HonorbuddyKeyData
+	    {
+		    get { return _honorbuddyKeyData; }
+		    set { _honorbuddyKeyData = value; }
+	    }
+
+	    /// <summary>
+	    /// The Honorbuddy Key to use. It can be left empty
+	    /// </summary>
+	    public string HonorbuddyKey
         {
             get
             {
                 try
                 {
-                    return !string.IsNullOrEmpty(HonorbuddyKeyData) ? Utility.DecrptDpapi(HonorbuddyKeyData) : "";
+	                if (string.IsNullOrEmpty(HonorbuddyKeyData))
+		                return "";
+
+					return GlobalSettings.Instance.EncryptSettings
+						? Utility.DecrptDpapi(HonorbuddyKeyData)
+						: HonorbuddyKeyData;
                 }
                 catch
                 {
                     // this error can occur if the Windows password was changed or profile was copied to another computer
-                    MessageBox.Show(string.Format("Error decrypting Honrobuddy key. Try setting Honrobuddy key again."));
+                    MessageBox.Show("Error decrypting Honrobuddy key. Try setting Honrobuddy key again.");
                     return "";
                 }
             }
             set
             {
-                HonorbuddyKeyData = Utility.EncrptDpapi(value);
-                NotifyPropertyChanged("HonorbuddyKey");
+				string val = GlobalSettings.Instance.EncryptSettings ? Utility.EncrptDpapi(value) : value;
+				NotifyPropertyChanged(ref _honorbuddyKeyData, ref val, nameof(HonorbuddyKey));
             }
         }
         private string _honorbuddyProfile;
@@ -85,7 +92,7 @@ namespace HighVoltz.HBRelog.Settings
         public string HonorbuddyProfile
         {
             get { return _honorbuddyProfile; }
-            set { _honorbuddyProfile = value; NotifyPropertyChanged("HonorbuddyProfile"); }
+			set { NotifyPropertyChanged(ref _honorbuddyProfile, ref value, nameof(HonorbuddyProfile)); }
         }
         private string _customClass;
         /// <summary>
@@ -94,7 +101,7 @@ namespace HighVoltz.HBRelog.Settings
         public string CustomClass
         {
             get { return _customClass; }
-            set { _customClass = value; NotifyPropertyChanged("CustomClass"); }
+			set { NotifyPropertyChanged(ref _customClass, ref value, nameof(CustomClass)); }
         }
 
 		private string _honorbuddyArgs;
@@ -104,17 +111,18 @@ namespace HighVoltz.HBRelog.Settings
 		public string HonorbuddyArgs
 		{
 			get { return _honorbuddyArgs; }
-			set { _honorbuddyArgs = value; NotifyPropertyChanged("HonorbuddyArgs"); }
+			set { NotifyPropertyChanged(ref _honorbuddyArgs, ref value, nameof(HonorbuddyArgs)); }
 		}
 
         private bool _useHBBeta;
-        /// <summary>
+
+	    /// <summary>
         /// The Honorbuddy CustomClass to use. It can be left empty
         /// </summary>
         public bool UseHBBeta
         {
             get { return _useHBBeta; }
-            set { _useHBBeta = value; NotifyPropertyChanged("UseHBBeta"); }
+			set { NotifyPropertyChanged(ref _useHBBeta, ref value, nameof(UseHBBeta)); }
         }
         public HonorbuddySettings ShadowCopy()
         {
@@ -123,14 +131,15 @@ namespace HighVoltz.HBRelog.Settings
 
 
         public event PropertyChangedEventHandler PropertyChanged;
-        private void NotifyPropertyChanged(string name)
-        {
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, new PropertyChangedEventArgs(name));
-            }
-            if (HbRelogManager.Settings != null)
-                HbRelogManager.Settings.QueueSave();
-        }
-    }
+		private bool NotifyPropertyChanged<T>(ref T oldValue, ref T newValue, string propertyName)
+		{
+			if (Equals(oldValue, newValue))
+				return false;
+			oldValue = newValue;
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+			if (GlobalSettings.Instance != null)
+				GlobalSettings.Instance.QueueSave();
+			return true;
+		}
+	}
 }

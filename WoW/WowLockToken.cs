@@ -167,6 +167,14 @@ namespace HighVoltz.HBRelog.WoW
 						_lockOwner.Profile.Log(_lockOwner.Profile.Status);
 						return;
 					}
+					var isPopup = (NativeMethods.GetWindowStyle(_wowProcess.MainWindowHandle) & NativeMethods.WindowStyle.Popup) != 0;
+					if (isPopup)
+					{
+						_lockOwner.Profile.Log("WoW failed to load and is an error popup; Restarting");
+						ReleaseLock();
+						return;
+					}
+
 					_lockOwner.GameProcess = _wowProcess;
 					_lockOwner.Memory = new ExternalProcessReader(_wowProcess);
 					_wowProcess = null;

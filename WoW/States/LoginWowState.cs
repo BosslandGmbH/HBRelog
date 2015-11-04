@@ -47,12 +47,12 @@ namespace HighVoltz.HBRelog.WoW.States
 
             if (_wowManager.StalledLogin)
             {
-                _wowManager.Profile.Log("Failed to login wow, lets restart");
-                _wowManager.GameProcess.Kill();
+                _wowManager.Profile.Log("Failed to log into WoW; Restarting");
+				_wowManager.LockToken.ReleaseLock();
                 return;
             }
 
-            bool isBanned = IsBanned, isSuspended = IsSuspended, isFrozen = IsFrozen, isSuspiciousLocked = IsLockedSuspiciousActivity, isLockedLicense = IsLockedLicense;
+			bool isBanned = IsBanned, isSuspended = IsSuspended, isFrozen = IsFrozen, isSuspiciousLocked = IsLockedSuspiciousActivity, isLockedLicense = IsLockedLicense;
 
             if (isBanned || isSuspended || isFrozen || isSuspiciousLocked || isLockedLicense)
             {
@@ -356,8 +356,10 @@ namespace HighVoltz.HBRelog.WoW.States
                 return false;
 
             var editBoxText = editBox.Text;
+	        if (editBox.MaxLetters > 0 && text.Length > editBox.MaxLetters)
+		        text = text.Substring(0, editBox.MaxLetters);
 
-	        if (string.Equals(editBoxText, text, StringComparison.InvariantCultureIgnoreCase))
+            if (string.Equals(editBoxText, text, StringComparison.InvariantCultureIgnoreCase))
 		        return false;
 
 	        // do we have focus?

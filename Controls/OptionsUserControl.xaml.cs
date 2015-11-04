@@ -41,7 +41,7 @@ namespace HighVoltz.HBRelog.Controls
             };
             if (ofd.ShowDialog() == true)
             {
-                HbRelogManager.Settings = GlobalSettings.Import(ofd.FileName);
+                GlobalSettings.Instance.Import(ofd.FileName);
                 // re-assign the data context for main window.
                 MainWindow.Instance.DataContext = HbRelogManager.Settings.CharacterProfiles;
 

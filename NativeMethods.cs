@@ -13,15 +13,21 @@ namespace HighVoltz.HBRelog
     internal class NativeMethods
     {
         // credits to http://www.pinvoke.net/ for most of this.
-
-        public const int GWL_STYLE = -16;
+        private const int GWL_STYLE = -16;
 
         // Window Styles
-        public const uint WS_POPUP = 0x80000000;
+		[Flags]
+	    public enum WindowStyle: uint
+	    {
+		    Border = 0x00800000,
+			SysMenu = 0x00080000,
+			Popup = 0x80000000,
+			PopupWindow = Popup | Border | SysMenu
+		}
 
-        #region ConnectionStates enum
+		#region ConnectionStates enum
 
-        [Flags]
+		[Flags]
         public enum ConnectionStates
         {
             Modem = 0x1,
@@ -95,6 +101,11 @@ namespace HighVoltz.HBRelog
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+
+	    public static WindowStyle GetWindowStyle(IntPtr hWnd)
+	    {
+		    return (WindowStyle)GetWindowLong(hWnd, GWL_STYLE);
+	    }
 
         public static string GetClassName(IntPtr hWnd)
         {
