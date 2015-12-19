@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Windows;
@@ -28,7 +29,8 @@ namespace HighVoltz.HBRelog.Controls
 
         private void DarkStyleCheckCheckedChanged(object sender, RoutedEventArgs e)
         {
-            MainWindow.Instance.LoadStyle();
+			if (!DesignerProperties.GetIsInDesignMode(this))
+				MainWindow.Instance.LoadStyle();
         }
 
         private void ImportSettingsButton_Click(object sender, RoutedEventArgs e)

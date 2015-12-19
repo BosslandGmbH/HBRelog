@@ -49,7 +49,8 @@ namespace HighVoltz.HBRelog.WoW.States
             {
                 _wowManager.Profile.Log("Failed to log into WoW; Restarting");
 				_wowManager.LockToken.ReleaseLock();
-                return;
+				_wowManager.GameProcess.Kill();
+				return;
             }
 
 			bool isBanned = IsBanned, isSuspended = IsSuspended, isFrozen = IsFrozen, isSuspiciousLocked = IsLockedSuspiciousActivity, isLockedLicense = IsLockedLicense;

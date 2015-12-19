@@ -61,7 +61,6 @@ namespace HighVoltz.HBRelog.WoW
 
         public Process GameProcess { get; internal set; }
 
-        private LuaTable _globals;
         public LuaTable Globals
         {
             get
@@ -85,21 +84,15 @@ namespace HighVoltz.HBRelog.WoW
 #endif
 		            return null;
 	            }
-                if (_globals == null || _globals.Address != globalsOffset)
-                    _globals = new LuaTable(Memory, globalsOffset);
-
-                return _globals;
+                return new LuaTable(Memory, globalsOffset);
             }
         }
 
         public WowLockToken LockToken { get; internal set; }
 
-        public IntPtr FocusedWidgetPtr
-        {
-            get { return Memory == null ? IntPtr.Zero : Memory.Read<IntPtr>((IntPtr)HbRelogManager.Settings.FocusedWidgetOffset, true); }
-        }
+        public IntPtr FocusedWidgetPtr => Memory?.Read<IntPtr>((IntPtr)HbRelogManager.Settings.FocusedWidgetOffset, true) ?? IntPtr.Zero;
 
-        public UIObject FocusedWidget
+	    public UIObject FocusedWidget
         {
             get
             {
