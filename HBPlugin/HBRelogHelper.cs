@@ -118,7 +118,11 @@ namespace HighVoltz.HBRelogHelper
             if(hbProcId == 0) hbProcId = Process.GetCurrentProcess().Id;
             HbProcId = hbProcId;
 
-            IsConnected = HBRelogRemoteApi.Init(HbProcId);
+            try
+            {
+                IsConnected = HBRelogRemoteApi.Init(HbProcId);
+            }
+            catch { }
             if (IsConnected)
             {
                 Logging.Write("HBRelogHelper: Connected with HBRelog");
