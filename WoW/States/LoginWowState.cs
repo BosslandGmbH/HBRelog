@@ -27,17 +27,11 @@ namespace HighVoltz.HBRelog.WoW.States
             get { return 700; }
         }
 
-        public override bool NeedToRun
-        {
-            get
-            {
-                return (_wowManager.GameProcess != null && !_wowManager.GameProcess.HasExitedSafe())
-                    && !_wowManager.StartupSequenceIsComplete && !_wowManager.InGame
-                    && _wowManager.GlueStatus == WowManager.GlueState.Disconnected;
-            }
-        }
+        public override bool NeedToRun => (_wowManager.GameProcess != null && !_wowManager.GameProcess.HasExitedSafe())
+                                          && !_wowManager.StartupSequenceIsComplete && !_wowManager.InGame
+                                          && _wowManager.GlueScreen == GlueScreen.Login;
 
-        public override void Run()
+	    public override void Run()
         {
 	        if (_wowManager.Globals == null)
 		        return;
@@ -102,11 +96,11 @@ namespace HighVoltz.HBRelog.WoW.States
                 return;
 
             // enter Battlenet email..
-            if (EnterTextInEditBox("AccountLoginAccountEdit", _wowManager.Settings.Login))
+            if (EnterTextInEditBox("AccountLogin.UI.AccountEditBox", _wowManager.Settings.Login))
                 return;
 
             // enter password
-            if (EnterTextInEditBox("AccountLoginPasswordEdit", _wowManager.Settings.Password))
+            if (EnterTextInEditBox("AccountLogin.UI.PasswordEditBox", _wowManager.Settings.Password))
                 return;
 
             SetGameTitle();
