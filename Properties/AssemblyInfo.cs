@@ -16,7 +16,7 @@ using System.Windows;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("HBRelog")]
-[assembly: AssemblyCopyright("Copyright © 2015 by HighVoltz")]
+[assembly: AssemblyCopyright("Copyright © 2016 by HighVoltz")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

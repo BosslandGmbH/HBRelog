@@ -225,7 +225,6 @@ namespace HighVoltz.HBRelog.WoW
 				return;
 			}
 			var config = new ConfigWtf(_lockOwner, configPath);
-			config.EnsureValue("realmName", _lockOwner.Settings.ServerName);
 			if (HbRelogManager.Settings.AutoAcceptTosEula)
 			{
 				config.EnsureValue("readTOS", "1");
