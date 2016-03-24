@@ -76,7 +76,7 @@ namespace HighVoltz.HBRelog.WoW.States
             if (!_wowManager.StartupSequenceIsComplete)
                 return WowProblem.None;
 
-            if (_wowManager.GlueStatus == WowManager.GlueState.Disconnected)
+            if (_wowManager.GlueScreen == GlueScreen.Login)
                 return WowProblem.Disconnected;
 
             if (WowIsLoggedOutForTooLong)

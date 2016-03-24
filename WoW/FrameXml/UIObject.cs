@@ -185,8 +185,8 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
         {
             if (wowManager == null) throw new ArgumentException("wowManager is null", "wowManager");
             if (wowManager.Globals == null) throw new ArgumentException("wowManager.Globals is null", "wowManager.Globals");
-            var value = wowManager.Globals.GetValue(name);
-            if (value == null || value.Type != LuaType.Table)
+			var value = wowManager.GetLuaObject(name);
+			if (value == null || value.Type != LuaType.Table)
             {
                 return null;
             }

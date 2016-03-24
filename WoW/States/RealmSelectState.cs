@@ -33,7 +33,7 @@ namespace HighVoltz.HBRelog.WoW.States
 			{
                 return (_wowManager.GameProcess != null && !_wowManager.GameProcess.HasExitedSafe()) 
 					&& !_wowManager.StartupSequenceIsComplete && !_wowManager.InGame && !_wowManager.IsConnectiongOrLoading &&
-					   _wowManager.GlueStatus == WowManager.GlueState.ServerSelection;
+					   _wowManager.GlueScreen == GlueScreen.RealmList;
 			}
 		}
 
@@ -66,7 +66,7 @@ namespace HighVoltz.HBRelog.WoW.States
 			if (tabs.Any())
 			{
 
-				while (tabs.Any() && _wowManager.GlueStatus == WowManager.GlueState.ServerSelection)
+				while (tabs.Any() && _wowManager.GlueScreen == GlueScreen.RealmList)
 				{
 					foundServer = SelectRealm(_wowManager.Settings.ServerName);
 					if (foundServer)
@@ -127,8 +127,9 @@ namespace HighVoltz.HBRelog.WoW.States
 		{
 			get
 			{
-				const string groupName = "RealmListRealmButton";
+				const string groupName = "RealmListScrollFrameButton";
 				return UIObject.GetUIObjectsOfType<Button>(_wowManager).Where(b => b.IsVisible && b.Name.Contains(groupName)).ToList();
+
 			}
 		}
 
@@ -265,7 +266,10 @@ namespace HighVoltz.HBRelog.WoW.States
 				if (!scrollButton.IsEnabled || !scrollButton.IsVisible)
 					break;
 				clickPos = _wowManager.ConvertWidgetCenterToWin32Coord(scrollButton);
-				Utility.LeftClickAtPos(_wowManager.GameProcess.MainWindowHandle, (int)clickPos.X, (int)clickPos.Y, false, false);
+
+				for (int j=0; j < 19; j++)
+					Utility.LeftClickAtPos(_wowManager.GameProcess.MainWindowHandle, (int)clickPos.X, (int)clickPos.Y, false, false);
+
 				try
 				{
 					NativeMethods.BlockInput(true);

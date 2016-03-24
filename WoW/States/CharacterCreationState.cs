@@ -29,7 +29,7 @@ namespace HighVoltz.HBRelog.WoW.States
                 return (_wowManager.GameProcess != null && !_wowManager.GameProcess.HasExitedSafe()) 
 					&& !_wowManager.StartupSequenceIsComplete && !_wowManager.InGame 
 					&& !_wowManager.IsConnectiongOrLoading 
-					&& _wowManager.GlueStatus == WowManager.GlueState.CharacterCreation;
+					&& _wowManager.GlueScreen == GlueScreen.CharCreate;
 	        }
         }
 

@@ -191,7 +191,6 @@ namespace HighVoltz.HBRelog.Settings
         public uint GameStateOffset { get; set; }
         public uint FocusedWidgetOffset { get; set; }
         public uint LuaStateOffset { get; set; }
-		public uint GlueStateOffset { get; set; }
 		public uint LoadingScreenEnableCountOffset { get; set; }
 
         public TimeSpan SaveCompleteTimeSpan
@@ -239,7 +238,6 @@ namespace HighVoltz.HBRelog.Settings
                 root.Add(new XElement("GameStateOffset", GameStateOffset));
                 root.Add(new XElement("FocusedWidgetOffset", FocusedWidgetOffset));
                 root.Add(new XElement("LuaStateOffset", LuaStateOffset));
-                root.Add(new XElement("GlueStateOffset", GlueStateOffset));
 				root.Add(new XElement("LoadingScreenEnableCountOffset", LoadingScreenEnableCountOffset));
 
                 var characterProfilesElement = new XElement("CharacterProfiles");
@@ -386,10 +384,6 @@ namespace HighVoltz.HBRelog.Settings
                     FocusedWidgetOffset = GetElementValue(root.Element("FocusedWidgetOffset"), 0u);
                     LuaStateOffset = GetElementValue(root.Element("LuaStateOffset"), 0u);
                     //settings.LastHardwareEventOffset = GetElementValue(root.Element("LastHardwareEventOffset"), 0u);
-                    GlueStateOffset = GetElementValue(root.Element("GlueStateOffset"), 0u);
-	                LoadingScreenEnableCountOffset = GetElementValue(
-		                root.Element("LoadingScreenEnableCountOffset"),
-		                0u);
 
 					CharacterProfiles.Clear();
 					XElement characterProfilesElement = root.Element("CharacterProfiles");
