@@ -65,6 +65,7 @@ namespace HighVoltz.HBRelog.Honorbuddy.States
             {
                 _hbManager.Profile.Pause();
                 _hbManager.Profile.Log($"path to honorbuddy.exe is not set or does not exist: {hbPath}");
+                return;
             }
 
             Log.Write("Checking for new  Honorbuddy update");
