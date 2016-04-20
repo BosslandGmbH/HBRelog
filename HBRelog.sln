@@ -162,7 +162,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(SubversionScc) = preSolution
-		Svn-Managed = True
+		Svn-Managed = False
 		Manager = AnkhSVN - Subversion Support for Visual Studio
 	EndGlobalSection
 EndGlobal
