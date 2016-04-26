@@ -47,14 +47,23 @@ namespace HighVoltz.HBRelog.WoW.States
 				return;
             }
 
-			bool isBanned = IsBanned, isSuspended = IsSuspended, isFrozen = IsFrozen, isSuspiciousLocked = IsLockedSuspiciousActivity, isLockedLicense = IsLockedLicense;
 
-            if (isBanned || isSuspended || isFrozen || isSuspiciousLocked || isLockedLicense)
+			var htmlFormatText = GlueDialogHtmlFormatText;
+
+			bool isBanned = IsBanned, isSuspended = IsSuspended, isSuspiciousLocked = IsLockedSuspiciousActivity, isLockedLicense = IsLockedLicense;
+
+            if (isBanned || isSuspended || isSuspiciousLocked || isLockedLicense || !string.IsNullOrEmpty(htmlFormatText))
             {
-                string reason = isBanned ? "banned" : isSuspended ? "suspended" : isFrozen ? "frozen" : isSuspiciousLocked ? "locked due to suspicious activity" : "locked license";
-                _wowManager.Profile.Status = string.Format("Account is {0}", reason);
+	            var reason = isBanned
+		            ? "banned"
+		            : isSuspended ? "suspended" : isSuspiciousLocked ? "locked due to suspicious activity" : isLockedLicense ? "locked license" : "inaccessible";
+
+                _wowManager.Profile.Status = $"Account is {reason}";
                 _wowManager.Profile.Log("Pausing profile because account is {0}.", reason);
-                _wowManager.Profile.Pause();
+				if (reason == "inaccessible")
+					_wowManager.Profile.Log("Loggin Error: {0}.", htmlFormatText);
+
+				_wowManager.Profile.Pause();
                 return;
             }
 
@@ -138,18 +147,62 @@ namespace HighVoltz.HBRelog.WoW.States
             }
         }
 
-        string GlueDialogTitle
+        private string GlueDialogType
         {
             get
             {
-                var glueDialogTitleFontString = UIObject.GetUIObjectByName<FontString>(_wowManager, "GlueDialogTitle");
-                if (glueDialogTitleFontString != null && glueDialogTitleFontString.IsVisible)
-                    return glueDialogTitleFontString.Text;
+                var glueDialog = UIObject.GetUIObjectByName<Frame>(_wowManager, "GlueDialog");
+
+	            if (glueDialog != null && glueDialog.IsVisible)
+	            {
+		            var which = _wowManager.GetLuaObject("GlueDialog.which");
+					if (which != null && !string.IsNullOrEmpty(which.String.Value))
+						return which.String.Value;
+				}
                 return string.Empty;
             }
         }
 
-        string GlueDialogText
+		private string GlueDialogData
+		{
+			get
+			{
+				var glueDialog = UIObject.GetUIObjectByName<Frame>(_wowManager, "GlueDialog");
+
+				if (glueDialog != null && glueDialog.IsVisible)
+				{
+					var data = _wowManager.GetLuaObject("GlueDialog.data");
+					if (data != null && data.Pointer != IntPtr.Zero && !string.IsNullOrEmpty(data.String.Value))
+						return data.String.Value;
+				}
+				return string.Empty;
+			}
+		}
+
+		private string GlueDialogHtmlFormatText
+		{
+			get
+			{
+				var glueDialogHTML = UIObject.GetUIObjectByName<Frame>(_wowManager, "GlueDialogHTML");
+
+				if (glueDialogHTML != null && glueDialogHTML.IsVisible)
+					return glueDialogHTML.Regions.OfType<FontString>().FirstOrDefault()?.Text ?? "";
+				return "";
+			}
+		}
+
+		string GlueDialogTitle
+		{
+			get
+			{
+				var glueDialogTitleFontString = UIObject.GetUIObjectByName<FontString>(_wowManager, "GlueDialogTitle");
+				if (glueDialogTitleFontString != null && glueDialogTitleFontString.IsVisible)
+					return glueDialogTitleFontString.Text;
+				return string.Empty;
+			}
+		}
+
+		string GlueDialogText
         {
             get
             {
@@ -171,83 +224,44 @@ namespace HighVoltz.HBRelog.WoW.States
             }
         }
 
-        private const string BANNED_TITLE_TEXT = "Battle.net Error #202";
 
-        bool IsBanned
-        {
-            get
-            {
-                var dialogText = GlueDialogTitle;
-                if (string.IsNullOrEmpty(dialogText))
-                    return false;
-                return BANNED_TITLE_TEXT == dialogText;
-            }
-        }
-
-        private const string SUSPENED_TEXT = "Battle.net Error #203";
-
-        bool IsSuspended
-        {
-            get
-            {
-                var dialogText = GlueDialogTitle;
-                if (string.IsNullOrEmpty(dialogText))
-                    return false;
-                return SUSPENED_TEXT == dialogText;
-            }
-        }
-
-        private const string FROZEN_TEXT = "Battle.net Error #206";
-
-        bool IsFrozen
-        {
-            get
-            {
-                var dialogText = GlueDialogTitle;
-                if (string.IsNullOrEmpty(dialogText))
-                    return false;
-                return FROZEN_TEXT == dialogText;
-            }
-        }
-
-        private const string INCORRECT_PASSWORD_TEXT = "Battle.net Error #104";
+        private const string GlueDialogData_IncorrectPassword = "WOW51900314";
         bool IncorrectPassword
         {
             get
             {
-                var dialogText = GlueDialogTitle;
-                if (string.IsNullOrEmpty(dialogText))
+	            var dialogData = GlueDialogData;
+
+                if (string.IsNullOrEmpty(dialogData))
                     return false;
-                return INCORRECT_PASSWORD_TEXT == dialogText;
+	            return dialogData == GlueDialogData_IncorrectPassword;
             }
         }
 
-        private const string IS_LOCKED_LICENSE_TEXT = "Battle.net Error #204";
-        bool IsLockedLicense
-        {
-            get
-            {
-                var dialogText = GlueDialogTitle;
-                if (string.IsNullOrEmpty(dialogText))
-                    return false;
-                return IS_LOCKED_LICENSE_TEXT == dialogText;
-            }
-        }
 
-        private const string LOCKED_TEXT1 = "Battle.net Error #42003";
-        private const string LOCKED_TEXT2 = "Battle.net Error #141";
-        bool IsLockedSuspiciousActivity
-        {
-            get
-            {
-                var dialogText = GlueDialogTitle;
-                if (string.IsNullOrEmpty(dialogText))
-                    return false;
-                return LOCKED_TEXT1 == dialogText || LOCKED_TEXT2 == dialogText;
-            }
-        }
+		bool IsSuspended => IsGlueDialogHtmlVisible("BLZ51900053");
 
-        private string _okayText;
+	    private bool IsBanned => false;
+
+		bool IsLockedLicense => false;
+
+		bool IsLockedSuspiciousActivity => false;
+
+		private bool IsGlueDialogHtmlVisible(string partialFormat)
+		{
+			var text = GlueDialogHtmlFormatText;
+			if (string.IsNullOrEmpty(text))
+				return false;
+			return text.Contains(partialFormat);
+		}
+
+	    private string GetGlobalString(string str)
+	    {
+		    return _wowManager.Globals.GetValue(str)?.String.Value;
+	    }
+
+
+		private string _okayText;
 
         private bool IsErrorDialogVisible
         {
@@ -273,10 +287,10 @@ namespace HighVoltz.HBRelog.WoW.States
 			if (string.IsNullOrEmpty(_wowManager.Settings.AuthenticatorSerial))
 				return false;
 
-            var frame = UIObject.GetUIObjectByName<Frame>(_wowManager, "TokenEnterDialogBackgroundEdit");
+			var frame = UIObject.GetUIObjectByName<Frame>(_wowManager, "AccountLogin.UI.TokenEntryDialog");
             if (frame == null || !frame.IsVisible || !frame.IsShown) return false;
 
-            var editBox = UIObject.GetUIObjectByName<EditBox>(_wowManager, "AccountLoginTokenEdit");
+            var editBox = UIObject.GetUIObjectByName<EditBox>(_wowManager, "AccountLogin.UI.TokenEntryDialog.Background.EditBox");
 
 	        var auth = new BattleNetAuthenticator();
 
@@ -305,8 +319,11 @@ namespace HighVoltz.HBRelog.WoW.States
 
         bool HandleAccountSelectionDialog()
         {
-            const string buttonGroupName = "WoWAccountSelectDialogBackgroundContainerButton";
-            var accountButtons = UIObject.GetUIObjectsOfType<Button>(_wowManager).Where(b => b.IsVisible && b.Name.Contains(buttonGroupName)).ToList();
+	        var accountContainer = UIObject.GetUIObjectByName<Frame>(_wowManager, "AccountLogin.UI.WoWAccountSelectDialog.Background.Container");
+	        if (accountContainer == null)
+		        return true;
+
+			var accountButtons = accountContainer.Children.OfType<Button>().Where(b => b.IsVisible).ToList();
             if (accountButtons.Any())
             {
                 var wantedAccountButton =

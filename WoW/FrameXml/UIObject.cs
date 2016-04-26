@@ -226,7 +226,9 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
                     return new Frame(wowManager, address) { Type = type };
                 case UIObjectType.ScrollFrame:
                     return new ScrollFrame(wowManager, address) { Type = type };
-                case UIObjectType.Slider:
+				case UIObjectType.SimpleHTML:
+					return new Frame(wowManager, address) { Type = type };
+				case UIObjectType.Slider:
                     return new Slider(wowManager, address) { Type = type };
                 case UIObjectType.Texture:
                     return new Texture(wowManager, address) { Type = type };
