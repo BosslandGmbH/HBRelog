@@ -60,14 +60,18 @@ namespace HighVoltz.HBRelog.Honorbuddy.States
 
         public override void Run()
         {
-            if (!File.Exists(_hbManager.Settings.HonorbuddyPath))
+            var hbPath = _hbManager.Settings.HonorbuddyPath;
+            if (string.IsNullOrEmpty(hbPath) || !File.Exists(hbPath))
             {
                 _hbManager.Profile.Pause();
-                _hbManager.Profile.Log(string.Format("path to honorbuddy.exe does not exist: {0}", _hbManager.Settings.HonorbuddyPath));
+                _hbManager.Profile.Log($"path to honorbuddy.exe is not set or does not exist: {hbPath}");
+                return;
             }
+
             Log.Write("Checking for new  Honorbuddy update");
+            
             // get local honorbuddy file version.
-            FileVersionInfo localFileVersionInfo = FileVersionInfo.GetVersionInfo(_hbManager.Settings.HonorbuddyPath);
+            FileVersionInfo localFileVersionInfo = FileVersionInfo.GetVersionInfo(hbPath);
             // download the latest Honorbuddy version string from server
             var client = new WebClient {Proxy = null};
             string latestHbVersion = client.DownloadString(_hbManager.Profile.Settings.HonorbuddySettings.UseHBBeta ? HbBetaVersionUrl : HbVersionUrl);
