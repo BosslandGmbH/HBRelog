@@ -69,11 +69,6 @@ namespace HighVoltz.HBRelog.Honorbuddy
 		    }
 	    }
 
-        public void ChangeBotProcess(int botProcessId)
-        {
-            BotProcess = Process.GetProcessById(botProcessId);
-        }
-
         public HonorbuddyManager(CharacterProfile profile)
         {
             Profile = profile;
