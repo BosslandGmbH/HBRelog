@@ -166,6 +166,8 @@ namespace HighVoltz.HBRelog
             Log.Write("\t{0,-30} {1}", "Minimize Hb On Startup:", HbRelogManager.Settings.MinimizeHbOnStart);
 			Log.Write("\t{0,-30} {1}", "Set GameWindow Title:", HbRelogManager.Settings.SetGameWindowTitle);
             Log.Write("\t{0,-30} {1}", "Wow Start Delay:", HbRelogManager.Settings.WowDelay);
+            Log.Write("\t{0,-30} {1}", "Profiles to start:", string.Join(",", HbRelogManager.Settings.ProfilesToStart));
+
             // if autostart is on then start all enabled acounts
             if (HbRelogManager.Settings.AutoStart)
             {
@@ -173,6 +175,20 @@ namespace HighVoltz.HBRelog
                 {
                     if (character.Settings.IsEnabled)
                         character.Start();
+                }
+            }
+
+            if (HbRelogManager.Settings.ProfilesToStart != null && HbRelogManager.Settings.ProfilesToStart.Any())
+            {
+                foreach (var profileToStart in HbRelogManager.Settings.ProfilesToStart)
+                {
+                    foreach (CharacterProfile item in AccountGrid.Items)
+                    {
+                        if (item.Settings.ProfileName.Equals(profileToStart, StringComparison.CurrentCultureIgnoreCase))
+                            item.Start();
+                    }
+
+                    Log.Write("\t{0,-30} {1}", "Couldn't start:", profileToStart);
                 }
             }
         }
