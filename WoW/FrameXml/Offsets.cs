@@ -1,14 +1,13 @@
 ﻿namespace HighVoltz.HBRelog.WoW.FrameXml
 {
-    static class Offsets
+    internal static class Offsets
     {
         public static class UIObject
         {
             public const int GetTypeVtmOffset = 0x20;
             public const int GetFontTypeVtmOffset = 0x1C;
             public const int NamePtrOffset = 0x14;
-			// Needs updating
-            public const int FontNamePtrOffset = 0x54;
+            public const int FontNamePtrOffset = 0x5C;
         }
 
         public static class ParentedObject
@@ -64,11 +63,7 @@
             public const int MaxLettersOffset = 0x1A4;  
             public const int IsEnabledFlagOffset = 0x98;  
             public const int IsEnabledBit = 8;
-            public const int IsAutoFocus = 0x1;
-            public const int IsMultilineBit = 0x2;
-            public const int IsNumericBit = 0x4;
-            public const int IsPasswordBit = 0x8;
-            public const int IsCountInvisibleLettersBit = 0x20;
+
         }
 
         public static class ScrollFrame // Inherits from Frame
@@ -82,22 +77,19 @@
 
         public static class Slider // Inherits from Frame
         {
-            public const int IsEnabledFlagOffset = 0x98;
+            public const int Flags = 0x98;
             public const int MinValueOffset = 0x160;  
             public const int MaxValueOffset = 0x164;  
             public const int ValueOffset = 0x168;  
             public const int ValueStepOffset = 0x16C;  
             public const int ThumbTextureOffset = 0x174; 
             public const int OrientationOffset = 0x170;  
-            public const int IsEnabledBit = 8;
         }
 
         public static class Texture // Inherits From Layered Region
         {
-			// Needs fixing
-            public const int TexturePathObjectOffset = 0xC0;
-			// Needs fixing
-			public const int TexturePathOffset = 0x18;
+            public const int TexturePathObjectOffset = 0xA8;
+			public const int TexturePathOffset = 0x188;
         }
 
     }

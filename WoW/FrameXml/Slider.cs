@@ -7,12 +7,13 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
     {
         public Slider(WowManager wowManager, IntPtr address) : base(wowManager, address) { }
 
-        public bool IsEnabled
-        {
-            get { return (WowManager.Memory.Read<int>(Address + Offsets.Slider.IsEnabledFlagOffset) & Offsets.Slider.IsEnabledBit) == 0; }
-        }
+        public bool IsEnabled => (SliderFlags & SliderFlags.Disabled) == 0;
 
-        public Orientation Orientation
+
+	    public SliderFlags SliderFlags => (SliderFlags)WowManager.Memory.Read<uint>(Address + Offsets.Slider.Flags);
+
+
+		public Orientation Orientation
         {
             get
             {
@@ -21,28 +22,16 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
             }
         }
 
-        public float MinValue
-        {
-            get { return WowManager.Memory.Read<float>(Address + Offsets.Slider.MinValueOffset); }
-        }
+        public float MinValue => WowManager.Memory.Read<float>(Address + Offsets.Slider.MinValueOffset);
 
-        public float MaxValue
-        {
-            get { return WowManager.Memory.Read<float>(Address + Offsets.Slider.MaxValueOffset) + MinValue; }
-        }
+	    public float MaxValue => WowManager.Memory.Read<float>(Address + Offsets.Slider.MaxValueOffset) + MinValue;
 
-        public float Value
-        {
-            get { return WowManager.Memory.Read<float>(Address + Offsets.Slider.ValueOffset) + MinValue; }
-        }
+	    public float Value => WowManager.Memory.Read<float>(Address + Offsets.Slider.ValueOffset) + MinValue;
 
-        public float ValueStep
-        {
-            get { return WowManager.Memory.Read<float>(Address + Offsets.Slider.ValueStepOffset) + MinValue; }
-        }
+	    public float ValueStep => WowManager.Memory.Read<float>(Address + Offsets.Slider.ValueStepOffset) + MinValue;
 
 
-        public Texture ThumbTexture
+	    public Texture ThumbTexture
         {
             get
             {
@@ -51,4 +40,10 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
             }
         }
     }
+
+	[Flags]
+	public enum SliderFlags
+	{
+		Disabled = 1 << 3,
+	}
 }

@@ -8,6 +8,7 @@ using System.Threading;
 using System.Windows.Forms;
 using HighVoltz.HBRelog.FiniteStateMachine;
 using HighVoltz.HBRelog.WoW.FrameXml;
+using HighVoltz.HBRelog.WoW.Lua;
 using WinAuth;
 using Button = HighVoltz.HBRelog.WoW.FrameXml.Button;
 
@@ -172,7 +173,7 @@ namespace HighVoltz.HBRelog.WoW.States
 				if (glueDialog != null && glueDialog.IsVisible)
 				{
 					var data = _wowManager.GetLuaObject("GlueDialog.data");
-					if (data != null && data.Pointer != IntPtr.Zero && !string.IsNullOrEmpty(data.String.Value))
+					if (data != null && data.Pointer != IntPtr.Zero && data.Type != LuaType.Nil && !string.IsNullOrEmpty(data.String.Value))
 						return data.String.Value;
 				}
 				return string.Empty;
@@ -324,32 +325,31 @@ namespace HighVoltz.HBRelog.WoW.States
 		        return true;
 
 			var accountButtons = accountContainer.Children.OfType<Button>().Where(b => b.IsVisible).ToList();
-            if (accountButtons.Any())
+			if (!accountButtons.Any())
+				return true;
+
+            var wantedAccountButton =
+                accountButtons.FirstOrDefault(b => string.Equals(b.Text, _wowManager.Settings.AcountName, StringComparison.InvariantCultureIgnoreCase));
+
+            if (wantedAccountButton == null)
             {
-                var wantedAccountButton =
-                    accountButtons.FirstOrDefault(b => string.Equals(b.Text, _wowManager.Settings.AcountName, StringComparison.InvariantCultureIgnoreCase));
-                if (wantedAccountButton == null)
-                {
-                    _wowManager.Profile.Log("Account name not found. Double check spelling");
-                    return false;
-                }
-                var buttonIndex = wantedAccountButton.Id;
-
-                var currentIndex = SelectedAccountIndex;
-
-                if (buttonIndex != currentIndex)
-                {
-                    Utility.SendBackgroundString(_wowManager.GameProcess.MainWindowHandle,
-                        buttonIndex > currentIndex
-                            ? new string((char) Keys.Down, buttonIndex - currentIndex)
-                            : new string((char) Keys.Up, currentIndex - buttonIndex), false);
-                    _wowManager.Profile.Log("Selecting Account");
-                    Utility.SleepUntil(() => SelectedAccountIndex == buttonIndex, TimeSpan.FromSeconds(2));
-                    return false;
-                }
-                _wowManager.Profile.Log("Accepting current account selection");
-                Utility.SendBackgroundKey(_wowManager.GameProcess.MainWindowHandle, (char)Keys.Enter, false);
+                _wowManager.Profile.Log("Account name not found. Double check spelling");
+                return false;
             }
+
+            var buttonIndex = wantedAccountButton.Id;
+            var currentIndex = SelectedAccountIndex;
+
+			if (buttonIndex == currentIndex)
+			{
+				_wowManager.Profile.Log("Accepting current account selection");
+				Utility.SendBackgroundKey(_wowManager.GameProcess.MainWindowHandle, (char)Keys.Enter, false);
+				return true;
+			}
+
+			_wowManager.Profile.Log("Selecting Account");
+			var clickPos = _wowManager.ConvertWidgetCenterToWin32Coord(wantedAccountButton);
+			Utility.LeftClickAtPos(_wowManager.GameProcess.MainWindowHandle, (int)clickPos.X, (int)clickPos.Y, true);
             return true;
         }
 
@@ -357,7 +357,7 @@ namespace HighVoltz.HBRelog.WoW.States
         {
             get
             {
-                return (int)_wowManager.Globals.GetValue("CURRENT_SELECTED_WOW_ACCOUNT").Value.Number;
+                return (int)_wowManager.GetLuaObject("AccountLogin.UI.WoWAccountSelectDialog.selectedAccount").Value.Number;
             }
         }
 

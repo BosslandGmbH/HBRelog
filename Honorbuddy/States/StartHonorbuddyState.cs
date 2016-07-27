@@ -40,16 +40,23 @@ namespace HighVoltz.HBRelog.Honorbuddy.States
 
         public override void Run()
         {
-            // remove internet zone restrictions from Honorbuddy.exe if it exists
-            Utility.UnblockFileIfZoneRestricted(_hbManager.Settings.HonorbuddyPath);
+	        if (!File.Exists(_hbManager.Settings.HonorbuddyPath))
+	        {
+		        _hbManager.Profile.Log("Honorbuddy not found at path {0}", _hbManager.Settings.HonorbuddyPath);
+				_hbManager.Profile.Pause();
+		        return;
+	        }
+
+			// remove internet zone restrictions from Honorbuddy.exe if it exists
+			Utility.UnblockFileIfZoneRestricted(_hbManager.Settings.HonorbuddyPath);
             // we need to delay starting honorbuddy for a few seconds if another instance from same path was started a few seconds ago
 	        if (HonorbuddyManager.HBStartupManager.CanStart(_hbManager.Settings.HonorbuddyPath))
 	        {
 		        CopyHBRelogHelperPluginOver();
 				_hbManager.StartHonorbuddy();
 	        }
-
         }
+
 
 	    void CopyHBRelogHelperPluginOver()
 	    {

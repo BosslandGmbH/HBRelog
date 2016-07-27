@@ -9,13 +9,13 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
     {
         public EditBox(WowManager wowManager, IntPtr address) : base(wowManager, address) { }
 
-        /// <summary>
-        /// Gets the cursor position. Works correctly with utf8 text.
-        /// </summary>
-        /// <value>
-        /// The cursor position.
-        /// </value>
-        public int CursorPosition
+		/// <summary>
+		/// Gets the cursor position. Works correctly with utf8 text.
+		/// </summary>
+		/// <value>
+		/// The cursor position.
+		/// </value>
+		public int CursorPosition
         {
             get
             {
@@ -27,48 +27,36 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
             }
         }
 
-        public int Flags
-        {
-            get { return WowManager.Memory.Read<int>(Address + Offsets.EditBox.FlagsOffset); }
-        }
+        public EditBoxFlags EditBoxFlags => (EditBoxFlags)WowManager.Memory.Read<int>(Address + Offsets.EditBox.FlagsOffset);
 
-        public bool HasFocus
-        {
-            get { return Address == WowManager.FocusedWidgetPtr; }
-        }
+	    public bool HasFocus => Address == WowManager.FocusedWidgetPtr;
 
-        /// <summary>
+	    /// <summary>
         /// Gets the max bytes. NOTE: this can return 0.
         /// </summary>
         /// <value>
         /// The max bytes.
         /// </value>
-        public int MaxBytes
-        {
-            get { return WowManager.Memory.Read<int>(Address + Offsets.EditBox.MaxBytesOffset) + 1; }
-        }
+        public int MaxBytes => WowManager.Memory.Read<int>(Address + Offsets.EditBox.MaxBytesOffset) + 1;
 
-        /// <summary>
+	    /// <summary>
         /// Gets the max letters.
         /// </summary>
         /// <value>
         /// The max letters.
         /// </value>
-        public int MaxLetters
-        {
-            get { return WowManager.Memory.Read<int>(Address + Offsets.EditBox.MaxLettersOffset); }
-        }
+        public int MaxLetters => WowManager.Memory.Read<int>(Address + Offsets.EditBox.MaxLettersOffset);
 
-        public int NumLetters
+	    public int NumLetters
         {
             get
             {
                 var text = Text;
                 if (!IsNumeric)
                 {
-                    return text != null ? text.Length : 0;
+                    return text?.Length ?? 0;
                 }
-                return text != null ? text.Count(char.IsDigit) : 0;
+                return text?.Count(char.IsDigit) ?? 0;
             }
         }
 
@@ -97,39 +85,32 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
             }
         }
 
-        public bool IsAutoFocus
-        {
-            get { return (Flags & Offsets.EditBox.IsAutoFocus) != 0; }
-        }
+        public bool IsAutoFocus => (EditBoxFlags & EditBoxFlags.IsAutoFocus) != 0;
 
-        public bool IsEnabled
-        {
-            get { return (WowManager.Memory.Read<int>(Address + Offsets.EditBox.IsEnabledFlagOffset) & Offsets.EditBox.IsEnabledBit) == 0; }
-        }
+	    public bool IsEnabled => (WowManager.Memory.Read<int>(Address + Offsets.EditBox.IsEnabledFlagOffset) & Offsets.EditBox.IsEnabledBit) == 0;
 
-        public bool IsNumeric
-        {
-            get { return (Flags & Offsets.EditBox.IsNumericBit) != 0; }
-        }
+	    public bool IsNumeric => (EditBoxFlags & EditBoxFlags.IsNumeric) != 0;
 
-        public bool IsPassword
-        {
-            get { return (Flags & Offsets.EditBox.IsPasswordBit) != 0; }
-        }
+	    public bool IsPassword => (EditBoxFlags & EditBoxFlags.IsPassword) != 0;
 
-        public bool IsMultiline
-        {
-            get { return (Flags & Offsets.EditBox.IsMultilineBit) != 0; }
-        }
+	    public bool IsMultiline => (EditBoxFlags & EditBoxFlags.IsMultiline) != 0;
 
-        public bool IsCountInvisibleLetters
-        {
-            get { return (Flags & Offsets.EditBox.IsCountInvisibleLettersBit) != 0; }
-        }
+	    public bool IsCountInvisibleLetters => (EditBoxFlags & EditBoxFlags.IsCountInvisibleLetters) != 0;
 
-        public Font FontObject { get { throw new NotImplementedException(); } }
+	    public Font FontObject { get { throw new NotImplementedException(); } }
 
         public FontInfo FontInfo { get { throw new NotImplementedException(); } }
 
     }
+
+	[Flags]
+	public enum EditBoxFlags
+	{
+		IsAutoFocus = 1,
+		IsMultiline = 1 << 1,
+		IsNumeric = 1 << 2,
+		IsPassword = 1 << 3,
+		IsCountInvisibleLetters = 1 << 5,
+	}
+
 }
