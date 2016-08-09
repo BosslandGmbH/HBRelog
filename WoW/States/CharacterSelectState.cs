@@ -87,7 +87,15 @@ namespace HighVoltz.HBRelog.WoW.States
 
             if (wantedCharIndex == 0)
             {
-                _wowManager.Profile.Status = string.Format("Character name: {0} not found. Double check spelling", charName);
+	            var inactivecharName = $"{charName} |cffff2020(Inactive)|r";
+	            if (characterNames.Any(n => string.Equals(inactivecharName, n, StringComparison.InvariantCultureIgnoreCase)))
+	            {
+					_wowManager.Profile.Status = "WoW subscription is inactive";
+					_wowManager.Profile.Log("WoW subscription is inactive");
+					_wowManager.Profile.Pause();
+					return false;
+	            }
+                _wowManager.Profile.Status = $"Character name: {charName} not found. Double check spelling";
                 _wowManager.Profile.Log("Character name not found. Double check spelling");
                 return false;
             }

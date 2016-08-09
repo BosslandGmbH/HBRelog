@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -49,20 +50,13 @@ namespace HighVoltz.HBRelog.WoW.States
             }
 
 
-			var htmlFormatText = GlueDialogHtmlFormatText;
-
 			bool isBanned = IsBanned, isSuspended = IsSuspended, isSuspiciousLocked = IsLockedSuspiciousActivity, isLockedLicense = IsLockedLicense;
-
-            if (isBanned || isSuspended || isSuspiciousLocked || isLockedLicense || !string.IsNullOrEmpty(htmlFormatText))
+            if (isBanned || isSuspended || isSuspiciousLocked || isLockedLicense)
             {
-	            var reason = isBanned
-		            ? "banned"
-		            : isSuspended ? "suspended" : isSuspiciousLocked ? "locked due to suspicious activity" : isLockedLicense ? "locked license" : "inaccessible";
+                string reason = isBanned ? "banned" : isSuspended ? "suspended" : isSuspiciousLocked ? "locked due to suspicious activity" : "locked license";
 
                 _wowManager.Profile.Status = $"Account is {reason}";
                 _wowManager.Profile.Log("Pausing profile because account is {0}.", reason);
-				if (reason == "inaccessible")
-					_wowManager.Profile.Log("Loggin Error: {0}.", htmlFormatText);
 
 				_wowManager.Profile.Pause();
                 return;
@@ -76,13 +70,9 @@ namespace HighVoltz.HBRelog.WoW.States
                 return;
             }
 
-            //  press 'Enter' key if popup dialog with an 'Okay' button is visible
-            if (IsErrorDialogVisible)
-            {
-                _wowManager.Profile.Log("Clicking okay on dialog.");
-                Utility.SendBackgroundKey(_wowManager.GameProcess.MainWindowHandle, (char)Keys.Enter, false);
+            // Auto-click Okay on dialog
+            if (ClickOkayButton())
                 return;
-            }
 
             if (_wowManager.ServerHasQueue)
             {
@@ -242,11 +232,13 @@ namespace HighVoltz.HBRelog.WoW.States
 
 		bool IsSuspended => IsGlueDialogHtmlVisible("BLZ51900053");
 
-	    private bool IsBanned => false;
+        private bool IsBanned => IsGlueDialogHtmlVisible("BLZ51900052");
 
-		bool IsLockedLicense => false;
+        // ToDo: Implement IsLockedLicense
+        bool IsLockedLicense => false;
 
-		bool IsLockedSuspiciousActivity => false;
+        // ToDo: Implement IsLockedSuspiciousActivity
+        bool IsLockedSuspiciousActivity => false;
 
 		private bool IsGlueDialogHtmlVisible(string partialFormat)
 		{
@@ -264,16 +256,40 @@ namespace HighVoltz.HBRelog.WoW.States
 
 		private string _okayText;
 
-        private bool IsErrorDialogVisible
+        private bool ClickOkayButton()
         {
-            get
+            if (_okayText == null)
+                _okayText = _wowManager.Globals.GetValue("OKAY").String.Value;
+
+            var buttons = GetGlueDialogButtons().ToList();
+            var okayButton = buttons.FirstOrDefault(b => b.Text == _okayText);
+            if (okayButton == null)
+                return false;
+
+            // if there's only one button then we just need to press 'Enter'
+            if (buttons.Count == 1)
             {
-                var dialogButtonText = GlueDialogButton1Text;
-                if (string.IsNullOrEmpty(dialogButtonText))
-                    return false;
-                if (_okayText == null)
-                    _okayText = _wowManager.Globals.GetValue("OKAY").String.Value;
-                return _okayText == dialogButtonText;
+                _wowManager.Profile.Log("Pressing 'Enter' key to close dialog.");
+                Utility.SendBackgroundKey(_wowManager.GameProcess.MainWindowHandle, (char)Keys.Enter, false);
+            }
+            else
+            {
+                _wowManager.Profile.Log("Clicking okay on dialog.");
+                var clickPos = _wowManager.ConvertWidgetCenterToWin32Coord(okayButton);
+                Utility.LeftClickAtPos(_wowManager.GameProcess.MainWindowHandle, (int)clickPos.X, (int)clickPos.Y, true);
+            }
+
+            return true;
+        }
+
+        private static readonly string[] s_GlueDialogButtonNames = new[] { "GlueDialogButton1", "GlueDialogButton2", "GlueDialogButton3" };
+        private IEnumerable<Button> GetGlueDialogButtons()
+        {
+            foreach (var buttonName in s_GlueDialogButtonNames)
+            {
+                var button = UIObject.GetUIObjectByName<Button>(_wowManager, buttonName);
+                if (button != null && button.IsVisible)
+                    yield return button;
             }
         }
 
