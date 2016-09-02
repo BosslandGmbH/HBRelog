@@ -1,4 +1,5 @@
 ﻿//!CompilerOption:Optimize:On
+//!CompilerOption:AddRef:System.ServiceModel.dll
 using HighVoltz.HBRelog.Remoting;
 using Styx;
 using Styx.Common;

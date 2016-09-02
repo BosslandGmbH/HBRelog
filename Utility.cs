@@ -287,9 +287,8 @@ namespace HighVoltz.HBRelog
             var fy = (wndBounds.Top + y)*(65535.0f/fScreenHeight);
 
             var structInput = new NativeMethods.Input {type = NativeMethods.SendInputEventType.InputMouse};
-            structInput.mkhi.mi.dwFlags = NativeMethods.MouseEventFlags.ABSOLUTE | NativeMethods.MouseEventFlags.MOVE |
-                                          NativeMethods.MouseEventFlags.LEFTDOWN |
-                                          NativeMethods.MouseEventFlags.LEFTUP;
+            structInput.mkhi.mi.dwFlags = NativeMethods.MouseEventFlags.ABSOLUTE | NativeMethods.MouseEventFlags.MOVE;
+
             structInput.mkhi.mi.dx = (int) fx;
             structInput.mkhi.mi.dy = (int) fy;
 
@@ -309,11 +308,17 @@ namespace HighVoltz.HBRelog
                 }
 
                 NativeMethods.SendInput(1, ref structInput, SizeOfInput);
-                Thread.Sleep(100);
+                Thread.Sleep(80);
+
+                structInput.mkhi.mi.dwFlags = NativeMethods.MouseEventFlags.LEFTDOWN
+                    | NativeMethods.MouseEventFlags.LEFTUP;
+
+                NativeMethods.SendInput(1, ref structInput, SizeOfInput);
+                SleepOfMouseInputReaction();
                 if (doubleClick)
                 {
                     NativeMethods.SendInput(1, ref structInput, SizeOfInput);
-                    Thread.Sleep(100);
+                    SleepOfMouseInputReaction();
                 }
             }
             finally
@@ -339,6 +344,11 @@ namespace HighVoltz.HBRelog
                 }
                 NativeMethods.BlockInput(false);
             }
+        }
+
+        private static void SleepOfMouseInputReaction()
+        {
+            Thread.Sleep(Rand.Next(100, 150));
         }
 
         /// <summary>
