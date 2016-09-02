@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
 using HighVoltz.HBRelog.FiniteStateMachine;
@@ -33,7 +34,7 @@ namespace HighVoltz.HBRelog.WoW.States
                                           && !_wowManager.StartupSequenceIsComplete && !_wowManager.InGame
                                           && _wowManager.GlueScreen == GlueScreen.Login;
 
-	    public override void Run()
+        public override void Run()
         {
 	        if (_wowManager.Globals == null)
 		        return;
@@ -74,11 +75,23 @@ namespace HighVoltz.HBRelog.WoW.States
             if (ClickOkayButton())
                 return;
 
+            if (_wowManager.LoginHasQueue)
+            {
+                var status = QueueStatus;
+                _wowManager.Profile.Status = string.IsNullOrEmpty(status) ? status : "Waiting in login queue";
+                _wowManager.Profile.Log("Waiting in login queue");
+                if (_wowManager.LockToken.IsValid)
+                    _wowManager.LockToken.ReleaseLock();
+                return;
+            }
+
             if (_wowManager.ServerHasQueue)
             {
                 var status = QueueStatus;
                 _wowManager.Profile.Status = string.IsNullOrEmpty(status) ? status : "Waiting in server queue";
                 _wowManager.Profile.Log("Waiting in server queue");
+                if (_wowManager.LockToken.IsValid)
+                    _wowManager.LockToken.ReleaseLock();
                 return;
             }
 

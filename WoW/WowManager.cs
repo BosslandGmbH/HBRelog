@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
 using GreyMagic;
@@ -217,7 +218,8 @@ namespace HighVoltz.HBRelog.WoW
 			{
 				if (Memory == null)
 					return false;
-				if (ServerIsOnline && !ServerHasQueue)
+
+				if (!LoginHasQueue && ServerIsOnline && !ServerHasQueue)
 				{
 					GlueScreen glueStatus = GlueScreen;
 					// check if at server selection for tooo long.
@@ -264,11 +266,58 @@ namespace HighVoltz.HBRelog.WoW
 			}
 		}
 
-		#endregion
+        private Regex _bnetLoginQueueTimeLeftSecondsRegEx;
+        private Regex _bnetLoginQueueTimeLeftUnknownRegEx;
+        private Regex _bnetLoginQueueTimeLeftRegEx;
 
-		#region IGameManager Members
+        public bool LoginHasQueue
+        {
+            get
+            {
+                try
+                {
+                    if (InGame)
+                        return false;
 
-		public CharacterProfile Profile
+                    var glueDialogTextContol = UIObject.GetUIObjectByName<FontString>(this, "GlueDialogText");
+                    if (glueDialogTextContol == null || !glueDialogTextContol.IsVisible)
+                        return false;
+
+                    if (_bnetLoginQueueTimeLeftSecondsRegEx == null)
+                        _bnetLoginQueueTimeLeftSecondsRegEx = GetLoginQueueRegEx("BNET_LOGIN_QUEUE_TIME_LEFT_SECONDS");
+                    if (_bnetLoginQueueTimeLeftSecondsRegEx.IsMatch(glueDialogTextContol.Text))
+                        return true;
+
+                    if (_bnetLoginQueueTimeLeftUnknownRegEx == null)
+                        _bnetLoginQueueTimeLeftUnknownRegEx = GetLoginQueueRegEx("BNET_LOGIN_QUEUE_TIME_LEFT_UNKNOWN");
+                    if (_bnetLoginQueueTimeLeftUnknownRegEx.IsMatch(glueDialogTextContol.Text))
+                        return true;
+
+                    if (_bnetLoginQueueTimeLeftRegEx == null)
+                        _bnetLoginQueueTimeLeftRegEx = GetLoginQueueRegEx("BNET_LOGIN_QUEUE_TIME_LEFT");
+                    if (_bnetLoginQueueTimeLeftRegEx.IsMatch(glueDialogTextContol.Text))
+                        return true;
+
+                    return false;
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+            }
+        }
+
+	    private Regex GetLoginQueueRegEx(string globalVarName)
+	    {
+	        var text = GetLuaObject(globalVarName).String.Value;
+            return new Regex(text.Replace("%d", "\\d+"));
+	    }
+
+        #endregion
+
+        #region IGameManager Members
+
+        public CharacterProfile Profile
 		{
 			get { return _profile; }
 			private set
@@ -437,11 +486,16 @@ namespace HighVoltz.HBRelog.WoW
 			var bottomBorderWidth = windowInfo.rcWindow.Bottom - windowInfo.rcClient.Bottom;
 			var winClientWidth = windowInfo.rcClient.Right - windowInfo.rcClient.Left;
 			var winClientHeight = windowInfo.rcClient.Bottom - windowInfo.rcClient.Top;
-			var xCo = winClientWidth/gameFullScreenFrameRect.Width;
-			var yCo = winClientHeight/gameFullScreenFrameRect.Height;
+            
+            // gameFullScreenFrameRect sometimes doesn't fill entire screen.
+            // When that happens, it's centered on the screen, and we need to add the gaps that it doesn't occupy.
+            // Left gap is simply gameFullScreenFrameRect.Left, and we assume the right side gap is same width because frame is centered, so we just multiply left gap by 2.
 
-			ret.X = widgetCenter.X*xCo + leftBorderWidth;
-			ret.Y = widgetCenter.Y*yCo + bottomBorderWidth;
+            var xCo = winClientWidth/(gameFullScreenFrameRect.Width + gameFullScreenFrameRect.Left * 2);
+			var yCo = winClientHeight/gameFullScreenFrameRect.Height + gameFullScreenFrameRect.Bottom * 2;
+
+			ret.X = widgetCenter.X * xCo + leftBorderWidth;
+			ret.Y = widgetCenter.Y * yCo + bottomBorderWidth;
 			// flip the Y coord around because in WoW's UI coord space the Y goes up where as in windows it goes down.
 			ret.Y = windowInfo.rcWindow.Bottom - windowInfo.rcWindow.Top - ret.Y;
 			return ret;

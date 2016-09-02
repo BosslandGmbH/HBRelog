@@ -47,8 +47,11 @@ namespace HighVoltz.HBRelog.WoW.States
 				var status = QueueStatus;
 				_wowManager.Profile.Status = string.IsNullOrEmpty(status) ? status : "Waiting in server queue";
 				_wowManager.Profile.Log("Waiting in server queue");
-				return;
+                if (_wowManager.LockToken.IsValid)
+                    _wowManager.LockToken.ReleaseLock();
+                return;
 			}
+
 			if (_wowManager.IsConnectiongOrLoading || IsConnecting)
 				return;
 
@@ -220,7 +223,8 @@ namespace HighVoltz.HBRelog.WoW.States
 
 		bool SelectRealm(string realm)
 		{
-			var scrollDownButton = ScrollDownButton;
+
+            var scrollDownButton = ScrollDownButton;
 			if (scrollDownButton == null)
 				return false;
 
@@ -279,6 +283,7 @@ namespace HighVoltz.HBRelog.WoW.States
 				{
 					NativeMethods.BlockInput(false);
 				}
+                Thread.Sleep(1000);
 			}
 			return false;
 		}
