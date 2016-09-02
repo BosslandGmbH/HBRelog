@@ -48,6 +48,12 @@ namespace HighVoltz.HBRelog
                         HbRelogManager.Settings.WowDelay = GetCmdLineArgVal<int>(CmdLineArgs["WOWDELAY"]);
                     if (CmdLineArgs.ContainsKey("HBDELAY"))
                         HbRelogManager.Settings.HBDelay = GetCmdLineArgVal<int>(CmdLineArgs["HBDELAY"]);
+                    if (CmdLineArgs.ContainsKey("PROFILESTOSTART"))
+                    {
+                        var rawProfilesToStart = GetCmdLineArgVal<string>(CmdLineArgs["PROFILESTOSTART"]);
+                        var profilesToStart = rawProfilesToStart.Trim().Split(';', '|', ',');
+                        HbRelogManager.Settings.ProfilesToStart = profilesToStart;
+                    }
 
                     var app = new Application();
                     Window window = new MainWindow();

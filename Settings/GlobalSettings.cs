@@ -56,6 +56,7 @@ namespace HighVoltz.HBRelog.Settings
 		private bool _useDarkStyle;
 		private bool _setGameWindowTitle;
         private int _wowDelay;
+        private string[] _profilesToStart;
 
         private GlobalSettings()
         {
@@ -80,15 +81,21 @@ namespace HighVoltz.HBRelog.Settings
         public ObservableCollection<CharacterProfile> CharacterProfiles { get; private set; }
         // Automatically start all enabled profiles on start
 
-	    public bool AutoStart
-	    {
-		    get { return _autoStart; }
-		    set { NotifyPropertyChanged(ref _autoStart, ref value, nameof(AutoStart)); }
-	    }
+        public bool AutoStart
+        {
+            get { return _autoStart; }
+            set { NotifyPropertyChanged(ref _autoStart, ref value, nameof(AutoStart)); }
+        }
+
+        public string[] ProfilesToStart
+        {
+            get { return _profilesToStart; }
+            set { NotifyPropertyChanged(ref _profilesToStart, ref value, nameof(ProfilesToStart)); }
+        }
 
         // delay in seconds between starting multiple Wow instance
 
-	    public int WowDelay
+        public int WowDelay
 	    {
 		    get { return _wowDelay; }
 		    set { NotifyPropertyChanged(ref _wowDelay, ref value, nameof(WowDelay)); }
