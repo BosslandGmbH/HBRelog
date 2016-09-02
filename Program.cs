@@ -29,7 +29,8 @@ namespace HighVoltz.HBRelog
 {
     public class Program
     {
-        static Dictionary<string, string> CmdLineArgs = new Dictionary<string, string>();
+        private static Dictionary<string, string> s_cmdLineArgs = new Dictionary<string, string>();
+
         [STAThread]
         public static void Main(params string[] args)
         {
@@ -40,14 +41,12 @@ namespace HighVoltz.HBRelog
                 {
                     AppDomain.CurrentDomain.ProcessExit += CurrentDomainProcessExit;
                     AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
-                    
-                    CmdLineArgs = ProcessCmdLineArgs(args);
-                    if (CmdLineArgs.ContainsKey("AUTOSTART"))
-                        HbRelogManager.Settings.AutoStart = true;
-                    if (CmdLineArgs.ContainsKey("WOWDELAY"))
-                        HbRelogManager.Settings.WowDelay = GetCmdLineArgVal<int>(CmdLineArgs["WOWDELAY"]);
-                    if (CmdLineArgs.ContainsKey("HBDELAY"))
-                        HbRelogManager.Settings.HBDelay = GetCmdLineArgVal<int>(CmdLineArgs["HBDELAY"]);
+
+                    s_cmdLineArgs = ProcessCmdLineArgs(args);
+                    if (s_cmdLineArgs.ContainsKey("WOWDELAY"))
+                        HbRelogManager.Settings.WowDelay = GetCmdLineArgVal<int>(s_cmdLineArgs["WOWDELAY"]);
+                    if (s_cmdLineArgs.ContainsKey("HBDELAY"))
+                        HbRelogManager.Settings.HBDelay = GetCmdLineArgVal<int>(s_cmdLineArgs["HBDELAY"]);
 
                     var app = new Application();
                     Window window = new MainWindow();
@@ -66,30 +65,54 @@ namespace HighVoltz.HBRelog
             }
         }
 
-        static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             HbRelogManager.Shutdown();           
         }
 
-        static void CurrentDomainProcessExit(object sender, EventArgs e)
+        private static void CurrentDomainProcessExit(object sender, EventArgs e)
         {
             HbRelogManager.Shutdown();
         }
 
-        static Dictionary<string, string> ProcessCmdLineArgs(IEnumerable<string> args)
+        internal static bool GetCommandLineArgument<T>(string name, out T value)
+        {
+            value = default(T);
+            string stringVal;
+            if (!s_cmdLineArgs.TryGetValue(name.ToLowerInvariant(), out stringVal))
+                return false;
+
+            try
+            {
+                value = (T)Convert.ChangeType(stringVal, typeof(T));
+            }
+            catch (Exception ex)
+            {
+                Log.Err("Unable to convert {0} to type: {1}\n{2}", stringVal, typeof(T), ex);
+                return false;
+            }
+
+            return true;
+        }
+
+        internal static bool HasCommandLineSwitch(string name)
+        {
+            return s_cmdLineArgs.ContainsKey(name.ToLowerInvariant());
+        }
+
+        private static Dictionary<string, string> ProcessCmdLineArgs(IEnumerable<string> args)
         {
             var cmdLineArgs = new Dictionary<string, string>();
             foreach (string s in args)
             {
-                string[] tokens = s.Split('=');
-                // make the / character optional
-                string argName = (tokens[0][0] == '/' ? tokens[0].Substring(1) : tokens[0]).ToUpperInvariant();
+                string[] tokens = s.Split('=',':');
+                string argName = tokens[0].Replace("/", "").Replace("-", "").ToLowerInvariant();
                 cmdLineArgs.Add(argName, tokens.Length > 1 ? tokens[1] : "");
             }
             return cmdLineArgs;
         }
 
-        static T GetCmdLineArgVal<T>(string arg)
+        private static T GetCmdLineArgVal<T>(string arg)
         {
             try
             {

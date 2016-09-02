@@ -15,6 +15,7 @@ Copyright 2012 HighVoltz
 */
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
@@ -157,7 +158,6 @@ namespace HighVoltz.HBRelog
             Log.Write("HBRelog Version {0}", version);
             Log.Write("******* Settings ******** ");
             Log.Write("\t{0,-30} {1}", "Auto AcceptTosEula:", HbRelogManager.Settings.AutoAcceptTosEula);
-            Log.Write("\t{0,-30} {1}","Auto Start:", HbRelogManager.Settings.AutoStart);
             Log.Write("\t{0,-30} {1}", "Auto Update HB:", HbRelogManager.Settings.AutoUpdateHB);
             Log.Write("\t{0,-30} {1}", "Check Hb's Responsiveness:", HbRelogManager.Settings.CheckHbResponsiveness);
             Log.Write("\t{0,-30} {1}", "Check Realm Status:", HbRelogManager.Settings.CheckRealmStatus);
@@ -166,13 +166,27 @@ namespace HighVoltz.HBRelog
             Log.Write("\t{0,-30} {1}", "Minimize Hb On Startup:", HbRelogManager.Settings.MinimizeHbOnStart);
 			Log.Write("\t{0,-30} {1}", "Set GameWindow Title:", HbRelogManager.Settings.SetGameWindowTitle);
             Log.Write("\t{0,-30} {1}", "Wow Start Delay:", HbRelogManager.Settings.WowDelay);
-            // if autostart is on then start all enabled acounts
-            if (HbRelogManager.Settings.AutoStart)
+
+
+            string rawProfilesToStart;
+
+            if (Program.GetCommandLineArgument("AutoStart", out rawProfilesToStart))
             {
+                var profilesToStart = !string.IsNullOrEmpty(rawProfilesToStart)
+                    ? new HashSet<string>(rawProfilesToStart.Trim().Split(';', '|', ',').Select(a => a.Trim()), StringComparer.OrdinalIgnoreCase)
+                    : null;
+
                 foreach (CharacterProfile character in AccountGrid.Items)
                 {
-                    if (character.Settings.IsEnabled)
+                    if (profilesToStart == null)
+                    {
+                        if (character.Settings.IsEnabled)
+                            character.Start();
+                    }
+                    else if (profilesToStart.Contains(character.Settings.ProfileName))
+                    {
                         character.Start();
+                    }
                 }
             }
         }
