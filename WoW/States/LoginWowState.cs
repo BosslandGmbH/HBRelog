@@ -50,7 +50,6 @@ namespace HighVoltz.HBRelog.WoW.States
 				return;
             }
 
-
 			bool isBanned = IsBanned, isSuspended = IsSuspended, isSuspiciousLocked = IsLockedSuspiciousActivity, isLockedLicense = IsLockedLicense;
             if (isBanned || isSuspended || isSuspiciousLocked || isLockedLicense)
             {

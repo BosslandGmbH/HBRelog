@@ -158,6 +158,7 @@ namespace HighVoltz.HBRelog
             Log.Write("HBRelog Version {0}", version);
             Log.Write("******* Settings ******** ");
             Log.Write("\t{0,-30} {1}", "Auto AcceptTosEula:", HbRelogManager.Settings.AutoAcceptTosEula);
+            Log.Write("\t{0,-30} {1}", "Auto Start:", HbRelogManager.Settings.AutoStart);
             Log.Write("\t{0,-30} {1}", "Auto Update HB:", HbRelogManager.Settings.AutoUpdateHB);
             Log.Write("\t{0,-30} {1}", "Check Hb's Responsiveness:", HbRelogManager.Settings.CheckHbResponsiveness);
             Log.Write("\t{0,-30} {1}", "Check Realm Status:", HbRelogManager.Settings.CheckRealmStatus);
@@ -170,7 +171,8 @@ namespace HighVoltz.HBRelog
 
             string rawProfilesToStart;
 
-            if (Program.GetCommandLineArgument("AutoStart", out rawProfilesToStart))
+            if (Program.GetCommandLineArgument("AutoStart", out rawProfilesToStart) 
+                || HbRelogManager.Settings.AutoStart)
             {
                 var profilesToStart = !string.IsNullOrEmpty(rawProfilesToStart)
                     ? new HashSet<string>(rawProfilesToStart.Trim().Split(';', '|', ',').Select(a => a.Trim()), StringComparer.OrdinalIgnoreCase)

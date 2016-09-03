@@ -492,7 +492,7 @@ namespace HighVoltz.HBRelog.WoW
             // Left gap is simply gameFullScreenFrameRect.Left, and we assume the right side gap is same width because frame is centered, so we just multiply left gap by 2.
 
             var xCo = winClientWidth/(gameFullScreenFrameRect.Width + gameFullScreenFrameRect.Left * 2);
-			var yCo = winClientHeight/gameFullScreenFrameRect.Height + gameFullScreenFrameRect.Bottom * 2;
+			var yCo = winClientHeight/gameFullScreenFrameRect.Height + gameFullScreenFrameRect.Top * 2;
 
 			ret.X = widgetCenter.X * xCo + leftBorderWidth;
 			ret.Y = widgetCenter.Y * yCo + bottomBorderWidth;

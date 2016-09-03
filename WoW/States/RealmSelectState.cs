@@ -5,9 +5,11 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Windows.Forms;
 using HighVoltz.HBRelog.FiniteStateMachine;
 using HighVoltz.HBRelog.WoW.FrameXml;
 using HighVoltz.HBRelog.WoW.Lua;
+using Button = HighVoltz.HBRelog.WoW.FrameXml.Button;
 
 namespace HighVoltz.HBRelog.WoW.States
 {
@@ -64,7 +66,8 @@ namespace HighVoltz.HBRelog.WoW.States
 
 			Utility.SaveForegroundWindowAndMouse();
 			var tabs = RealmTabs;
-			bool foundServer = false;
+
+            bool foundServer = false;
 
 			if (tabs.Any())
 			{
@@ -111,12 +114,12 @@ namespace HighVoltz.HBRelog.WoW.States
 		    }
 		}
 
-		#endregion
+        #endregion
 
 
-		#region Properties
+        #region Properties
 
-		private Button ScrollDownButton
+        private Button ScrollDownButton
 		{
 			get { return UIObject.GetUIObjectByName<Button>(_wowManager, "RealmListScrollFrameScrollBarScrollDownButton"); }
 		}
@@ -130,9 +133,11 @@ namespace HighVoltz.HBRelog.WoW.States
 		{
 			get
 			{
-				const string groupName = "RealmListScrollFrameButton";
-				return UIObject.GetUIObjectsOfType<Button>(_wowManager).Where(b => b.IsVisible && b.Name.Contains(groupName)).ToList();
-
+			    const string groupName = "RealmListScrollFrameButton";
+			    return UIObject.GetUIObjectsOfType<Button>(_wowManager)
+			        .Where(b => b.IsVisible && b.Name.Contains(groupName) 
+                        // Exclude buttons that are not on completely visible    
+                        && b.Bottom >= ((Frame) b.Parent).Bottom).ToList();
 			}
 		}
 
@@ -223,7 +228,6 @@ namespace HighVoltz.HBRelog.WoW.States
 
 		bool SelectRealm(string realm)
 		{
-
             var scrollDownButton = ScrollDownButton;
 			if (scrollDownButton == null)
 				return false;
@@ -262,6 +266,7 @@ namespace HighVoltz.HBRelog.WoW.States
 					}
 					return true;
 				}
+
 				if (scrollUp && !scrollUpButton.IsEnabled)
 					scrollUp = false;
 
@@ -269,15 +274,19 @@ namespace HighVoltz.HBRelog.WoW.States
 
 				if (!scrollButton.IsEnabled || !scrollButton.IsVisible)
 					break;
-				clickPos = _wowManager.ConvertWidgetCenterToWin32Coord(scrollButton);
 
-				for (int j=0; j < 19; j++)
-					Utility.LeftClickAtPos(_wowManager.GameProcess.MainWindowHandle, (int)clickPos.X, (int)clickPos.Y, false, false);
+
+                clickPos = _wowManager.ConvertWidgetCenterToWin32Coord(scrollButton);
 
 				try
 				{
 					NativeMethods.BlockInput(true);
-					Thread.Sleep(50);
+                    for (int j = 0; j < 19; j++)
+                    {
+                        if (!scrollButton.IsEnabled)
+                            break;
+                        Utility.LeftClickAtPos(_wowManager.GameProcess.MainWindowHandle, (int)clickPos.X, (int)clickPos.Y, false, false);
+                    }
 				}
 				finally
 				{
