@@ -78,6 +78,13 @@ namespace HighVoltz.HBRelog.Settings
 	    }
 
         public ObservableCollection<CharacterProfile> CharacterProfiles { get; private set; }
+        // Automatically start all enabled profiles on start
+
+	    public bool AutoStart
+	    {
+		    get { return _autoStart; }
+		    set { NotifyPropertyChanged(ref _autoStart, ref value, nameof(AutoStart)); }
+	    }
 
         // delay in seconds between starting multiple Wow instance
 
@@ -211,6 +218,7 @@ namespace HighVoltz.HBRelog.Settings
             try
             {
                 var root = new XElement("BotManager");
+                root.Add(new XElement("AutoStart", AutoStart));
                 root.Add(new XElement("WowDelay", WowDelay));
                 root.Add(new XElement("HBDelay", HBDelay));
                 root.Add(new XElement("LoginDelay", LoginDelay));
@@ -356,6 +364,7 @@ namespace HighVoltz.HBRelog.Settings
 
 					XElement root = XElement.Load(path);
                     WowVersion = root.Element("WowVersion").Value;
+                    AutoStart = GetElementValue<bool>(root.Element("AutoStart"));
                     WowDelay = GetElementValue<int>(root.Element("WowDelay"));
                     HBDelay = GetElementValue(root.Element("HBDelay"), 10);
                     LoginDelay = GetElementValue(root.Element("LoginDelay"), 3);
