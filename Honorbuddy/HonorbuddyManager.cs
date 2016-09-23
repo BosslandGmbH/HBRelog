@@ -173,10 +173,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
             StartupSequenceIsComplete = true;
             LastHeartbeat.Restart();
 
-            if (HbRelogManager.Settings.MinimizeHbOnStart)
-                NativeMethods.ShowWindow(BotProcess.MainWindowHandle, NativeMethods.ShowWindowCommands.Minimize);
-            if (OnStartupSequenceIsComplete != null)
-                OnStartupSequenceIsComplete(this, new ProfileEventArgs(Profile));
+            OnStartupSequenceIsComplete?.Invoke(this, new ProfileEventArgs(Profile));
         }
 
         /// <summary>

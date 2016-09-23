@@ -37,7 +37,7 @@ namespace HighVoltz.HBRelog.Settings
 	    static GlobalSettings()
 	    {
 			Instance = new GlobalSettings();
-			Instance.Load();
+			Instance.Load(GetSettingsPath());
 	    }
 
 		private bool _autoAcceptTosEula;
@@ -51,7 +51,7 @@ namespace HighVoltz.HBRelog.Settings
 		private int _hBDelay;
         private DateTime _lastSaveTimeStamp;
         private int _loginDelay;
-        private bool _minimizeHbOnStart;
+        private bool _useLocalSettings;
         private bool _encryptSettings;
 		private bool _useDarkStyle;
 		private bool _setGameWindowTitle;
@@ -63,11 +63,31 @@ namespace HighVoltz.HBRelog.Settings
             // set some default settings
             HBDelay = 3;
             AutoUpdateHB = CheckHbResponsiveness = UseDarkStyle = true;
-	        SettingsPath = DefaultSettingsPath;
         }
 
-	    public static readonly string DefaultSettingsPath =
-		    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "HighVoltz\\HBRelog\\Setting.xml");
+        private static string LocalSettingsPath => Path.Combine(Utility.AssemblyDirectory, "Settings.xml");
+
+        private static string UserSettingsPath
+            =>
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    "HighVoltz\\HBRelog\\Settings.xml");
+
+        private static string OldUserSettingsPath
+            =>
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    "HighVoltz\\HBRelog\\Setting.xml");
+
+        private static string GetSettingsPath()
+        {
+            if (File.Exists(LocalSettingsPath))
+                return LocalSettingsPath;
+
+            // Rename old file to new file name
+            if (File.Exists(OldUserSettingsPath))
+                File.Move(OldUserSettingsPath, UserSettingsPath);
+
+            return UserSettingsPath;
+        }
 
 	    public string SettingsPath { get; private set; }
 
@@ -161,10 +181,10 @@ namespace HighVoltz.HBRelog.Settings
         /// <summary>
         ///     Minimizes HB to system tray on start
         /// </summary>
-        public bool MinimizeHbOnStart
+        public bool UseLocalSettings
         {
-	        get { return _minimizeHbOnStart; }
-	        set { NotifyPropertyChanged(ref _minimizeHbOnStart, ref value, nameof(MinimizeHbOnStart)); }
+	        get { return _useLocalSettings; }
+	        set { NotifyPropertyChanged(ref _useLocalSettings, ref value, nameof(UseLocalSettings)); }
         }
 
 
@@ -213,10 +233,11 @@ namespace HighVoltz.HBRelog.Settings
 
         public event PropertyChangedEventHandler PropertyChanged;
         // serializers giving me issues with colections.. so saving stuff manually.
-        public void Save()
+        public void Save(string path = null)
         {
             try
             {
+                SettingsPath = path ?? (UseLocalSettings ? LocalSettingsPath : UserSettingsPath);
                 var root = new XElement("BotManager");
                 root.Add(new XElement("AutoStart", AutoStart));
                 root.Add(new XElement("WowDelay", WowDelay));
@@ -226,7 +247,7 @@ namespace HighVoltz.HBRelog.Settings
                 root.Add(new XElement("CheckRealmStatus", CheckRealmStatus));
                 root.Add(new XElement("CheckHbResponsiveness", CheckHbResponsiveness));
                 root.Add(new XElement("CheckWowResponsiveness", CheckWowResponsiveness));
-                root.Add(new XElement("MinimizeHbOnStart", MinimizeHbOnStart));
+                root.Add(new XElement("UseLocalSettings", UseLocalSettings));
                 root.Add(new XElement("AutoUpdateHB", AutoUpdateHB));
                 root.Add(new XElement("AutoAcceptTosEula", AutoAcceptTosEula));
 				root.Add(new XElement("SetGameWindowTitle", SetGameWindowTitle));
@@ -300,7 +321,8 @@ namespace HighVoltz.HBRelog.Settings
                 }
                 root.Add(characterProfilesElement);
 
-	            var tempPath = GetTempSettingsPath(SettingsPath);
+
+                var tempPath = GetTempSettingsPath(SettingsPath);
 				var directory = Path.GetDirectoryName(tempPath);
                 if (directory != null && !Directory.Exists(directory))
                     Directory.CreateDirectory(directory);
@@ -315,6 +337,12 @@ namespace HighVoltz.HBRelog.Settings
                         File.Delete(SettingsPath);
 
 					File.Move(tempPath, SettingsPath);
+
+                    // Maintain only one copy of settings.
+                    if (UseLocalSettings && File.Exists(UserSettingsPath))
+                        File.Delete(UserSettingsPath);
+                    else if (!UseLocalSettings && File.Exists(LocalSettingsPath))
+                        File.Delete(LocalSettingsPath);
                 }
             }
             catch (Exception ex)
@@ -345,9 +373,8 @@ namespace HighVoltz.HBRelog.Settings
         ///     Attempts to load settings from file
         /// </summary>
         /// <returns>A GlocalSettings</returns>
-        private void Load(string path = null)
+        private void Load(string path)
         {
-	        path = path ?? DefaultSettingsPath;
             try
             {
 				var hasSettings = File.Exists(path);
@@ -373,7 +400,7 @@ namespace HighVoltz.HBRelog.Settings
                     CheckHbResponsiveness = GetElementValue(root.Element("CheckHbResponsiveness"), true);
                     CheckWowResponsiveness = GetElementValue(root.Element("CheckWowResponsiveness"), true);
                     AutoUpdateHB = GetElementValue(root.Element("AutoUpdateHB"), true);
-                    MinimizeHbOnStart = GetElementValue(root.Element("MinimizeHbOnStart"), false);
+                    UseLocalSettings = GetElementValue(root.Element("UseLocalSettings"), false);
                     AutoAcceptTosEula = GetElementValue(root.Element("AutoAcceptTosEula"), false);
 					SetGameWindowTitle = GetElementValue(root.Element("SetGameWindowTitle"), true);
 					GameWindowTitle = GetElementValue(root.Element("GameWindowTitle"), "{name} - {pid}");
@@ -467,6 +494,8 @@ namespace HighVoltz.HBRelog.Settings
                         CharacterProfiles.Add(profile);
                     }
                 }
+
+                SettingsPath = UseLocalSettings ? LocalSettingsPath : UserSettingsPath;
             }
             catch (Exception ex)
             {

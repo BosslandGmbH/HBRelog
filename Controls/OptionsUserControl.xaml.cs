@@ -47,19 +47,9 @@ namespace HighVoltz.HBRelog.Controls
                 // re-assign the data context for main window.
                 MainWindow.Instance.DataContext = HbRelogManager.Settings.CharacterProfiles;
 
-                var options = (Controls.OptionsUserControl)MainWindow.Instance.FindName("HbrelogOptions");
+                var options = (OptionsUserControl)MainWindow.Instance.FindName("HbrelogOptions");
                 options.DataContext = HbRelogManager.Settings;
 
-                var accountConfig = (Controls.AccountConfigUserControl) MainWindow.Instance.FindName("AccountConfig");
-                var taskList = (ListBox)accountConfig.FindName("ProfileTaskList");
-
-                //HbRelogManager.Settings.CharacterProfiles[0].Tasks.
-                //ItemsSource="{Binding CharacterProfiles/Tasks, Source={x:Static HighVoltz:HbRelogManager.Settings}}
-                //taskList.ItemsSource = HbRelogManager.Settings.CharacterProfiles;
-                //taskList.ItemsSource = HbRelogManager.Settings.CharacterProfiles;
-
-                // var a = (CheckBox) MainWindow.Instance.FindName("ProfileEnabledCheckBox");
-                // a.DataContext = HbRelogManager.Settings.CharacterProfiles[0].Settings
                 HbRelogManager.Settings.QueueSave();
             }
         }
@@ -75,9 +65,8 @@ namespace HighVoltz.HBRelog.Controls
             if (sfd.ShowDialog() == true)
             {
                 var settings = HbRelogManager.Settings.Export(sfd.FileName);
-                settings.Save();
+                settings.Save(sfd.FileName);
             }
         }
-
     }
 }
