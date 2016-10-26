@@ -28,7 +28,7 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
             {
                 if (!_triedGetName)
                 {
-                    var idx = Type != UIObjectType.Font ? Offsets.UIObject.NamePtrOffset : Offsets.UIObject.FontNamePtrOffset;
+                    var idx = Offsets.UIObject.NamePtrOffset;
                     var ptr = WowManager.Memory.Read<IntPtr>(Address + idx);
                     _name = ptr != IntPtr.Zero ? WowManager.Memory.ReadString(ptr, Encoding.UTF8, 128) : "<unnamed>";
                     _triedGetName = true;
@@ -55,13 +55,10 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
 
         private static void SetObjectType(ExternalProcessReader memory, IntPtr ptr)
         {
-            var vtmPtr = memory.Read<IntPtr>(ptr + Offsets.UIObject.GetTypeVtmOffset);
-            if (!IsValidTypePtr(memory, vtmPtr))
-                vtmPtr = memory.Read<IntPtr>(ptr + Offsets.UIObject.GetFontTypeVtmOffset);
-
+            var vtmPtr = memory.Read<IntPtr>(ptr + Offsets.UIObject.GetTypeNameVfuncOffset);
             if (IsValidTypePtr(memory, vtmPtr))
             {
-                var strPtr = memory.Read<IntPtr>(false, vtmPtr + 1, IntPtr.Zero);
+                var strPtr = memory.Read<IntPtr>(false, vtmPtr + 1);
                 var str = memory.ReadString(strPtr, Encoding.UTF8, 128);
                 UIObjectTypeCache[ptr] = GetUIObjectTypeFromString(str);
             }
@@ -152,7 +149,7 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
             try
             {
                 var bytes = memory.ReadBytes(ptr, 6);
-                return bytes[0] == 0xA1 /* mov */&& bytes[5] == 0xC3 /* retn */;
+                return bytes[0] == 0xB8 /* mov */&& bytes[5] == 0xC3 /* retn */;
             }
             catch
             {
