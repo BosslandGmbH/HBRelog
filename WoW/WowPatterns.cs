@@ -19,12 +19,12 @@ namespace HighVoltz.HBRelog.WoW
 			"? ? ? ? 6a 00 ff 75 0c 56 e8 ? ? ? ? ff 75 08 56 e8 ? ? ? ? 6a fe 56 e8 ? ? ? ? 68 ? ? ? ? 56 e8 ? ? ? ? 83 c4 24 5e 5d c3",
             new LeaModifier());
 
-		// first offset used in 'LoadingScreenEnable' function. This function also fires the 'LOADING_SCREEN_ENABLED' lua event.
-	    public static readonly Pattern LoadingScreenEnableCountPattern = Pattern.FromTextstyle(
-		    "LoadingScreenEnableCount",
-			"? ? ? ? 83 EC 18 48 A3 ? ? ? ? 85 C0 0F 8F ? ? ? ? 53 79 18 33 DB 89 1D ? ? ? ? E8 ? ? ? ? 89 1D ? ? ? ? E9",
-		    new LeaModifier());
+        // first offset used in 'LoadingScreenEnable' function. This function also fires the 'LOADING_SCREEN_ENABLED' lua event.
+        public static readonly Pattern LoadingScreenEnableCountPattern = Pattern.FromTextstyle(
+            "LoadingScreenEnableCount",
+            "A1 ? ? ? ? 83 EC ? 48",
+            new AddModifier(1), new LeaModifier());
 
-	    // 
+        // 
     }
 }
