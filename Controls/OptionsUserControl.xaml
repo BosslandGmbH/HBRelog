@@ -40,10 +40,10 @@
                               HorizontalAlignment="Right"
                               Checked="DarkStyleCheckCheckedChanged" 
                               Unchecked="DarkStyleCheckCheckedChanged"/>
-                    <TextBlock Text="Minimize HB on Start" Grid.Row="1"/>
-                    <CheckBox x:Name="AutoMinimzeHbCheck" Grid.Column="1" Grid.Row="1"
-                              ToolTip="Automatically minimizes HB to system tray on start"
-                              IsChecked="{Binding MinimizeHbOnStart}" HorizontalAlignment="Right"/>
+                    <TextBlock Text="Store Settings Locally" Grid.Row="1"/>
+                    <CheckBox x:Name="UseLocalSettingsCheck" Grid.Column="1" Grid.Row="1"
+                              ToolTip="Stores settings in same folder as HBRelog executable"
+                              IsChecked="{Binding UseLocalSettings}" HorizontalAlignment="Right"/>
                     <TextBlock Text="Encrypt Settings" Grid.Row="2"/>
                     <CheckBox x:Name="EncryptSettingsCheck" Grid.Column="1" Grid.Row="2"
                               ToolTip="Encrypts settings that contain sensitive information"
