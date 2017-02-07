@@ -27,95 +27,110 @@ namespace HighVoltz.HBRelog
 {
     public class Log
     {
-        private static readonly string LogPath;
+        private static readonly string _logPath;
 
         static Log()
         {
             string logFolder = Path.Combine(ApplicationPath, "Logs");
             if (!Directory.Exists(logFolder))
                 Directory.CreateDirectory(logFolder);
-            LogPath = Path.Combine(logFolder, string.Format("Log[{0:yyyy-MM-dd_hh-mm-ss}].txt", DateTime.Now));
+            _logPath = Path.Combine(logFolder, $"Log[{DateTime.Now:yyyy-MM-dd_hh-mm-ss}].txt");
         }
 
-        public static string ApplicationPath
-        {
-            get { return Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName); }
-        }
+        public static string ApplicationPath => Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
 
         public static void Write(string format, params object[] args)
         {
             Write(HbRelogManager.Settings.UseDarkStyle ? Colors.White : Colors.Black, format, args);
         }
 
-        public static void Err(string format, params object[] args)
+        public static void Write(string msg)
         {
-            Write(Colors.Red, format, args);
+            Write(HbRelogManager.Settings.UseDarkStyle ? Colors.White : Colors.Black, msg);
         }
 
-        public static void Debug(string format, params object[] args)
-        {
-            Debug(HbRelogManager.Settings.UseDarkStyle ? Colors.White : Colors.Black, format, args);
-        }
-
+   
         public static void Write(Color color, string format, params object[] args)
+        {
+            Write(color, string.Format(format, args));
+        }
+
+        public static void Write(Color color, string msg)
         {
             if (MainWindow.Instance == null)
                 return;
-            if (Thread.CurrentThread == MainWindow.Instance.Dispatcher.Thread)
+    
+            if (Thread.CurrentThread != MainWindow.Instance.Dispatcher.Thread)
             {
-                InternalWrite(color, string.Format(format, args));
-                WriteToLog(format, args);
+                MainWindow.Instance.Dispatcher.BeginInvoke(new Action(() => Write(color, msg)));
+                return;
             }
-            else
-            {
-                MainWindow.Instance.Dispatcher.Invoke(
-                    new Action(() =>
-                                   {
-                                       InternalWrite(color, string.Format(format, args));
-                                       WriteToLog(format, args);
-                                   }));
-            }
+
+            InternalWrite(color, msg);
+            WriteToLog(msg);
         }
 
         public static void Write(Color hColor, string header, Color mColor, string format, params object[] args)
         {
+            Write(hColor, header, mColor, string.Format(format, args));
+        }
+
+        public static void Write(Color hColor, string header, Color mColor, string msg)
+        {
             if (MainWindow.Instance == null)
                 return;
-            if (Thread.CurrentThread == MainWindow.Instance.Dispatcher.Thread)
+
+            if (Thread.CurrentThread != MainWindow.Instance.Dispatcher.Thread)
             {
-                InternalWrite(hColor, header, mColor, string.Format(format, args));
-                WriteToLog(header + format, args);
+                MainWindow.Instance.Dispatcher.BeginInvoke(new Action(() => Write(hColor, header, mColor, msg)));
+                return;
             }
-            else
-            {
-                MainWindow.Instance.Dispatcher.Invoke(
-                    new Action(() =>
-                                   {
-                                       InternalWrite(hColor, header, mColor, string.Format(format, args));
-                                       WriteToLog(header + format, args);
-                                   }));
-            }
+
+            InternalWrite(hColor, header, mColor, msg);
+            WriteToLog(msg);
         }
 
         // same Write. might use a diferent tab someday.
         public static void Debug(Color color, string format, params object[] args)
         {
+            Debug(color, string.Format(format, args));
+        }
+
+        public static void Debug(string format, params object[] args)
+        {
+            Debug(string.Format(format, args));
+        }
+
+        public static void Debug(string msg)
+        {
+            Debug(HbRelogManager.Settings.UseDarkStyle ? Colors.White : Colors.Black, msg);
+        }
+
+        // same Write. might use a diferent tab someday.
+        public static void Debug(Color color, string msg)
+        {
             if (MainWindow.Instance == null)
                 return;
-            if (Thread.CurrentThread == MainWindow.Instance.Dispatcher.Thread)
+
+            if (Thread.CurrentThread != MainWindow.Instance.Dispatcher.Thread)
             {
-                InternalWrite(color, string.Format(format, args));
-                WriteToLog(format, args);
+                MainWindow.Instance.Dispatcher.BeginInvoke(new Action(() => Debug(color, msg)));
+                return;
             }
-            else
-            {
-                MainWindow.Instance.Dispatcher.BeginInvoke(
-                    new Action(() =>
-                                   {
-                                       InternalWrite(color, string.Format(format, args));
-                                       WriteToLog(format, args);
-                                   }));
-            }
+
+            InternalWrite(color, msg);
+            WriteToLog(msg);
+        }
+
+
+        public static void Err(string format, params object[] args)
+        {
+            Err(string.Format(format,args));
+        }
+
+        public static void Err(string msg)
+        {
+            Write(Colors.Red, msg);
         }
 
         private static void InternalWrite(Color color, string text)
@@ -160,13 +175,13 @@ namespace HighVoltz.HBRelog
             }
         }
 
-        public static void WriteToLog(string format, params object[] args)
+        public static void WriteToLog(string msg)
         {
             try
             {
-                using (var logStringWriter = new StreamWriter(LogPath, true))
+                using (var logStringWriter = new StreamWriter(_logPath, true))
                 {
-                    logStringWriter.WriteLine(string.Format("[" + DateTime.Now.ToString(CultureInfo.InvariantCulture) + "] " + format, args));
+                    logStringWriter.WriteLine(string.Format("[" + DateTime.Now.ToString(CultureInfo.InvariantCulture) + "] " + msg));
                 }
             }
             catch

@@ -170,6 +170,7 @@ namespace HighVoltz.HBRelog.WoW.States
 		    }
 			var clickPos = _wowManager.ConvertWidgetCenterToWin32Coord(playButton);
 			Utility.LeftClickAtPos(_wowManager.GameProcess.MainWindowHandle, (int)clickPos.X, (int)clickPos.Y);
+            Thread.Sleep(4000);
 			return true;
 	    }
 

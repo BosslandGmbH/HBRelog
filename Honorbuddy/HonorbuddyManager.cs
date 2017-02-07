@@ -39,6 +39,8 @@ namespace HighVoltz.HBRelog.Honorbuddy
     {
         private Stopwatch _botExitTimer;
         readonly object _lockObject = new object();
+        private Process _launcherProc;
+
 
         public bool StartupSequenceIsComplete { get; private set; }
 
@@ -110,20 +112,65 @@ namespace HighVoltz.HBRelog.Honorbuddy
 
         internal void StartHonorbuddy()
         {
-	        _botExitTimer = null;
+            // check if a batch file or any .exe besides WoW.exe is used and try to get the child WoW process started by this process.
+
+            if (_launcherProc != null)
+            {
+                Process botProcess;
+                // Two methods are used to find the HB process if a launcher is used;
+                // Method one: launcher exit code return the HB process ID or a negative if an error occured. 
+                //			   If launcher does not use return the expected return values then a batch file or console app
+                //			   must be used to start the launcher and return the expected return codes.	
+                // Method two: Find a child WoW process of the launcher process.
+
+                if (_launcherProc.HasExited && _launcherProc.ExitCode < 0)
+                {
+                    Profile.Log("Pausing profile because HB launcher exited with error code: {0}", _launcherProc.ExitCode);
+                    Profile.Pause();
+                    return;
+                }
+
+                if (!_launcherProc.HasExited || _launcherProc.ExitCode == 0
+                                || !Utility.TryGetProcessById(_launcherProc.ExitCode, out botProcess))
+                {
+                    var executablePath = Path.GetFileNameWithoutExtension(Profile.Settings.HonorbuddySettings.HonorbuddyPath);
+                    botProcess = Utility.GetChildProcessByName(_launcherProc.Id, "Honorbuddy")
+                        ?? Utility.GetChildProcessByName(_launcherProc.Id, executablePath); // Renamed executables
+                }
+
+                if (botProcess == null)
+                {
+                    Profile.Log("Waiting on external application to start Honorbuddy");
+                    Profile.Status = "Waiting on external application to start Honorbuddy";
+                    return;
+                }
+
+                _launcherProc = null;
+                BotProcess = botProcess;
+                return;
+            }
+
+            bool launchingHB = IsHonorbuddyPath(Profile.Settings.HonorbuddySettings.HonorbuddyPath);
+
+            _botExitTimer = null;
             Profile.Log("starting {0}", Profile.Settings.HonorbuddySettings.HonorbuddyPath);
             Profile.Status = "Starting Honorbuddy";
             StartupSequenceIsComplete = false;
-	        string hbArgs =
-		        "/noupdate " +
-		        $"/pid={Profile.TaskManager.WowManager.GameProcess.Id} " +
-		        "/autostart " +
-		        $"{(!string.IsNullOrEmpty(Settings.HonorbuddyKey) ? $"/hbkey=\"{Settings.HonorbuddyKey}\" " : string.Empty)}" +
-		        $"{(!string.IsNullOrEmpty(Settings.CustomClass) ? $"/customclass=\"{Settings.CustomClass}\" " : string.Empty)}" +
-		        $"{(!string.IsNullOrEmpty(Settings.HonorbuddyProfile) ? $"/loadprofile=\"{Settings.HonorbuddyProfile}\" " : string.Empty)}" +
-		        $"{(!string.IsNullOrEmpty(Settings.BotBase) ? $"/botname=\"{Settings.BotBase}\" " : string.Empty)}";
 
-	        if (!string.IsNullOrEmpty(Settings.HonorbuddyArgs))
+            string hbArgs = "";
+
+            if (launchingHB)
+            {
+                hbArgs = "/noupdate " +
+                    $"/pid={Profile.TaskManager.WowManager.GameProcess.Id} " +
+                    "/autostart " +
+                    $"{(!string.IsNullOrEmpty(Settings.HonorbuddyKey) ? $"/hbkey=\"{Settings.HonorbuddyKey}\" " : string.Empty)}" +
+                    $"{(!string.IsNullOrEmpty(Settings.CustomClass) ? $"/customclass=\"{Settings.CustomClass}\" " : string.Empty)}" +
+                    $"{(!string.IsNullOrEmpty(Settings.HonorbuddyProfile) ? $"/loadprofile=\"{Settings.HonorbuddyProfile}\" " : string.Empty)}" +
+                    $"{(!string.IsNullOrEmpty(Settings.BotBase) ? $"/botname=\"{Settings.BotBase}\" " : string.Empty)}";
+            }
+
+            if (!string.IsNullOrEmpty(Settings.HonorbuddyArgs))
 		        hbArgs +=  Settings.HonorbuddyArgs.Trim();
 
             var hbWorkingDirectory = Path.GetDirectoryName(Settings.HonorbuddyPath);
@@ -131,7 +178,12 @@ namespace HighVoltz.HBRelog.Honorbuddy
             {
                 WorkingDirectory = hbWorkingDirectory
             };
-            BotProcess = Process.Start(procStartI);
+
+            if (launchingHB)
+                BotProcess = Process.Start(procStartI);
+            else
+                _launcherProc = Process.Start(procStartI);
+
             HbStartupTimeStamp = DateTime.Now;
         }
 
@@ -176,10 +228,16 @@ namespace HighVoltz.HBRelog.Honorbuddy
             OnStartupSequenceIsComplete?.Invoke(this, new ProfileEventArgs(Profile));
         }
 
+        private bool IsHonorbuddyPath(string path)
+        {
+            var originalExeFileName = FileVersionInfo.GetVersionInfo(path).OriginalFilename;
+            return originalExeFileName == "Honorbuddy.exe";
+        }
+
         /// <summary>
         /// returns false if the WoW user interface is not responsive for 10+ seconds.
         /// </summary>
-        static internal class HBStartupManager
+        internal static class HBStartupManager
         {
             private static readonly object LockObject = new object();
             private static readonly Dictionary<string, DateTime> TimeStamps = new Dictionary<string, DateTime>();

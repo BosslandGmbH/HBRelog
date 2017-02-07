@@ -71,7 +71,7 @@ namespace HighVoltz.HBRelog.WoW.States
             }
 
             // Auto-click Okay on dialog
-            if (ClickOkayButton())
+            if (CloseDialogs())
                 return;
 
             if (_wowManager.LoginHasQueue)
@@ -268,7 +268,7 @@ namespace HighVoltz.HBRelog.WoW.States
 
 		private string _okayText;
 
-        private bool ClickOkayButton()
+        private bool CloseDialogs()
         {
             if (_okayText == null)
                 _okayText = _wowManager.Globals.GetValue("OKAY").String.Value;
@@ -278,19 +278,8 @@ namespace HighVoltz.HBRelog.WoW.States
             if (okayButton == null)
                 return false;
 
-            // if there's only one button then we just need to press 'Enter'
-            if (buttons.Count == 1)
-            {
-                _wowManager.Profile.Log("Pressing 'Enter' key to close dialog.");
-                Utility.SendBackgroundKey(_wowManager.GameProcess.MainWindowHandle, (char)Keys.Enter, false);
-            }
-            else
-            {
-                _wowManager.Profile.Log("Clicking okay on dialog.");
-                var clickPos = _wowManager.ConvertWidgetCenterToWin32Coord(okayButton);
-                Utility.LeftClickAtPos(_wowManager.GameProcess.MainWindowHandle, (int)clickPos.X, (int)clickPos.Y, true);
-            }
-
+            _wowManager.Profile.Log("Pressing 'Esc' key to close dialog.");
+            Utility.SendBackgroundKey(_wowManager.GameProcess.MainWindowHandle, (char)Keys.Escape, false);
             return true;
         }
 
@@ -378,6 +367,7 @@ namespace HighVoltz.HBRelog.WoW.States
 			_wowManager.Profile.Log("Selecting Account");
 			var clickPos = _wowManager.ConvertWidgetCenterToWin32Coord(wantedAccountButton);
 			Utility.LeftClickAtPos(_wowManager.GameProcess.MainWindowHandle, (int)clickPos.X, (int)clickPos.Y, true);
+            Thread.Sleep(4000);
             return true;
         }
 

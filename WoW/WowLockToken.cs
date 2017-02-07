@@ -90,7 +90,8 @@ namespace HighVoltz.HBRelog.WoW
 						return;
 					}
 
-					if (!_launcherProc.HasExited || _launcherProc.ExitCode  == 0 || (wowProcess = TryGetProcessById(_launcherProc.ExitCode)) == null)
+					if (!_launcherProc.HasExited || _launcherProc.ExitCode  == 0 
+                        || !Utility.TryGetProcessById(_launcherProc.ExitCode, out wowProcess))
 					{
 						var executablePath = Path.GetFileNameWithoutExtension(_lockOwner.Profile.Settings.WowSettings.WowPath);
 						wowProcess = Utility.GetChildProcessByName(_launcherProc.Id, "Wow") 
@@ -180,18 +181,6 @@ namespace HighVoltz.HBRelog.WoW
 					_wowProcess = null;
 					_lockOwner.Profile.Log("Wow is ready to login.");
 				}
-			}
-		}
-
-		private Process TryGetProcessById(int procId)
-		{
-			try
-			{
-				return Process.GetProcessById(procId);
-			}
-			catch (Exception)
-			{
-				return null;
 			}
 		}
 

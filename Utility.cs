@@ -15,6 +15,7 @@ Copyright 2012 HighVoltz
 */
 
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -277,8 +278,34 @@ namespace HighVoltz.HBRelog
 
         private const int SizeOfInput = 28;
 
-        public static void LeftClickAtPos(
-            IntPtr hWnd, int x, int y, bool doubleClick = false, bool restore = true, Func<bool> restoreCondition = null)
+        public static bool BringWindowIntoFocus(IntPtr hWnd, CharacterProfile profile = null)
+        {
+            if (NativeMethods.GetForegroundWindow() == hWnd)
+                return true;
+
+            NativeMethods.SetForegroundWindow(hWnd);
+            var sw = Stopwatch.StartNew();
+            do
+            {
+                if (sw.Elapsed > TimeSpan.FromSeconds(5))
+                {
+                    Action<string> log;
+                    if (profile != null)
+                        log = profile.Log;
+                    else
+                        log = Log.Write;
+
+                    var winName = NativeMethods.GetWindowText(hWnd);
+                    log($"Unabled to bring {(!string.IsNullOrEmpty(winName) ? $"{winName} " : "")}window into focus");
+                    return false;
+                }
+                Thread.Sleep(10);
+            } while (NativeMethods.GetForegroundWindow() != hWnd);
+            return true;
+        }
+
+        public static bool LeftClickAtPos(
+            IntPtr hWnd, int x, int y, bool doubleClick = false, bool restore = true, Func<bool> restoreCondition = null, CharacterProfile profile = null)
         {
             var wndBounds = GetWindowRect(hWnd);
             double fScreenWidth = NativeMethods.GetSystemMetrics(NativeMethods.SystemMetric.SM_CXSCREEN) - 1;
@@ -292,20 +319,19 @@ namespace HighVoltz.HBRelog
             structInput.mkhi.mi.dx = (int) fx;
             structInput.mkhi.mi.dy = (int) fy;
 
-            var forefroundWindow = NativeMethods.GetForegroundWindow();
 
             if (restore)
                 SaveForegroundWindowAndMouse();
+
+            if (!BringWindowIntoFocus(hWnd, profile))
+                return false;
+
             try
             {
                 NativeMethods.BlockInput(true);
-
-                for (var num = 0; forefroundWindow != hWnd && num < 1000; num++)
-                {
-                    NativeMethods.SetForegroundWindow(hWnd);
-                    Thread.Sleep(10);
-                    forefroundWindow = NativeMethods.GetForegroundWindow();
-                }
+                // check one last time if window is still in foreground after we block input.
+                if (NativeMethods.GetForegroundWindow() != hWnd)
+                    return false;
 
                 NativeMethods.SendInput(1, ref structInput, SizeOfInput);
                 Thread.Sleep(80);
@@ -344,6 +370,7 @@ namespace HighVoltz.HBRelog
                 }
                 NativeMethods.BlockInput(false);
             }
+            return true;
         }
 
         private static void SleepOfMouseInputReaction()
@@ -425,6 +452,20 @@ namespace HighVoltz.HBRelog
                 await Task.Delay(100);
             }
             return false;
+        }
+
+        public static bool TryGetProcessById(int procId, out Process process)
+        {
+            try
+            {
+                process= Process.GetProcessById(procId);
+                return true;
+            }
+            catch (Exception)
+            {
+                process = null;
+                return false;
+            }
         }
     }
 }

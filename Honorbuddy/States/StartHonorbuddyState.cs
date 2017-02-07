@@ -58,7 +58,7 @@ namespace HighVoltz.HBRelog.Honorbuddy.States
         }
 
 
-	    void CopyHBRelogHelperPluginOver()
+	    private void CopyHBRelogHelperPluginOver()
 	    {
 			// remove internet zone restrictions from Honorbuddy.exe if it exists
 			Utility.UnblockFileIfZoneRestricted(_hbManager.Settings.HonorbuddyPath);

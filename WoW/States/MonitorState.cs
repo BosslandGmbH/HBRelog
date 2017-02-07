@@ -167,15 +167,19 @@ namespace HighVoltz.HBRelog.WoW.States
             {
                 try
                 {
+                    if (_wowManager.GameProcess == null || _wowManager.GameProcess.HasExitedSafe())
+                        return true;
+
                     bool isResponding = _wowManager.GameProcess.Responding;
-                    if (_wowManager.GameProcess != null && !_wowManager.GameProcess.HasExitedSafe() && !_wowManager.GameProcess.Responding)
+                    if (!isResponding)
                     {
                         if (!_wowRespondingSw.IsRunning)
                             _wowRespondingSw.Start();
-                        if (_wowRespondingSw.ElapsedMilliseconds >= 20000)
+
+                        if (_wowRespondingSw.ElapsedMilliseconds >= 30000)
                             return true;
                     }
-                    else if (isResponding && _wowRespondingSw.IsRunning)
+                    else if (_wowRespondingSw.IsRunning)
                         _wowRespondingSw.Reset();
                 }
                 catch (InvalidOperationException)

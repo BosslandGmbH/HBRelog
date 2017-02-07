@@ -64,6 +64,9 @@ namespace HighVoltz.HBRelog.WoW.States
 		    if (_realmSelectionTimer.IsRunning && _realmSelectionTimer.ElapsedMilliseconds < 5000)
 		        return;
 
+		    if (!Utility.BringWindowIntoFocus(_wowManager.GameProcess.MainWindowHandle, _wowManager.Profile))
+		        return;
+
 			Utility.SaveForegroundWindowAndMouse();
 			var tabs = RealmTabs;
 
@@ -84,16 +87,8 @@ namespace HighVoltz.HBRelog.WoW.States
 					{
 						var clickPos = _wowManager.ConvertWidgetCenterToWin32Coord(nextTab);
 						Utility.LeftClickAtPos(_wowManager.GameProcess.MainWindowHandle, (int)clickPos.X, (int)clickPos.Y, true, false);
-						// need to wait a little for click to register.
-						try
-						{
-							NativeMethods.BlockInput(true);
-							Utility.SleepUntil(() => !nextTab.IsEnabled, TimeSpan.FromMilliseconds(1000));
-						}
-						finally
-						{
-							NativeMethods.BlockInput(false);
-						}
+                        Utility.SleepUntil(() => !nextTab.IsEnabled, TimeSpan.FromMilliseconds(1000));
+                        Thread.Sleep(1000);
 					}
 				}
 			}
@@ -247,23 +242,15 @@ namespace HighVoltz.HBRelog.WoW.States
 				{
 					if (!wantedButton.IsEnabled)
 					{
-						_wowManager.Profile.Status = string.Format("Realm is offline");
+						_wowManager.Profile.Status = "Realm is offline";
 						_wowManager.Profile.Log("Realm is offline");
 						_wowManager.GameProcess.Kill();
 						return true;
 					}
 					clickPos = _wowManager.ConvertWidgetCenterToWin32Coord(wantedButton);
 					Utility.LeftClickAtPos(_wowManager.GameProcess.MainWindowHandle, (int)clickPos.X, (int)clickPos.Y, true, false);
-					// need to wait a little for click to register.
-					try
-					{
-						NativeMethods.BlockInput(true);
-						Utility.SleepUntil(() => _wowManager.IsConnectiongOrLoading, TimeSpan.FromMilliseconds(1000));
-					}
-					finally
-					{
-						NativeMethods.BlockInput(false);
-					}
+                    Utility.SleepUntil(() => _wowManager.IsConnectiongOrLoading, TimeSpan.FromMilliseconds(1000));
+                    Thread.Sleep(2000);
 					return true;
 				}
 
@@ -280,7 +267,6 @@ namespace HighVoltz.HBRelog.WoW.States
 
 				try
 				{
-					NativeMethods.BlockInput(true);
                     for (int j = 0; j < 19; j++)
                     {
                         if (!scrollButton.IsEnabled)

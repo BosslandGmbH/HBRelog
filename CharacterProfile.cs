@@ -142,7 +142,11 @@ namespace HighVoltz.HBRelog
         private string _lastLog;
         public void Log(string format, params object[] args)
         {
-            var msg = string.Format(format, args);
+            Log(string.Format(format, args));
+        }
+
+        public void Log(string msg)
+        {
             if (msg == _lastLog)
                 return;
             _lastLog = msg;
@@ -155,8 +159,13 @@ namespace HighVoltz.HBRelog
 
         public void Err(string format, params object[] args)
         {
+            Err(string.Format(format, args));
+        }
+
+        public void Err(string msg)
+        {
             HBRelog.Log.Write(HbRelogManager.Settings.UseDarkStyle ? Colors.LightBlue : Colors.DarkSlateBlue,
-                                        Settings.ProfileName + ": ", Colors.Red, format, args);
+                                        Settings.ProfileName + ": ", Colors.Red, msg);
         }
 
         public CharacterProfile ShadowCopy()
