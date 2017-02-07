@@ -4,8 +4,8 @@ Releases can be downloaded from [here](https://github.com/highvoltz/HBRelog/rele
 
 ### Requirements
 * Windows Vista SP2 or a newer windows. 
-* .Net 4.5.1 - [link](http://www.microsoft.com/en-us/download/details.aspx?id=40779)
-* Visual C++ Redist. for Visual Studio 2013 - [link](http://www.microsoft.com/en-us/download/details.aspx?id=40784)
+* .Net 4.6.1 - [link](https://www.microsoft.com/en-us/download/details.aspx?id=49982)
+* Visual C++ Redist. for Visual Studio 2015 - [link](https://www.microsoft.com/en-us/download/details.aspx?id=48145)
 * World of Warcraft - http://www.battle.net
 * Honorbuddy - http://www.honorbuddy.com
 
