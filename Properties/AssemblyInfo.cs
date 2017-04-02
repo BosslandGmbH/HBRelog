@@ -1,8 +1,4 @@
-﻿// This file is auto genorated from using SubRCRev.exe and template AssemblyInfo.template
-// Build Date: 2015/01/05 17:55:38
-// SVN url: https://hbrelog.googlecode.com/svn/trunk/Properties
-
-using System.Reflection;
+﻿using System.Reflection;
 using System.Resources;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -16,7 +12,7 @@ using System.Windows;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("HBRelog")]
-[assembly: AssemblyCopyright("Copyright © 2016 by HighVoltz")]
+[assembly: AssemblyCopyright("Copyright © 2017 by HighVoltz")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -55,5 +51,5 @@ using System.Windows;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.1.13")]
-[assembly: AssemblyFileVersion("1.1.13")]
+[assembly: AssemblyVersion("1.1.14")]
+[assembly: AssemblyFileVersion("1.1.14")]
