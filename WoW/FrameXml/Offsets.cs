@@ -46,11 +46,11 @@
         public static class Button // inherits Frame
         {
             // first offset in Button::GetButtonState function
-            public const int FlagsOffset = 0x15C;
+            public const int FlagsOffset = 0x158;
             // first offset in Button::GetFontString function
-            public const int FontStringOffset = 0x164;
+            public const int FontStringOffset = 0x160;
             // first offset in Button::GetHighlightTexture function
-            public const int HighlightTextureOffset = 0x18C; 
+            public const int HighlightTextureOffset = 0x188; 
         }
 
         public static class FontString
@@ -64,7 +64,7 @@
             // In EditBox:IsMultiLine function
             public const int FlagsOffset = 0x158;
             // In EditBox:GetCursorPosition function
-            public const int AsciiCursorPositionOffset = 0x1B4;
+            public const int AsciiCursorPositionOffset = 0x1B8;
             // Last offset in EditBox:GetText function
             public const int TextOffset = 0x16C;
             // In EditBox:GetMaxBytes function
@@ -101,7 +101,7 @@
             public const int ValueOffset = 0x154;
             // In Slider:GetValueStep function
             public const int ValueStepOffset = 0x158;
-            // In Slider:Slider:SetThumbTexture function
+            // In Slider:SetThumbTexture function
             public const int ThumbTextureOffset = 0x160;
             // In Slider:GetOrientation function
             public const int OrientationOffset = 0x15C;  
