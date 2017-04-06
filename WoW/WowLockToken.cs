@@ -16,6 +16,7 @@ namespace HighVoltz.HBRelog.WoW
 		private readonly string _key;
 		private Process _wowProcess;
 		private Process _launcherProc;
+        private Stopwatch _dialogDisplayTimer;
 
 		private WowLockToken(string key, DateTime startTime, WowManager lockOwner)
 		{
@@ -51,7 +52,8 @@ namespace HighVoltz.HBRelog.WoW
 				_wowProcess = null;
 				_launcherProc = null;
 				_lockOwner = null;
-			}
+                _dialogDisplayTimer = null;
+            }
 		}
 
 
@@ -127,8 +129,9 @@ namespace HighVoltz.HBRelog.WoW
 
 					_lockOwner.StartupSequenceIsComplete = false;
 					_lockOwner.Memory = null;
+                    _dialogDisplayTimer = null;
 
-					bool lanchingWoW = IsWoWPath(_lockOwner.Settings.WowPath);
+                    bool lanchingWoW = IsWoWPath(_lockOwner.Settings.WowPath);
 
 					// force 32 bit client to start.
 					if (lanchingWoW && _lockOwner.Settings.WowArgs.IndexOf("-noautolaunch64bit", StringComparison.InvariantCultureIgnoreCase) == -1)
@@ -169,10 +172,22 @@ namespace HighVoltz.HBRelog.WoW
 						return;
 					}
 					var isPopup = (NativeMethods.GetWindowStyle(_wowProcess.MainWindowHandle) & NativeMethods.WindowStyle.Popup) != 0;
-					if (isPopup)
+
+                    if (isPopup)
 					{
-						_lockOwner.Profile.Log("WoW failed to load and is an error popup; Restarting");
-						ReleaseLock();
+                        // WoW is now shown as a dialog very breifly everytime it's started, 
+                        // so we only care if it's a dialog window longer than normal
+                        if (_dialogDisplayTimer == null)
+                        {
+                            _dialogDisplayTimer = Stopwatch.StartNew();
+                        }
+                        else if (_dialogDisplayTimer.ElapsedMilliseconds > 10000)
+                        {
+                            _lockOwner.Profile.Log($"WoW v{_wowProcess.VersionString()} failed to load and is a popup. " +
+                                $"Make sure your WoW installation is updated. Pausing profile.");
+                            _lockOwner.Profile.Pause();
+                            ReleaseLock();
+                        }
 						return;
 					}
 
