@@ -115,6 +115,9 @@ namespace HighVoltz.HBRelog.WoW.States
             if (EnterTextInEditBox("AccountLogin.UI.PasswordEditBox", _wowManager.Settings.Password))
                 return;
 
+            if (HandleAccountSelectionOnLoginScreen())
+                return;
+
             SetGameTitle();
 
             // everything looks good. Press 'Enter' key to login.
@@ -335,7 +338,48 @@ namespace HighVoltz.HBRelog.WoW.States
             return true;
         }
 
-        bool HandleAccountSelectionDialog()
+        /// <summary>
+        /// Handles the account selection on Login screen.
+        /// </summary>
+        /// <returns></returns>
+        private bool HandleAccountSelectionOnLoginScreen()
+        {
+            var accountLoginDropDownText = UIObject.GetUIObjectByName<FontString>(_wowManager, "AccountLoginDropDownText");
+            if (accountLoginDropDownText == null || !accountLoginDropDownText.IsVisible
+                || accountLoginDropDownText.Text.Equals(_wowManager.Settings.AcountName, StringComparison.InvariantCultureIgnoreCase))
+            {
+                return false;
+            }
+            var accountLoginDropDownButton = UIObject.GetUIObjectByName<Button>(_wowManager, "AccountLoginDropDownButton");
+            _wowManager.Profile.Log("Opening account selection drop-down");
+            var clickPos = _wowManager.ConvertWidgetCenterToWin32Coord(accountLoginDropDownButton);
+            Utility.LeftClickAtPos(_wowManager.GameProcess.MainWindowHandle, (int)clickPos.X, (int)clickPos.Y, false);
+
+            var dropdownList = UIObject.GetUIObjectByName<Frame>(_wowManager, "DropDownList1");
+            if (dropdownList == null || !dropdownList.IsVisible)
+                return false;
+
+            var wantedButton = dropdownList.Children.OfType<Button>()
+                .FirstOrDefault(b => b.Text.Equals(_wowManager.Settings.AcountName, StringComparison.InvariantCultureIgnoreCase));
+
+            if (wantedButton == null)
+            {
+                _wowManager.Profile.Log("Account name not found. Double check spelling");
+                return false;
+            }
+
+            clickPos = _wowManager.ConvertWidgetCenterToWin32Coord(wantedButton);
+            Utility.LeftClickAtPos(_wowManager.GameProcess.MainWindowHandle, (int)clickPos.X, (int)clickPos.Y, false);
+
+            Thread.Sleep(4000);
+            return true;
+        }
+
+        /// <summary>
+        /// Handles the account selection dialog that WoW sometimes shows after logging in.
+        /// </summary>
+        /// <returns></returns>
+        private bool HandleAccountSelectionDialog()
         {
 	        var accountContainer = UIObject.GetUIObjectByName<Frame>(_wowManager, "AccountLogin.UI.WoWAccountSelectDialog.Background.Container");
 	        if (accountContainer == null)

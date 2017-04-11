@@ -104,6 +104,7 @@ namespace HighVoltz.HBRelog.WoW
 					if (wowProcess != null)
 					{
 						_launcherProc = null;
+                        _dialogDisplayTimer = null;
                         Helpers.ResumeProcess(wowProcess.Id);
 						_wowProcess = wowProcess;
 					}
@@ -130,7 +131,6 @@ namespace HighVoltz.HBRelog.WoW
 					_lockOwner.StartupSequenceIsComplete = false;
 					_lockOwner.Memory = null;
                     _dialogDisplayTimer = null;
-
                     bool lanchingWoW = IsWoWPath(_lockOwner.Settings.WowPath);
 
 					// force 32 bit client to start.
@@ -216,7 +216,6 @@ namespace HighVoltz.HBRelog.WoW
 		{
 			return proc.ProcessName.Equals("cmd", StringComparison.CurrentCultureIgnoreCase);
 		}
-
 
 
 		private void AdjustWoWConfig()
