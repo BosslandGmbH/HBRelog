@@ -410,9 +410,11 @@ namespace HighVoltz.HBRelog.Settings
                     // settings.FrameScriptExecuteOffset = GetElementValue(root.Element("FrameScriptExecuteOffset"), 0u);
                     FocusedWidgetOffset = GetElementValue(root.Element("FocusedWidgetOffset"), 0u);
                     LuaStateOffset = GetElementValue(root.Element("LuaStateOffset"), 0u);
+                    LoadingScreenEnableCountOffset = GetElementValue(root.Element("LoadingScreenEnableCountOffset"), 0u);
+
                     //settings.LastHardwareEventOffset = GetElementValue(root.Element("LastHardwareEventOffset"), 0u);
 
-					CharacterProfiles.Clear();
+                    CharacterProfiles.Clear();
 					XElement characterProfilesElement = root.Element("CharacterProfiles");
                     foreach (XElement profileElement in characterProfilesElement.Elements("CharacterProfile"))
                     {

@@ -163,10 +163,11 @@ namespace HighVoltz.HBRelog.WoW
 				}
 				else
 				{
-					// return if wow isn't ready for input.
-					if (_wowProcess.MainWindowHandle == IntPtr.Zero)
+                    // need to refresh everytime because of the dialog at startup
+                    _wowProcess.Refresh();
+                    // return if wow isn't ready for input.
+                    if (_wowProcess.MainWindowHandle == IntPtr.Zero)
 					{
-						_wowProcess.Refresh();
 						_lockOwner.Profile.Status = "Waiting for Wow to start";
 						_lockOwner.Profile.Log(_lockOwner.Profile.Status);
 						return;
