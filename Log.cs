@@ -87,7 +87,7 @@ namespace HighVoltz.HBRelog
             }
 
             InternalWrite(hColor, header, mColor, msg);
-            WriteToLog(msg);
+            WriteToLog(header + msg);
         }
 
         // same Write. might use a diferent tab someday.

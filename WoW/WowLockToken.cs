@@ -103,7 +103,8 @@ namespace HighVoltz.HBRelog.WoW
 					}
 					if (wowProcess != null)
 					{
-						_launcherProc = null;
+                        _lockOwner.Profile.Log($"WoW Launcher Pid: {_launcherProc.Id} launched WoW Pid: {wowProcess.Id}");
+                        _launcherProc = null;
                         _dialogDisplayTimer = null;
                         Helpers.ResumeProcess(wowProcess.Id);
 						_wowProcess = wowProcess;
@@ -119,86 +120,90 @@ namespace HighVoltz.HBRelog.WoW
 
                 if (_wowProcess == null || _wowProcess.HasExitedSafe())
 				{
-					// throttle the number of times wow is launched.
-                    if (_wowProcess != null && _wowProcess.HasExitedSafe() && DateTime.Now - _startTime < TimeSpan.FromSeconds(HbRelogManager.Settings.WowDelay))
-					{
-						return;
-					}
-					AdjustWoWConfig();
-					_lockOwner.Profile.Log("Starting {0}", _lockOwner.Settings.WowPath);
-					_lockOwner.Profile.Status = "Starting WoW";
+                    // throttle the number of times wow is launched.
+                    if (_wowProcess != null && _wowProcess.HasExitedSafe()
+                        && DateTime.Now - _startTime < TimeSpan.FromSeconds(HbRelogManager.Settings.WowDelay))
+                        return;
 
-					_lockOwner.StartupSequenceIsComplete = false;
-					_lockOwner.Memory = null;
-                    _dialogDisplayTimer = null;
-                    bool lanchingWoW = IsWoWPath(_lockOwner.Settings.WowPath);
-
-					// force 32 bit client to start.
-					if (lanchingWoW && _lockOwner.Settings.WowArgs.IndexOf("-noautolaunch64bit", StringComparison.InvariantCultureIgnoreCase) == -1)
-					{
-						// append a space to WoW arguments to separate multiple arguments if user is already pasing arguments ..
-						if (!string.IsNullOrEmpty(_lockOwner.Settings.WowArgs))
-							_lockOwner.Settings.WowArgs += " ";
-						_lockOwner.Settings.WowArgs += "-noautolaunch64bit";
-					}
-
-					var pi = new ProcessStartInfo() { UseShellExecute = false };
-
-					if (lanchingWoW)
-					{
-						var launcherPath = Path.Combine(Utility.AssemblyDirectory, "Launcher.exe");
-						pi.FileName = launcherPath;
-						var args = string.Format("\"{0}\" \"{1}\"", _lockOwner.Settings.WowPath, _lockOwner.Settings.WowArgs);
-						pi.Arguments = args;
-					}
-					else
-					{
-						pi.FileName = _lockOwner.Settings.WowPath;
-						pi.Arguments = _lockOwner.Settings.WowArgs;
-					}
-
-					_launcherProc = Process.Start(pi);
-					_lockOwner.ProcessIsReadyForInput = false;
-					_lockOwner.LoginTimer.Reset();
+                    StartWowProcess();
+                    return;
 				}
-				else
+                // need to refresh everytime because of the dialog at startup
+                _wowProcess.Refresh();
+                // return if wow isn't ready for input.
+                if (_wowProcess.MainWindowHandle == IntPtr.Zero)
 				{
-                    // need to refresh everytime because of the dialog at startup
-                    _wowProcess.Refresh();
-                    // return if wow isn't ready for input.
-                    if (_wowProcess.MainWindowHandle == IntPtr.Zero)
-					{
-						_lockOwner.Profile.Status = "Waiting for Wow to start";
-						_lockOwner.Profile.Log(_lockOwner.Profile.Status);
-						return;
-					}
-					var isPopup = (NativeMethods.GetWindowStyle(_wowProcess.MainWindowHandle) & NativeMethods.WindowStyle.Popup) != 0;
-
-                    if (isPopup)
-					{
-                        // WoW is now shown as a dialog very breifly everytime it's started, 
-                        // so we only care if it's a dialog window longer than normal
-                        if (_dialogDisplayTimer == null)
-                        {
-                            _dialogDisplayTimer = Stopwatch.StartNew();
-                        }
-                        else if (_dialogDisplayTimer.ElapsedMilliseconds > 10000)
-                        {
-                            _lockOwner.Profile.Log($"WoW v{_wowProcess.VersionString()} failed to load and is a popup. " +
-                                $"Make sure your WoW installation is updated. Pausing profile.");
-                            _lockOwner.Profile.Pause();
-                            ReleaseLock();
-                        }
-						return;
-					}
-
-					_lockOwner.GameProcess = _wowProcess;
-					_lockOwner.Memory = new ExternalProcessReader(_wowProcess);
-					_wowProcess = null;
-					_lockOwner.Profile.Log("Wow is ready to login.");
+					_lockOwner.Profile.Status = "Waiting for Wow to start";
+					_lockOwner.Profile.Log(_lockOwner.Profile.Status);
+					return;
 				}
+				var isPopup = (NativeMethods.GetWindowStyle(_wowProcess.MainWindowHandle) & NativeMethods.WindowStyle.Popup) != 0;
+
+                if (isPopup)
+				{
+                    // WoW is now shown as a dialog very breifly everytime it's started, 
+                    // so we only care if it's a dialog window longer than normal
+                    if (_dialogDisplayTimer == null)
+                    {
+                        _dialogDisplayTimer = Stopwatch.StartNew();
+                    }
+                    else if (_dialogDisplayTimer.ElapsedMilliseconds > 10000)
+                    {
+                        _lockOwner.Profile.Log($"WoW v{_wowProcess.VersionString()} failed to load and is a popup. " +
+                            $"Make sure your WoW installation is updated. Pausing profile.");
+                        _lockOwner.Profile.Pause();
+                        ReleaseLock();
+                    }
+					return;
+				}
+
+				_lockOwner.GameProcess = _wowProcess;
+				_lockOwner.Memory = new ExternalProcessReader(_wowProcess);
+				_wowProcess = null;
+				_lockOwner.Profile.Log("Wow is ready to login.");
 			}
 		}
+
+        private void StartWowProcess()
+        {
+            AdjustWoWConfig();
+            _lockOwner.Profile.Log("Starting {0}", _lockOwner.Settings.WowPath);
+            _lockOwner.Profile.Status = "Starting WoW";
+
+            _lockOwner.StartupSequenceIsComplete = false;
+            _lockOwner.Memory = null;
+            _dialogDisplayTimer = null;
+            bool lanchingWoW = IsWoWPath(_lockOwner.Settings.WowPath);
+
+            // force 32 bit client to start.
+            if (lanchingWoW && _lockOwner.Settings.WowArgs.IndexOf("-noautolaunch64bit", StringComparison.InvariantCultureIgnoreCase) == -1)
+            {
+                // append a space to WoW arguments to separate multiple arguments if user is already pasing arguments ..
+                if (!string.IsNullOrEmpty(_lockOwner.Settings.WowArgs))
+                    _lockOwner.Settings.WowArgs += " ";
+                _lockOwner.Settings.WowArgs += "-noautolaunch64bit";
+            }
+
+            var pi = new ProcessStartInfo() { UseShellExecute = false };
+
+            if (lanchingWoW)
+            {
+                var launcherPath = Path.Combine(Utility.AssemblyDirectory, "Launcher.exe");
+                pi.FileName = launcherPath;
+                var args = string.Format("\"{0}\" \"{1}\"", _lockOwner.Settings.WowPath, _lockOwner.Settings.WowArgs);
+                pi.Arguments = args;
+            }
+            else
+            {
+                pi.FileName = _lockOwner.Settings.WowPath;
+                pi.Arguments = _lockOwner.Settings.WowArgs;
+            }
+
+            _launcherProc = Process.Start(pi);
+            _lockOwner.ProcessIsReadyForInput = false;
+            _lockOwner.LoginTimer.Reset();
+        }
+
 
 		private bool IsWoWPath(string path)
 		{

@@ -112,7 +112,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
 
         internal void StartHonorbuddy()
         {
-            // check if a batch file or any .exe besides WoW.exe is used and try to get the child WoW process started by this process.
+            // check if a batch file or any .exe besides Honorbuddy.exe is used and try to get the child HB process started by this process.
 
             if (_launcherProc != null)
             {
@@ -145,6 +145,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
                     return;
                 }
 
+                Profile.Log($"HB Launcher Pid: {_launcherProc.Id} launched HB Pid: {botProcess.Id}");
                 _launcherProc = null;
                 BotProcess = botProcess;
                 return;
@@ -153,7 +154,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
             bool launchingHB = IsHonorbuddyPath(Profile.Settings.HonorbuddySettings.HonorbuddyPath);
 
             _botExitTimer = null;
-            Profile.Log("starting {0}", Profile.Settings.HonorbuddySettings.HonorbuddyPath);
+            Profile.Log($"Starting {Profile.Settings.HonorbuddySettings.HonorbuddyPath}");
             Profile.Status = "Starting Honorbuddy";
             StartupSequenceIsComplete = false;
 
@@ -178,6 +179,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
             {
                 WorkingDirectory = hbWorkingDirectory
             };
+
 
             if (launchingHB)
                 BotProcess = Process.Start(procStartI);

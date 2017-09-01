@@ -346,7 +346,7 @@ namespace HighVoltz.HBRelog.WoW
 					var loadingScreenCount = Memory.Read<int>(
 						true,
 						(IntPtr) HbRelogManager.Settings.LoadingScreenEnableCountOffset);
-					return state == 1 && loadingScreenCount == 0;
+					return state == 2 && loadingScreenCount == 0;
 				}
 				catch
 				{
@@ -414,6 +414,8 @@ namespace HighVoltz.HBRelog.WoW
 
 		public void CloseGameProcess()
 		{
+            if (GameProcess == null)
+                return;
 			try
 			{
 				CloseGameProcess(GameProcess);
