@@ -86,7 +86,7 @@ namespace HighVoltz.HBRelogHelper
                 AppDomain.CurrentDomain.ProcessExit += CurrentDomainProcessExit;
                 AppDomain.CurrentDomain.UnhandledException += CurrentDomainUnhandledException;
 
-                HbProcId = Process.GetCurrentProcess().Id;
+                
                 _pipeFactory = new ChannelFactory<IRemotingApi>(new NetNamedPipeBinding(),
                         new EndpointAddress("net.pipe://localhost/HBRelog/Server"));
 
@@ -100,16 +100,8 @@ namespace HighVoltz.HBRelogHelper
                         _monitorTimer.Interval = TimeSpan.FromSeconds(10);
                         _monitorTimer.Start();
                     }));
-                IsConnected = HBRelogRemoteApi.Init(HbProcId);
-                if (IsConnected)
-                {
-                    Logging.Write("HBRelogHelper: Connected with HBRelog");
-                    CurrentProfileName = HBRelogRemoteApi.GetCurrentProfileName(HbProcId);
-                }
-                else
-                {
-                    Logging.Write("HBRelogHelper: Could not connect to HBRelog");
-                }
+               
+                Initialize();
             }
             catch (Exception ex)
             {
@@ -119,6 +111,28 @@ namespace HighVoltz.HBRelogHelper
             // since theres no point of this plugin showing up in plugin list lets just throw an exception.
             // new HB doesn't catch exceptions
             //  throw new Exception("Ignore this exception");
+
+        }
+
+        static internal void Initialize(int hbProcId=0)
+        {
+            if(hbProcId == 0) hbProcId = Process.GetCurrentProcess().Id;
+            HbProcId = hbProcId;
+
+            try
+            {
+                IsConnected = HBRelogRemoteApi.Init(HbProcId);
+            }
+            catch { }
+            if (IsConnected)
+            {
+                Logging.Write("HBRelogHelper: Connected with HBRelog");
+                CurrentProfileName = HBRelogRemoteApi.GetCurrentProfileName(HbProcId);
+            }
+            else
+            {
+                Logging.Write("HBRelogHelper: Could not connect to HBRelog");
+            }
         }
 
         private void Shutdown()
@@ -265,6 +279,12 @@ namespace HighVoltz.HBRelogHelper
         { get { return HBRelogHelper.HBRelogRemoteApi; } }
         public static bool IsConnected { get { return HBRelogHelper.IsConnected; } }
         public static string CurrentProfileName { get { return HBRelogHelper.CurrentProfileName; } }
+
+
+        public static void ReattachHB(int hbProcID)
+        {
+            HBRelogHelper.Initialize(hbProcID);
+        }
 
         public static void RestartWow()
         {

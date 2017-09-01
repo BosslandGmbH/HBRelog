@@ -10,7 +10,9 @@ namespace HighVoltz.HBRelog.Remoting
         bool Init(int hbProcID);
         [OperationContract(IsOneWay = true)]
         void Heartbeat(int hbProcID);
-        [OperationContract (IsOneWay=true)]
+        [OperationContract]
+        bool ReattachHB(int oldHbProcID, int newHbProcID);
+        [OperationContract(IsOneWay = true)]
         void RestartHB(int hbProcID);
         [OperationContract(IsOneWay = true)]
         void RestartWow(int hbProcID);
