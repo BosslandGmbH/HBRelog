@@ -7,6 +7,7 @@ using System.Text;
 using GreyMagic;
 using HighVoltz.Launcher;
 using System.Runtime.InteropServices;
+using HighVoltz.HBRelog.Settings;
 
 namespace HighVoltz.HBRelog.WoW
 {
@@ -272,7 +273,36 @@ namespace HighVoltz.HBRelog.WoW
 			}
 			config.EnsureValue("accountName", _lockOwner.Settings.Login);
 
-			if (!string.IsNullOrEmpty(_lockOwner.Settings.AcountName))
+            if (_lockOwner.Settings.Region != WowSettings.WowRegion.Auto)
+            {
+                string portal;
+                switch (_lockOwner.Settings.Region)
+                {
+                    case WowSettings.WowRegion.US:
+                        portal = "US";
+                        break;
+                    case WowSettings.WowRegion.EU:
+                        portal = "EU";
+                        break;
+                    case WowSettings.WowRegion.Korea:
+                        portal = "KR";
+                        break;
+                    case WowSettings.WowRegion.China:
+                        portal = "CN";
+                        break;
+                    case WowSettings.WowRegion.Taiwan:
+                        portal = "TW";
+                        break;
+                    default:
+                        portal = null;
+                        break;
+                }
+
+                if (portal != null)
+                    config.EnsureValue("portal", portal);
+            }
+
+            if (!string.IsNullOrEmpty(_lockOwner.Settings.AcountName))
 				config.EnsureAccountList(_lockOwner.Settings.AcountName);
 			else
 				config.DeleteSetting("accountList");
