@@ -16,18 +16,18 @@ namespace HighVoltz.HBRelog
         private const int GWL_STYLE = -16;
 
         // Window Styles
-		[Flags]
-	    public enum WindowStyle: uint
-	    {
-		    Border = 0x00800000,
-			SysMenu = 0x00080000,
-			Popup = 0x80000000,
-			PopupWindow = Popup | Border | SysMenu
-		}
+        [Flags]
+        public enum WindowStyle : uint
+        {
+            Border = 0x00800000,
+            SysMenu = 0x00080000,
+            Popup = 0x80000000,
+            PopupWindow = Popup | Border | SysMenu
+        }
 
-		#region ConnectionStates enum
+        #region ConnectionStates enum
 
-		[Flags]
+        [Flags]
         public enum ConnectionStates
         {
             Modem = 0x1,
@@ -102,10 +102,10 @@ namespace HighVoltz.HBRelog
         [DllImport("user32.dll", SetLastError = true)]
         public static extern int GetWindowLong(IntPtr hWnd, int nIndex);
 
-	    public static WindowStyle GetWindowStyle(IntPtr hWnd)
-	    {
-		    return (WindowStyle)GetWindowLong(hWnd, GWL_STYLE);
-	    }
+        public static WindowStyle GetWindowStyle(IntPtr hWnd)
+        {
+            return (WindowStyle)GetWindowLong(hWnd, GWL_STYLE);
+        }
 
         public static string GetClassName(IntPtr hWnd)
         {
@@ -145,10 +145,10 @@ namespace HighVoltz.HBRelog
             foreach (ProcessThread thread in Process.GetProcessById(processId).Threads)
                 EnumThreadWindows(
                     thread.Id, (hWnd, lParam) =>
-                                   {
-                                       handles.Add(hWnd);
-                                       return true;
-                                   }, IntPtr.Zero);
+                    {
+                        handles.Add(hWnd);
+                        return true;
+                    }, IntPtr.Zero);
 
             return handles;
         }
@@ -192,8 +192,6 @@ namespace HighVoltz.HBRelog
             //  You can modify this to check to see if you want to cancel the operation, then return a null here
             return true;
         }
-
-
         #endregion
 
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
@@ -201,6 +199,26 @@ namespace HighVoltz.HBRelog
 
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         public static extern IntPtr PostMessage(IntPtr hWnd, uint wMsg, IntPtr wParam, UIntPtr lParam);
+
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        public static extern IntPtr SendMessageTimeout(
+            IntPtr hWnd,
+            uint Msg,
+            IntPtr wParam,
+            UIntPtr lParam,
+            SendMessageTimeoutFlags fuFlags,
+            uint uTimeout,
+            out UIntPtr lpdwResult);
+
+        [Flags]
+        public enum SendMessageTimeoutFlags : uint
+        {
+            SMTO_NORMAL = 0x0,
+            SMTO_BLOCK = 0x1,
+            SMTO_ABORTIFHUNG = 0x2,
+            SMTO_NOTIMEOUTIFNOTHUNG = 0x8,
+            SMTO_ERRORONEXIT = 0x20
+        }
 
         public const int MaxPath = 260;
         public const int MaxAlternate = 14;
@@ -314,31 +332,19 @@ namespace HighVoltz.HBRelog
             [DllImport("ntdll.dll")]
             private static extern int NtQueryInformationProcess(IntPtr processHandle, int processInformationClass, ref ParentProcessUtilities processInformation, int processInformationLength, out int returnLength);
 
-            /// <summary>
-            /// Gets the parent process of the current process.
-            /// </summary>
-            /// <returns>An instance of the Process class.</returns>
-            public static Process GetParentProcess()
-            {
-                return GetParentProcess(Process.GetCurrentProcess().Handle);
-            }
-
-            /// <summary>
-            /// Gets the parent process of specified process.
-            /// </summary>
-            /// <param name="id">The process id.</param>
-            /// <returns>An instance of the Process class.</returns>
-            public static Process GetParentProcess(int id)
-            {
-                Process process = Process.GetProcessById(id);
-                return GetParentProcess(process.Handle);
-            }
-
             public static int GetParentProcessId(int id)
             {
                 Process process = Process.GetProcessById(id);
-                return GetParentProcessId(process.Handle);
+                try
+                {
+                    return GetParentProcessId(process.Handle);
+                }
+                finally
+                {
+                    process.Dispose();
+                }
             }
+
             /// <summary>
             /// Gets the parent process of a specified process.
             /// </summary>
@@ -367,16 +373,6 @@ namespace HighVoltz.HBRelog
             }
 
 
-            /// <summary>
-            /// Gets the parent process of a specified process.
-            /// </summary>
-            /// <param name="handle">The process handle.</param>
-            /// <returns>An instance of the Process class.</returns>
-            public static Process GetParentProcess(IntPtr handle)
-            {
-                var pid = GetParentProcessId(handle);
-                return pid != -1 ? Process.GetProcessById(pid) : null;
-            }
         }
 
         #region Nested Type: WindowInfo
@@ -397,7 +393,7 @@ namespace HighVoltz.HBRelog
 
             public WindowInfo(Boolean? filler) : this() // Allows automatic initialization of "cbSize" with "new WINDOWINFO(null/true/false)".
             {
-                cbSize = (UInt32) (Marshal.SizeOf(typeof (WindowInfo)));
+                cbSize = (UInt32)(Marshal.SizeOf(typeof(WindowInfo)));
             }
         }
 
@@ -1189,6 +1185,7 @@ namespace HighVoltz.HBRelog
 
         public enum Message : uint
         {
+            WM_NULL = 0,
             NCHITTEST = (0x0084),
             KEY_DOWN = (0x0100), //Key down
             KEY_UP = (0x0101), //Key Up
@@ -1202,11 +1199,13 @@ namespace HighVoltz.HBRelog
             RBUTTONDOWN = (0x204), //Right mousebutton down 
             RBUTTONUP = (0x205), //Right mousebutton up 
             RBUTTONDBLCLK = (0x206), //Right mousebutton doubleclick
+
             /// <summary>Middle mouse button down</summary>
             MBUTTONDOWN = (0x207),
 
             /// <summary>Middle mouse button up</summary>
-            MBUTTONUP = (0x208)
+            MBUTTONUP = (0x208),
+            WM_CLOSE = 0x10,
         }
 
         #endregion

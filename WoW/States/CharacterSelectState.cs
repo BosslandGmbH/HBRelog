@@ -34,7 +34,7 @@ namespace HighVoltz.HBRelog.WoW.States
                 return (_wowManager.GameProcess != null && !_wowManager.GameProcess.HasExitedSafe()) 
 				&& !_wowManager.StartupSequenceIsComplete 
 				&& !_wowManager.InGame 
-				&& !_wowManager.IsConnectiongOrLoading 
+				&& !_wowManager.IsConnectingOrLoading 
 				&& _wowManager.GlueScreen == GlueScreen.CharSelect; 
 			}
         }
@@ -57,7 +57,11 @@ namespace HighVoltz.HBRelog.WoW.States
 		        return;
 	        }
 
-            if (ShouldChangeRealm)
+            bool? shouldChangeRealm = ShouldChangeRealm;
+            if (!shouldChangeRealm.HasValue)
+                return;
+
+            if (shouldChangeRealm.Value)
             {
                 ChangeRealm();
                 return;
@@ -108,28 +112,25 @@ namespace HighVoltz.HBRelog.WoW.States
 	            var index = wantedCharIndex > currentIndex
 		            ? new string((char) Keys.Down, wantedCharIndex - currentIndex)
 		            : new string((char) Keys.Up, currentIndex - wantedCharIndex);
-	            Utility.SendBackgroundString(_wowManager.GameProcess.MainWindowHandle, index, false);
+	            Utility.SendBackgroundString(_wowManager.GameWindow, index, false);
 	            Utility.SleepUntil(() => SelectedCharacterIndex == wantedCharIndex, TimeSpan.FromSeconds(2));
                 return false;
             }
 
-            Utility.SendBackgroundKey(_wowManager.GameProcess.MainWindowHandle, (char)Keys.Enter, false);
+            Utility.SendBackgroundKey(_wowManager.GameWindow, (char)Keys.Enter, false);
             return true;
         }
 
         // 1-based.
-        int SelectedCharacterIndex
-        {
-            get { return (int)_wowManager.Globals.GetValue("CharacterSelect").Table.GetValue("selectedIndex").Number; }
-        }
+        int SelectedCharacterIndex => (int)_wowManager.GetLuaObject("CharacterSelect.selectedIndex").Number;
 
-        bool ShouldChangeRealm
+        bool? ShouldChangeRealm
         {
             get
             {
                 var realmName = CurrentRealmName;
                 if (string.IsNullOrEmpty(realmName))
-                    return false;
+                    return null;
                 return !realmName.ToLowerInvariant().Contains(_wowManager.Settings.ServerName.ToLowerInvariant());
             }
         }
@@ -150,7 +151,7 @@ namespace HighVoltz.HBRelog.WoW.States
                 return;
             var changeRealmButton = UIObject.GetUIObjectByName<Button>(_wowManager, "CharSelectChangeRealmButton");
             var clickPos = _wowManager.ConvertWidgetCenterToWin32Coord(changeRealmButton);
-            Utility.LeftClickAtPos(_wowManager.GameProcess.MainWindowHandle, (int)clickPos.X, (int)clickPos.Y);
+            Utility.LeftClickAtPos(_wowManager.GameWindow, (int)clickPos.X, (int)clickPos.Y);
             _wowManager.Profile.Log("Changing server.");
             _realmChangeSw.Restart();
         }
@@ -169,7 +170,7 @@ namespace HighVoltz.HBRelog.WoW.States
 				return false;
 		    }
 			var clickPos = _wowManager.ConvertWidgetCenterToWin32Coord(playButton);
-			Utility.LeftClickAtPos(_wowManager.GameProcess.MainWindowHandle, (int)clickPos.X, (int)clickPos.Y);
+			Utility.LeftClickAtPos(_wowManager.GameWindow, (int)clickPos.X, (int)clickPos.Y);
             Thread.Sleep(4000);
 			return true;
 	    }

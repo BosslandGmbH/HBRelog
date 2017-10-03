@@ -52,8 +52,13 @@ namespace HighVoltz.HBRelog.Honorbuddy
         public CharacterProfile Profile
         {
             get { return _profile; }
-            private set { _profile = value; Settings = value.Settings.HonorbuddySettings; }
+            private set
+            {
+                _profile = value;
+                Settings = value.Settings.HonorbuddySettings;
+            }
         }
+
         public HonorbuddySettings Settings { get; private set; }
         public Process BotProcess { get; private set; }
 
@@ -61,8 +66,9 @@ namespace HighVoltz.HBRelog.Honorbuddy
 	    {
 		    get
 		    {
-                if (Profile.TaskManager.WowManager.GameProcess != null && !Profile.TaskManager.WowManager.GameProcess.HasExitedSafe())
+                if (Profile.TaskManager.WowManager.StartupSequenceIsComplete)
 					return false;
+
                 if (BotProcess == null || BotProcess.HasExitedSafe())
 					return false;
 			    if (_botExitTimer == null)
@@ -163,7 +169,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
             if (launchingHB)
             {
                 hbArgs = "/noupdate " +
-                    $"/pid={Profile.TaskManager.WowManager.GameProcess.Id} " +
+                    $"/pid={Profile.TaskManager.WowManager.GameProcessId} " +
                     "/autostart " +
                     $"{(!string.IsNullOrEmpty(Settings.HonorbuddyKey) ? $"/hbkey=\"{Settings.HonorbuddyKey}\" " : string.Empty)}" +
                     $"{(!string.IsNullOrEmpty(Settings.CustomClass) ? $"/customclass=\"{Settings.CustomClass}\" " : string.Empty)}" +
@@ -242,7 +248,8 @@ namespace HighVoltz.HBRelog.Honorbuddy
         internal static class HBStartupManager
         {
             private static readonly object LockObject = new object();
-            private static readonly Dictionary<string, DateTime> TimeStamps = new Dictionary<string, DateTime>();
+            private static readonly Dictionary<string, DateTime> TimeStamps =
+                new Dictionary<string, DateTime>();
 
             public static bool CanStart(string path)
             {

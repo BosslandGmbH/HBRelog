@@ -22,7 +22,6 @@ namespace GreyMagic
             if (IsProcessOpen)
             {
                 ThreadHandle = Imports.OpenThread(0x0001F03FF, false, (uint) proc.Threads[0].Id);
-                WindowHandle = Process.MainWindowHandle;
 	            Asm = new FasmNet();
             }
             else
@@ -41,12 +40,6 @@ namespace GreyMagic
         /// </summary>
         /// <remarks>Created 2012-04-23</remarks>
         public IntPtr ThreadHandle { get; private set; }
-
-        /// <summary>
-        /// Gets the window handle.
-        /// </summary>
-        /// <remarks>Created 2012-04-23</remarks>
-        public IntPtr WindowHandle { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether the main thread is open.

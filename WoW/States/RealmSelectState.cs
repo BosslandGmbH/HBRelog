@@ -34,7 +34,7 @@ namespace HighVoltz.HBRelog.WoW.States
 			get
 			{
                 return (_wowManager.GameProcess != null && !_wowManager.GameProcess.HasExitedSafe()) 
-					&& !_wowManager.StartupSequenceIsComplete && !_wowManager.InGame && !_wowManager.IsConnectiongOrLoading &&
+					&& !_wowManager.StartupSequenceIsComplete && !_wowManager.InGame && !_wowManager.IsConnectingOrLoading &&
 					   _wowManager.GlueScreen == GlueScreen.RealmList;
 			}
 		}
@@ -54,7 +54,7 @@ namespace HighVoltz.HBRelog.WoW.States
                 return;
 			}
 
-			if (_wowManager.IsConnectiongOrLoading || IsConnecting)
+			if (_wowManager.IsConnectingOrLoading || IsConnecting)
 				return;
 
 			if (!IsRealmListVisible)
@@ -249,7 +249,7 @@ namespace HighVoltz.HBRelog.WoW.States
 					}
 					clickPos = _wowManager.ConvertWidgetCenterToWin32Coord(wantedButton);
 					Utility.LeftClickAtPos(_wowManager.GameProcess.MainWindowHandle, (int)clickPos.X, (int)clickPos.Y, true, false);
-                    Utility.SleepUntil(() => _wowManager.IsConnectiongOrLoading, TimeSpan.FromMilliseconds(1000));
+                    Utility.SleepUntil(() => _wowManager.IsConnectingOrLoading, TimeSpan.FromMilliseconds(1000));
                     Thread.Sleep(2000);
 					return true;
 				}

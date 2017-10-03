@@ -53,8 +53,7 @@ namespace HighVoltz.HBRelog.Honorbuddy.States
                     return;
                 }
             }
-            var gameProc = _hbManager.Profile.TaskManager.WowManager.GameProcess;
-            if (gameProc == null || gameProc.HasExitedSafe())
+            if (!_hbManager.Profile.TaskManager.WowManager.StartupSequenceIsComplete)
             {
                 if (!_hbManager.WaitForBotToExit)
                     _hbManager.Stop();

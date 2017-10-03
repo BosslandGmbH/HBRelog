@@ -20,40 +20,32 @@ namespace HighVoltz.HBRelog.Tasks
 {
     public class IdleTask : BMTask
     {
-	    #region Overrides
+        #region Overrides
 
-	    [XmlIgnore]
-	    public override string Name
-	    {
-		    get { return "Idle"; }
-	    }
+        [XmlIgnore]
+        public override string Name { get { return "Idle"; } }
 
-	    [XmlIgnore]
-	    public override string Help
-	    {
-		    get { return "Logs out of Wow for a duration then logs back in"; }
-	    }
+        [XmlIgnore]
+        public override string Help { get { return "Logs out of Wow for a duration then logs back in"; } }
 
-	    private string _toolTip;
+        private string _toolTip;
 
-	    [XmlIgnore]
-	    public override string ToolTip
-	    {
-		    get
-		    {
-			    return _toolTip ?? (ToolTip = string.Format("Idle: {0} minutes", Minutes));
-		    }
-		    set
-		    {
-			    if (value != _toolTip)
-			    {
-				    _toolTip = value;
-				    OnPropertyChanged("ToolTip");
-			    }
-		    }
-	    }
+        [XmlIgnore]
+        public override string ToolTip
+        {
+            get { return _toolTip ?? (ToolTip = string.Format("Idle: {0} minutes", Minutes)); }
+            set
+            {
+                if (value != _toolTip)
+                {
+                    _toolTip = value;
+                    OnPropertyChanged("ToolTip");
+                }
+            }
+        }
 
-	    private TimeSpan _waitTime = new TimeSpan(0);
+
+        private TimeSpan _waitTime = new TimeSpan(0);
 	    private DateTime _timeStamp;
 
 	    public override void Pulse()
@@ -66,10 +58,9 @@ namespace HighVoltz.HBRelog.Tasks
 			    Profile.TaskManager.WowManager.Stop();
 			    Profile.TaskManager.HonorbuddyManager.Stop();
 		    }
-		    Profile.Status = string.Format(
-			    "Idling for {0} minutes",
-			    (int) ((_waitTime - (DateTime.Now - _timeStamp)).TotalMinutes));
-		    ToolTip = Profile.Status;
+            TimeSpan left = _waitTime - (DateTime.Now - _timeStamp);
+            Profile.Status = $"Idling for {(int)left.TotalMinutes} minutes {left.Seconds} seconds";
+            ToolTip = Profile.Status;
 		    if (DateTime.Now - _timeStamp >= _waitTime)
 		    {
 				Stop();
@@ -86,39 +77,45 @@ namespace HighVoltz.HBRelog.Tasks
 
 	    public override void Stop()
 	    {
-			// if next task is not a LogonTask then we log back in game on same character.
-			if (!(NextTask is LogonTask))
-				Profile.Start();
-			base.Stop();
+            // if next task is not a LogonTask then we log back in game on same character.
+            if (!(NextTask is LogonTask))
+            {
+                Profile.TaskManager.WowManager.SetSettings(Profile.Settings.WowSettings);
+                Profile.TaskManager.WowManager.Start();
+            }
+            base.Stop();
 	    }
 
-	    #endregion
+        #endregion
 
-		private int _minutes;
-		public int Minutes
-		{
-			get { return _minutes; }
-			set
-			{
-				if (value == _minutes) return;
-				_minutes = value;
-				// invalidate the tooltip.
-				_toolTip = null;
-			}
-		}
+        private double _minutes;
 
-		private int _randomMinutes;
-		public int RandomMinutes
-		{
-			get { return _randomMinutes; }
-			set
-			{
-				if (value == _randomMinutes) return;
-				_randomMinutes = value;
-				// invalidate the tooltip.
-				_toolTip = null;
-			}
-		}
+        public double Minutes
+        {
+            get { return _minutes; }
+            set
+            {
+                if (value == _minutes)
+                    return;
+                _minutes = value;
+                // invalidate the tooltip.
+                _toolTip = null;
+            }
+        }
 
+        private int _randomMinutes;
+
+        public int RandomMinutes
+        {
+            get { return _randomMinutes; }
+            set
+            {
+                if (value == _randomMinutes)
+                    return;
+                _randomMinutes = value;
+                // invalidate the tooltip.
+                _toolTip = null;
+            }
+        }
     }
 }

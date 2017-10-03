@@ -212,6 +212,7 @@ namespace HighVoltz.HBRelog.WoW.FrameXml
             switch (type)
             {
                 case UIObjectType.Button:
+                case UIObjectType.CheckButton:
                     return new Button(wowManager, address) { Type = type };
                 case UIObjectType.EditBox:
                     return new EditBox(wowManager, address) { Type = type };

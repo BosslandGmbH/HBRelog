@@ -1,4 +1,6 @@
 ﻿using HighVoltz.HBRelog.FiniteStateMachine;
+using System.Diagnostics;
+using System.Linq;
 
 namespace HighVoltz.HBRelog.WoW.States
 {
@@ -16,17 +18,23 @@ namespace HighVoltz.HBRelog.WoW.States
 			get { return 1000; }
 		}
 
-		public override bool NeedToRun
-		{
-			get
-			{
-				var hbManager = _wowManager.Profile.TaskManager.HonorbuddyManager;
-                return (_wowManager.GameProcess == null || _wowManager.GameProcess.HasExitedSafe()) &&
-                        !hbManager.WaitForBotToExit && (hbManager.BotProcess == null || hbManager.BotProcess.HasExitedSafe());
-			}
-		}
+        public override bool NeedToRun
+        {
+            get
+            {
+                var hbManager = _wowManager.Profile.TaskManager.HonorbuddyManager;
 
-		public override void Run()
+                // check if WoW has exited since it was started.
+                if (_wowManager.StartupSequenceIsComplete && _wowManager.GameProcessId > 0 && !ProcessExists(_wowManager.GameProcessId))
+                    return true;
+
+                return (_wowManager.GameProcess == null || _wowManager.GameProcess.HasExitedSafe()) &&
+                        !_wowManager.StartupSequenceIsComplete &&
+                        !hbManager.WaitForBotToExit && (hbManager.BotProcess == null || hbManager.BotProcess.HasExitedSafe());
+            }
+        }
+
+        public override void Run()
 		{
 			string reason = string.Empty;
 			if (_wowManager.LockToken == null || !_wowManager.LockToken.IsValid)
@@ -48,5 +56,10 @@ namespace HighVoltz.HBRelog.WoW.States
 			}
 		}
 
-	}
+        private bool ProcessExists(int id)
+        {
+            return Process.GetProcesses().Any(x => x.Id == id);
+        }
+
+    }
 }

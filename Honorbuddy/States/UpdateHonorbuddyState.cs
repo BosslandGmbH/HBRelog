@@ -53,7 +53,7 @@ namespace HighVoltz.HBRelog.Honorbuddy.States
         {
             get
             {
-                return _hbManager.IsRunning && (_hbManager.BotProcess == null || _hbManager.BotProcess.HasExitedSafe()) 
+                return _hbManager.IsRunning && (_hbManager.BotProcess == null || _hbManager.BotProcess.HasExitedSafe())
                     && HbRelogManager.Settings.AutoUpdateHB && DateTime.Now - _lastUpdateCheck >= TimeSpan.FromMinutes(30);
             }
         }
@@ -69,11 +69,11 @@ namespace HighVoltz.HBRelog.Honorbuddy.States
             }
 
             Log.Write("Checking for new  Honorbuddy update");
-            
+
             // get local honorbuddy file version.
             FileVersionInfo localFileVersionInfo = FileVersionInfo.GetVersionInfo(hbPath);
             // download the latest Honorbuddy version string from server
-            var client = new WebClient {Proxy = null};
+            var client = new WebClient { Proxy = null };
             string latestHbVersion = client.DownloadString(_hbManager.Profile.Settings.HonorbuddySettings.UseHBBeta ? HbBetaVersionUrl : HbVersionUrl);
             // check if local version is different from remote honorbuddy version.
             if (localFileVersionInfo.FileVersion != latestHbVersion)
@@ -82,7 +82,7 @@ namespace HighVoltz.HBRelog.Honorbuddy.States
                 var originalFileName = Path.GetFileName(_hbManager.Settings.HonorbuddyPath);
                 // close all instances of Honorbuddy
                 Log.Write("Closing all instances of Honorbuddy");
-                var psi = new ProcessStartInfo("taskKill", "/IM " + originalFileName) {WindowStyle = ProcessWindowStyle.Hidden};
+                var psi = new ProcessStartInfo("taskKill", "/IM " + originalFileName) { WindowStyle = ProcessWindowStyle.Hidden };
 
                 Process.Start(psi);
                 // download the new honorbuddy zip

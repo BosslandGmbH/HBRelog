@@ -28,7 +28,7 @@ namespace HighVoltz.HBRelog.WoW.States
                 return (_wowManager.GameProcess != null && !_wowManager.GameProcess.HasExitedSafe()) 
 						&& !_wowManager.StartupSequenceIsComplete 
 						&& !_wowManager.InGame 
-						&& !_wowManager.IsConnectiongOrLoading 
+						&& !_wowManager.IsConnectingOrLoading 
 						&& !_wowManager.ProcessIsReadyForInput;
 			}
         }
@@ -46,7 +46,7 @@ namespace HighVoltz.HBRelog.WoW.States
                     _wowManager.Settings.WowWindowHeight);
 
                 Utility.ResizeAndMoveWindow(
-                    _wowManager.GameProcess.MainWindowHandle,
+                    _wowManager.GameWindow,
                     _wowManager.Settings.WowWindowX,
                     _wowManager.Settings.WowWindowY,
                     _wowManager.Settings.WowWindowWidth,

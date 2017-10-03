@@ -17,7 +17,11 @@ namespace HighVoltz.Launcher
 		[DllImport("kernel32.dll")]
 		static extern int ResumeThread(IntPtr hThread);
 
-		[DllImport("kernel32.dll", SetLastError = true)]
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool CloseHandle(IntPtr hObject);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
 		static extern bool CreateProcess(string lpApplicationName,
 		   string lpCommandLine, ref SECURITY_ATTRIBUTES lpProcessAttributes,
 		   ref SECURITY_ATTRIBUTES lpThreadAttributes, bool bInheritHandles,
@@ -62,13 +66,13 @@ namespace HighVoltz.Launcher
 				IntPtr pOpenThread = OpenThread(ThreadAccess.SUSPEND_RESUME, false, (uint)pT.Id);
 
 				if (pOpenThread == IntPtr.Zero)
-				{
 					break;
-				}
 
 				SuspendThread(pOpenThread);
-			}
-		}
+                CloseHandle(pOpenThread);
+            }
+            proc.Dispose();
+        }
 
 		public static void ResumeProcess(int pid)
 		{
@@ -82,13 +86,14 @@ namespace HighVoltz.Launcher
 				IntPtr pOpenThread = OpenThread(ThreadAccess.SUSPEND_RESUME, false, (uint)pT.Id);
 
 				if (pOpenThread == IntPtr.Zero)
-				{
 					break;
-				}
 
 				ResumeThread(pOpenThread);
-			}
-		}
+                CloseHandle(pOpenThread);
+            }
+
+            proc.Dispose();
+        }
 
 		[Flags]
 		public enum ThreadAccess : int

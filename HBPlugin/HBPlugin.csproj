@@ -75,6 +75,7 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="GreyMagic, Version=3.0.15964.846, Culture=neutral, PublicKeyToken=260525fa2b0e778a" />
     <Reference Include="Honorbuddy">
       <HintPath>..\Dependencies\Honorbuddy.exe</HintPath>
     </Reference>
@@ -84,6 +85,7 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Runtime.Remoting" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Windows.Presentation" />
     <Reference Include="System.Xaml" />

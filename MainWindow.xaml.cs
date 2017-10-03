@@ -314,16 +314,6 @@ namespace HighVoltz.HBRelog
             hbManager.CloseBotProcess();
         }
 
-        private void MaximizeWowMenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            var wowManager = ((CharacterProfile)((MenuItem)sender).Tag).TaskManager.WowManager;
-            if (wowManager.IsRunning && !wowManager.GameProcess.HasExitedSafe())
-            {
-                NativeMethods.ShowWindow(wowManager.GameProcess.MainWindowHandle, NativeMethods.ShowWindowCommands.Maximize);
-                NativeMethods.SetForegroundWindow(wowManager.GameProcess.MainWindowHandle);
-            }
-        }
-
         private void DataGridRowContextMenuOpening(object sender, ContextMenuEventArgs e)
         {
             var row = (DataGridRow)sender;
@@ -339,16 +329,9 @@ namespace HighVoltz.HBRelog
             else
                 skipTaskMenuItem.Visibility = Visibility.Collapsed;
 
-            //only show the 'Maximize Wow' task menu item if wow is running.
-            var maximizeWowMenuItem = (MenuItem)row.ContextMenu.Items[1];
-            if (wowManager.IsRunning && wowManager.GameProcess != null && !wowManager.GameProcess.HasExitedSafe())
-                maximizeWowMenuItem.Visibility = Visibility.Visible;
-            else
-                maximizeWowMenuItem.Visibility = Visibility.Collapsed;
-
             //only show the 'Bring HB to Foreground' task menu item if hb is running.
-            var bringHbToForegroundTaskMenuItem = (MenuItem)row.ContextMenu.Items[2];
-            var killHBMenu = (MenuItem)row.ContextMenu.Items[3];
+            var bringHbToForegroundTaskMenuItem = (MenuItem)row.ContextMenu.Items[1];
+            var killHBMenu = (MenuItem)row.ContextMenu.Items[2];
 
             if (hbManager.IsRunning && hbManager.BotProcess != null && !hbManager.BotProcess.HasExitedSafe())
             {

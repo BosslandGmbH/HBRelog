@@ -32,7 +32,7 @@ namespace HighVoltz.HBRelog.WoW
 				new RealmSelectState(this),
 				new CharacterSelectState(this),
 				new CharacterCreationState(this),
-				new MonitorState(this)
+                new MonitorState(this),
 			};
 		}
 
@@ -47,9 +47,6 @@ namespace HighVoltz.HBRelog.WoW
 		internal bool ProcessIsReadyForInput;
 		private CharacterProfile _profile;
 
-		private int _windowCloseAttempt;
-		private Timer _wowCloseTimer;
-
 		internal const int LuaStateGlobalsOffset = 0x50;
 
 		#endregion
@@ -58,11 +55,17 @@ namespace HighVoltz.HBRelog.WoW
 
 		public WowSettings Settings { get; private set; }
 
-		public ExternalProcessReader Memory { get; internal set; }
+        public ExternalProcessReader Memory { get; internal set; }
 
-		public Process GameProcess { get; internal set; }
+        public IntPtr GameWindow { get; internal set; }
 
-		public LuaTable Globals
+        public Process GameProcess => Memory?.Process;
+
+        public int GameProcessId { get; internal set; }
+
+        public string GameProcessName { get; internal set; }
+
+        public LuaTable Globals
 		{
 			get
 			{
@@ -89,7 +92,26 @@ namespace HighVoltz.HBRelog.WoW
 			}
 		}
 
-		public WowLockToken LockToken { get; internal set; }
+        public LuaTValue GetLuaObject(string luaAccessorCode)
+        {
+            LuaTable curTable = Globals;
+            string[] split = luaAccessorCode.Split('.');
+            for (int i = 0; i < split.Length - 1; i++)
+            {
+                if (curTable == null)
+                    return null;
+
+                LuaTValue val = curTable.GetValue(split[i]);
+                if (val == null || val.Type != LuaType.Table)
+                    return null;
+
+                curTable = val.Table;
+            }
+
+            return curTable.GetValue(split.Last());
+        }
+
+        public WowLockToken LockToken { get; internal set; }
 
 		public IntPtr FocusedWidgetPtr
 			=> Memory?.Read<IntPtr>((IntPtr) HbRelogManager.Settings.FocusedWidgetOffset, true) ?? IntPtr.Zero;
@@ -104,13 +126,13 @@ namespace HighVoltz.HBRelog.WoW
 		}
 
 		/// <summary>WoW is at the connecting or loading screen</summary>
-		public bool IsConnectiongOrLoading
+		public bool IsConnectingOrLoading
 		{
 			get
 			{
 				try
 				{
-					return Memory != null && Memory.Read<byte>(true, ((IntPtr) HbRelogManager.Settings.GameStateOffset + 1)) == 1;
+					return Memory != null && (Memory.Read<byte>(true, ((IntPtr) HbRelogManager.Settings.GameStateOffset)) & 1) != 0;
 				}
 				catch
 				{
@@ -162,24 +184,6 @@ namespace HighVoltz.HBRelog.WoW
 
 				return GlueScreen.None;
 			}
-		}
-		public LuaTValue GetLuaObject(string luaAccessorCode)
-		{
-			LuaTable curTable = Globals;
-			string[] split = luaAccessorCode.Split('.');
-			for (int i = 0; i < split.Length - 1; i++)
-			{
-				if (curTable == null)
-					return null;
-
-				LuaTValue val = curTable.GetValue(split[i]);
-				if (val == null || val.Type != LuaType.Table)
-					return null;
-
-				curTable = val.Table;
-			}
-
-			return curTable.GetValue(split.Last());
 		}
 
 		internal bool IsUsingLauncher
@@ -243,28 +247,29 @@ namespace HighVoltz.HBRelog.WoW
 			}
 		}
 
-		public bool ServerHasQueue
-		{
-			get
-			{
-				try
-				{
-					if (InGame)
-						return false;
-					var button = UIObject.GetUIObjectByName<Button>(this, "GlueDialogButton1");
-					if (button != null && button.IsVisible)
-					{
-						var localizedChangeRealmText = Globals.GetValue("CHANGE_REALM");
-						return localizedChangeRealmText != null && button.Text == localizedChangeRealmText.String.Value;
-					}
-					return false;
-				}
-				catch (Exception)
-				{
-					return false;
-				}
-			}
-		}
+        public bool ServerHasQueue
+        {
+            get
+            {
+                try
+                {
+                    if (InGame)
+                        return false;
+                    var button = UIObject.GetUIObjectByName<Button>(this, "GlueDialogButton1");
+                    if (button != null && button.IsVisible)
+                    {
+                        var localizedChangeRealmText = GetLuaObject("CHANGE_REALM");
+                        return localizedChangeRealmText != null &&
+                               button.Text == localizedChangeRealmText.String.Value;
+                    }
+                    return false;
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+            }
+        }
 
         private Regex _bnetLoginQueueTimeLeftSecondsRegEx;
         private Regex _bnetLoginQueueTimeLeftUnknownRegEx;
@@ -340,13 +345,13 @@ namespace HighVoltz.HBRelog.WoW
 				try
 				{
 					if (Memory == null)
-						return false;
+						return StartupSequenceIsComplete;
 
 					var state = Memory.Read<byte>(true, (IntPtr) HbRelogManager.Settings.GameStateOffset);
 					var loadingScreenCount = Memory.Read<int>(
 						true,
 						(IntPtr) HbRelogManager.Settings.LoadingScreenEnableCountOffset);
-					return state == 2 && loadingScreenCount == 0;
+					return (state & 2) != 0 && loadingScreenCount == 0;
 				}
 				catch
 				{
@@ -356,7 +361,9 @@ namespace HighVoltz.HBRelog.WoW
 		}
 
 		public bool StartupSequenceIsComplete { get; internal set; }
-		public event EventHandler<ProfileEventArgs> OnStartupSequenceIsComplete;
+
+
+        public event EventHandler<ProfileEventArgs> OnStartupSequenceIsComplete;
 
 		public void Start()
 		{
@@ -377,21 +384,27 @@ namespace HighVoltz.HBRelog.WoW
 			var lockAquried = Monitor.TryEnter(_lockObject, 500);
 			if (IsRunning)
 			{
-				Memory = null;
-				CloseGameProcess();
-				IsRunning = false;
+                CloseGameProcess();
+                if (Memory != null)
+                {
+                    Memory.Dispose();
+                    Memory = null;
+                }
+                IsRunning = false;
 				StartupSequenceIsComplete = false;
 				if (LockToken != null)
 				{
 					LockToken.Dispose();
 					LockToken = null;
 				}
-			}
-			if (lockAquried)
+            }
+            if (lockAquried)
 				Monitor.Exit(_lockObject);
-		}
 
-		public override void Pulse()
+            Profile.Status = "Stopped";
+        }
+
+        public override void Pulse()
 		{
 			lock (_lockObject)
 			{
@@ -408,71 +421,20 @@ namespace HighVoltz.HBRelog.WoW
 			StartupSequenceIsComplete = true;
 			Profile.Log("Login sequence complete");
 			Profile.Status = "Logged into WoW";
-			if (OnStartupSequenceIsComplete != null)
-				OnStartupSequenceIsComplete(this, new ProfileEventArgs(Profile));
-		}
+            OnStartupSequenceIsComplete?.Invoke(this, new ProfileEventArgs(Profile));
+        }
 
 		public void CloseGameProcess()
 		{
-            if (GameProcess == null)
+            if (GameProcessId <= 0)
                 return;
-			try
-			{
-				CloseGameProcess(GameProcess);
-			}
-				// handle the "No process is associated with this object' exception while wow process is still 'active'
-			catch (InvalidOperationException ex)
-			{
-				Log.Err(ex.ToString());
-				if (Memory != null)
-					CloseGameProcess(Process.GetProcessById(Memory.Process.Id));
-			}
-			//Profile.TaskManager.HonorbuddyManager.CloseBotProcess();
-			GameProcess = null;
-		}
 
-		private void CloseGameProcess(Process proc)
-		{
-			if (!_isExiting && proc != null && !proc.HasExitedSafe())
-			{
-				_isExiting = true;
-				Profile.Log("Attempting to close Wow");
-				proc.CloseMainWindow();
-				_windowCloseAttempt++;
-				_wowCloseTimer = new Timer(
-					state =>
-					{
-						if (!((Process) state).HasExitedSafe())
-						{
-							if (_windowCloseAttempt++ < 6)
-							{
-								proc.CloseMainWindow();
-							}
-							else
-							{
-								try
-								{
-									Profile.Log("Killing Wow");
-									((Process) state).Kill();
-								}
-								catch
-								{
-								}
-							}
-						}
-						else
-						{
-							_isExiting = false;
-							Profile.Log("Successfully closed Wow");
-							_wowCloseTimer.Dispose();
-							_windowCloseAttempt = 0;
-						}
-					},
-					proc,
-					1000,
-					1000);
-			}
-		}
+            var procInfo = new ProcessStartInfo("taskkill", $"/F /PID {GameProcessId}") { CreateNoWindow = true, UseShellExecute  = false};
+            Process.Start(procInfo);
+            Profile.Log("Killing Wow");
+            GameProcessId = 0;
+            StartupSequenceIsComplete = false;
+        }
 
 		internal PointF ConvertWidgetCenterToWin32Coord(Region widget)
 		{
@@ -483,7 +445,7 @@ namespace HighVoltz.HBRelog.WoW
 				return ret;
 			var gameFullScreenFrameRect = gameFullScreenFrame.Rect;
 			var widgetCenter = widget.Center;
-			var windowInfo = Utility.GetWindowInfo(GameProcess.MainWindowHandle);
+			var windowInfo = Utility.GetWindowInfo(GameWindow);
 			var leftBorderWidth = windowInfo.rcClient.Left - windowInfo.rcWindow.Left;
 			var bottomBorderWidth = windowInfo.rcWindow.Bottom - windowInfo.rcClient.Bottom;
 			var winClientWidth = windowInfo.rcClient.Right - windowInfo.rcClient.Left;
@@ -503,12 +465,25 @@ namespace HighVoltz.HBRelog.WoW
 			return ret;
 		}
 
-		#endregion
+        public bool WaitForMessageHandler(int timeout)
+        {
+            IntPtr handle = GameWindow;
+            UIntPtr result;
+            IntPtr response = NativeMethods.SendMessageTimeout(handle, (uint)NativeMethods.Message.WM_NULL,
+                                                               IntPtr.Zero,
+                                                               UIntPtr.Zero,
+                                                               NativeMethods.SendMessageTimeoutFlags
+                                                                            .SMTO_ABORTIFHUNG,
+                                                               (uint)timeout, out result);
 
-		#region Embeded Types
+            return response != IntPtr.Zero;
+        }
+        #endregion
 
-		#endregion
-	}
+        #region Embeded Types
+
+        #endregion
+    }
 
 	// incomplete. missing Server Queue (if there is one).
 	public enum GlueScreen

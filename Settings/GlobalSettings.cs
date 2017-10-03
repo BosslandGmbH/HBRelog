@@ -27,6 +27,7 @@ using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 using HighVoltz.HBRelog.Tasks;
+using System.Globalization;
 
 namespace HighVoltz.HBRelog.Settings
 {
@@ -478,7 +479,7 @@ namespace HighVoltz.HBRelog.Settings
                                         // if property is an enum then use Enum.Parse.. otherwise use Convert.ChangeValue
                                         object val = typeof(Enum).IsAssignableFrom(propertyDict[propKey].PropertyType)
                                                          ? Enum.Parse(propertyDict[propKey].PropertyType, attr.Value)
-                                                         : Convert.ChangeType(attr.Value, propertyDict[propKey].PropertyType);
+                                                         : Convert.ChangeType(attr.Value, propertyDict[propKey].PropertyType, CultureInfo.InvariantCulture);
                                         propertyDict[propKey].SetValue(task, val, null);
                                     }
                                     else

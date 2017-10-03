@@ -65,15 +65,10 @@ namespace HighVoltz.HBRelog.Tasks
 			    _timeStamp = DateTime.Now;
 		    }
 
-		    BMTask nextTask = NextTask;
-		    if (nextTask != null)
-			    ToolTip = string.Format(
-				    "Running {0} task in {1} minutes",
-				    nextTask,
-				    (int) ((_waitTime - (DateTime.Now - _timeStamp)).TotalMinutes));
+            TimeSpan left = _waitTime - (DateTime.Now - _timeStamp);
+            ToolTip = $"Waiting {(int)left.TotalMinutes} minutes {left.Seconds} seconds";
 
-
-		    if (DateTime.Now - _timeStamp >= _waitTime)
+            if (DateTime.Now - _timeStamp >= _waitTime)
 		    {
 			    IsDone = true;
 			    Profile.Log("Wait complete");
@@ -87,22 +82,22 @@ namespace HighVoltz.HBRelog.Tasks
 		    _waitTime = new TimeSpan(0);
 	    }
 
-	    #endregion
+        #endregion
 
-	    private int _minutes;
-	    public int Minutes
-	    {
-		    get { return _minutes; }
-		    set
-		    {
-			    if (value == _minutes) return;
-			    _minutes = value;
-				// invalidate the tooltip.
-			    _toolTip = null;
-		    }
-	    }
+        private double _minutes;
+        public double Minutes
+        {
+            get { return _minutes; }
+            set
+            {
+                if (value == _minutes) return;
+                _minutes = value;
+                // invalidate the tooltip.
+                _toolTip = null;
+            }
+        }
 
-	    private int _randomMinutes;
+        private int _randomMinutes;
 		public int RandomMinutes
 		{
 			get { return _randomMinutes; }

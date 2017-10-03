@@ -90,7 +90,7 @@
                                                        DefaultExt=".exe" Filter=".exe|*.exe"
                                                        ToolTip="The path to Wow.exe. click the '...' button on the right to browse to it. This can also be a batch file that launches WoW.exe"/>
 
-                            <!--Server Name-->
+                            <!--WoW Args-->
                             <TextBlock Text="WoW Args" Grid.Row="10" HorizontalAlignment="Left" Height="20" Margin="5,0,0,1" />
                             <TextBox x:Name="WoWParms" Grid.Column="2" Grid.Row="10" Text="{Binding Path=WowSettings.WowArgs}"
                                      ToolTip="Command-line arguments to pass to WoW or launcher (Advanced)"/>

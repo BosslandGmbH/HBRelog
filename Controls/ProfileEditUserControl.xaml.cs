@@ -137,7 +137,7 @@ namespace HighVoltz.HBRelog.Controls
                 CharacterProfile profile = (CharacterProfile)MainWindow.Instance.AccountGrid.SelectedItem;
                 if (profile.TaskManager.WowManager.Memory != null)
                 {
-                    var Rect = Utility.GetWindowRect(profile.TaskManager.WowManager.GameProcess.MainWindowHandle);
+                    var Rect = Utility.GetWindowRect(profile.TaskManager.WowManager.GameWindow);
                     profile.Settings.WowSettings.WowWindowX = Rect.Left;
                     profile.Settings.WowSettings.WowWindowY = Rect.Top;
                     profile.Settings.WowSettings.WowWindowWidth = Rect.Right - Rect.Left;
@@ -228,13 +228,13 @@ namespace HighVoltz.HBRelog.Controls
                 CharacterProfile profile = (CharacterProfile)MainWindow.Instance.AccountGrid.SelectedItem;
                 if (profile.TaskManager.WowManager.Memory != null)
                 {
-                    var screen = Screen.FromHandle(profile.TaskManager.WowManager.GameProcess.MainWindowHandle);
+                    var screen = Screen.FromHandle(profile.TaskManager.WowManager.GameWindow);
                     try
                     {
                         int denominator = int.Parse(WowWindowRatioText.Text);
                         profile.Settings.WowSettings.WowWindowWidth = screen.Bounds.Width / denominator;
                         profile.Settings.WowSettings.WowWindowHeight = screen.Bounds.Height / denominator;
-                        Utility.ResizeAndMoveWindow(profile.TaskManager.WowManager.GameProcess.MainWindowHandle, profile.Settings.WowSettings.WowWindowX,
+                        Utility.ResizeAndMoveWindow(profile.TaskManager.WowManager.GameWindow, profile.Settings.WowSettings.WowWindowX,
                             profile.Settings.WowSettings.WowWindowY, profile.Settings.WowSettings.WowWindowWidth, profile.Settings.WowSettings.WowWindowHeight);
                     }
                     catch { }

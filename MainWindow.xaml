@@ -174,13 +174,6 @@
                                         </Style>
                                     </MenuItem.Style>
                                 </MenuItem>
-                                <MenuItem  x:Name="MaximizeWowMenu" Header="Maximize Wow"  Tag="{Binding}">
-                                    <MenuItem.Style>
-                                        <Style TargetType="{x:Type MenuItem}" BasedOn="{StaticResource  {x:Type MenuItem}}">
-                                            <EventSetter Event="Click" Handler="MaximizeWowMenuItem_Click" />
-                                        </Style>
-                                    </MenuItem.Style>
-                                </MenuItem>
                                 <MenuItem  x:Name="BringHbToForegroundMenu" Header="Bring HB To Foreground"  Tag="{Binding}">
                                     <MenuItem.Style>
                                         <Style TargetType="{x:Type MenuItem}" BasedOn="{StaticResource  {x:Type MenuItem}}">

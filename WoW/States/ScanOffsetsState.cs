@@ -26,13 +26,15 @@ namespace HighVoltz.HBRelog.WoW.States
             get
             {
                 return (_wowManager.GameProcess != null && !_wowManager.GameProcess.HasExitedSafe())
-					&& !_wowManager.StartupSequenceIsComplete && _wowManager.Memory != null &&
+                       && !_wowManager.StartupSequenceIsComplete && _wowManager.Memory != null &&
                        (string.IsNullOrEmpty(HbRelogManager.Settings.WowVersion)
-                       || !HbRelogManager.Settings.WowVersion.Equals(_wowManager.GameProcess.VersionString())
-                       || HbRelogManager.Settings.GameStateOffset == 0
-                       || HbRelogManager.Settings.FocusedWidgetOffset == 0
-					   || HbRelogManager.Settings.LuaStateOffset == 0
-					   || HbRelogManager.Settings.LoadingScreenEnableCountOffset == 0);
+                        ||
+                        !HbRelogManager.Settings.WowVersion.Equals(
+                            _wowManager.GameProcess.VersionString())
+                        || HbRelogManager.Settings.GameStateOffset == 0
+                        || HbRelogManager.Settings.FocusedWidgetOffset == 0
+                        || HbRelogManager.Settings.LuaStateOffset == 0
+                        || HbRelogManager.Settings.LoadingScreenEnableCountOffset == 0);
             }
         }
 
@@ -48,8 +50,8 @@ namespace HighVoltz.HBRelog.WoW.States
             HbRelogManager.Settings.FocusedWidgetOffset = (uint)WowPatterns.FocusedWidgetPattern.Find(_wowManager.Memory);
             Log.Debug("FocusedWidget Offset found at 0x{0:X}", HbRelogManager.Settings.FocusedWidgetOffset);
 
-			HbRelogManager.Settings.LoadingScreenEnableCountOffset = (uint)WowPatterns.LoadingScreenEnableCountPattern.Find(_wowManager.Memory);
-			Log.Debug("LoadingScreenEnableCountOffset Offset found at 0x{0:X}", HbRelogManager.Settings.LoadingScreenEnableCountOffset);
+            HbRelogManager.Settings.LoadingScreenEnableCountOffset = (uint)WowPatterns.LoadingScreenEnableCountPattern.Find(_wowManager.Memory);
+            Log.Debug("LoadingScreenEnableCountOffset Offset found at 0x{0:X}", HbRelogManager.Settings.LoadingScreenEnableCountOffset);
 
             HbRelogManager.Settings.WowVersion = versionString;
             HbRelogManager.Settings.Save();

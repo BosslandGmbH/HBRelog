@@ -28,7 +28,7 @@ namespace HighVoltz.HBRelog.WoW.States
 	        {
                 return (_wowManager.GameProcess != null && !_wowManager.GameProcess.HasExitedSafe()) 
 					&& !_wowManager.StartupSequenceIsComplete && !_wowManager.InGame 
-					&& !_wowManager.IsConnectiongOrLoading 
+					&& !_wowManager.IsConnectingOrLoading 
 					&& _wowManager.GlueScreen == GlueScreen.CharCreate;
 	        }
         }
@@ -38,7 +38,7 @@ namespace HighVoltz.HBRelog.WoW.States
             var characterCreateFrame = UIObject.GetUIObjectByName<Frame>(_wowManager, "CharacterCreateFrame");
             if (characterCreateFrame != null && characterCreateFrame.IsVisible)
             {
-                Utility.SendBackgroundKey(_wowManager.GameProcess.MainWindowHandle, (char) Keys.Escape, false);
+                Utility.SendBackgroundKey(_wowManager.GameWindow, (char) Keys.Escape, false);
                 _wowManager.Profile.Log("Pressing 'esc' key to exit character creation screen");
             }
         }

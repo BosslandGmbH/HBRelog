@@ -16,6 +16,7 @@ using System.Windows.Shapes;
 using System.Xml.Serialization;
 using HighVoltz.HBRelog.Converters;
 using HighVoltz.HBRelog.Tasks;
+using System.Globalization;
 
 namespace HighVoltz.HBRelog.Controls
 {
@@ -43,7 +44,7 @@ namespace HighVoltz.HBRelog.Controls
             BMTask task = (BMTask)source;
 
             List<PropertyInfo> propertyList = task.GetType().GetProperties().
-                Where(pi => pi.GetCustomAttributesData().All(cad => cad.Constructor.DeclaringType != typeof(XmlIgnoreAttribute))).ToList();
+                Where(pi => pi.GetCustomAttributesData().All(cad => cad.AttributeType != typeof(XmlIgnoreAttribute))).ToList();
             PropertyGrid.Children.Clear();
             PropertyGrid.RowDefinitions.Clear();
             for (int index = 0; index < propertyList.Count; index++)
@@ -128,7 +129,7 @@ namespace HighVoltz.HBRelog.Controls
                 string str = ((TextBox)sender).Text;
                 try
                 {
-                    object val = Convert.ChangeType(str, pi.PropertyType);
+                    object val = Convert.ChangeType(str, pi.PropertyType, CultureInfo.InvariantCulture);
                     pi.SetValue(task, val, null);
                 } // in case the type conversion fails fall back to default value.
                 catch (FormatException)

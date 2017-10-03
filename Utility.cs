@@ -25,6 +25,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace HighVoltz.HBRelog
 {
@@ -60,7 +61,9 @@ namespace HighVoltz.HBRelog
         public static void ResizeAndMoveWindow(IntPtr hWnd, int x, int y, int width, int height)
         {
             NativeMethods.SetWindowPos(hWnd, new IntPtr(0), x, y, width, height,
-                NativeMethods.SetWindowPosFlags.SWP_NOZORDER | NativeMethods.SetWindowPosFlags.SWP_NOACTIVATE);
+                                       NativeMethods.SetWindowPosFlags.SWP_NOZORDER |
+                                       NativeMethods.SetWindowPosFlags.SWP_NOACTIVATE |
+                                       NativeMethods.SetWindowPosFlags.SWP_ASYNCWINDOWPOS);
         }
 
         public static NativeMethods.Rect GetWindowRect(IntPtr hWnd)
@@ -89,11 +92,17 @@ namespace HighVoltz.HBRelog
             var processes = Process.GetProcessesByName(processName);
             var result =  processes.FirstOrDefault(process => IsChildProcessOf(parentPid, process));
 
-	        if (result != null)
-		        return result;
+            // Do proper cleanup
+            foreach (var proc in processes.Where(p => p != result))
+                proc.Dispose();
 
-			// search for a process whose exe was renamed. 
-	        return (from proc in Process.GetProcesses()
+            if (result != null)
+                return result;
+
+            processes = Process.GetProcesses();
+
+            // search for a process whose exe was renamed. 
+            result = (from proc in processes
 		        let procPath = GetProcessPath(proc)
 		        where !string.IsNullOrEmpty(procPath) && File.Exists(procPath)
 		        let exeOriginalNameWithExtention = FileVersionInfo.GetVersionInfo(procPath).OriginalFilename
@@ -101,6 +110,12 @@ namespace HighVoltz.HBRelog
 				let exeOriginalName = Path.GetFileNameWithoutExtension(exeOriginalNameWithExtention)
 				where exeOriginalName != null && exeOriginalName.Equals(processName, StringComparison.OrdinalIgnoreCase) && IsChildProcessOf(parentPid, proc)
 					select proc).FirstOrDefault();
+
+            // Do proper cleanup
+            foreach (var proc in processes.Where(p => p != result))
+                proc.Dispose();
+
+            return result;
         }
 
 	    private static string GetProcessPath(Process proc)
@@ -228,6 +243,33 @@ namespace HighVoltz.HBRelog
                    SendMessage(hWnd, NativeMethods.Message.KEY_UP, key, lParam);
         }
 
+        public static bool KeyDown(IntPtr hWnd, Keys key)
+        {
+            var scanCode = NativeMethods.MapVirtualKey((uint)key, 0);
+            var lParam = (UIntPtr)(0x00000001 | (scanCode << 16));
+            return SendMessage(hWnd, NativeMethods.Message.KEY_DOWN, (char)key, lParam);
+        }
+
+        public static bool KeyUp(IntPtr hWnd, Keys key)
+        {
+            var scanCode = NativeMethods.MapVirtualKey((uint)key, 0);
+            var lParam = (UIntPtr)(0x00000001 | (scanCode << 16));
+            return SendMessage(hWnd, NativeMethods.Message.KEY_UP, (char)key, lParam);
+        }
+
+
+        public static bool PressKey(IntPtr hWnd, Keys key, TimeSpan downTime)
+        {
+            if (!KeyDown(hWnd, key))
+                return false;
+
+            Thread.Sleep(downTime);
+            if (!KeyUp(hWnd, key))
+                return false;
+
+            return true;
+        }
+
         public static void SendBackgroundString(IntPtr hWnd, string str, bool downUp = true)
         {
             foreach (var chr in str)
@@ -264,7 +306,9 @@ namespace HighVoltz.HBRelog
         {
             for (var cnt = 0; cnt < 4; cnt++)
             {
-                if (NativeMethods.SendMessage(hWnd, (uint) msg, (IntPtr) key, lParam) != IntPtr.Zero)
+                UIntPtr result;
+                if (NativeMethods.SendMessageTimeout(hWnd, (uint)msg, (IntPtr)key, lParam, NativeMethods.SendMessageTimeoutFlags.SMTO_ABORTIFHUNG, 5000, out result) == IntPtr.Zero
+                    || result != UIntPtr.Zero)
                     continue;
                 return true;
             }
@@ -304,21 +348,36 @@ namespace HighVoltz.HBRelog
             return true;
         }
 
+        public static bool RightClickAtPos(IntPtr hwnd, int x, int y)
+        {
+            return ClickAtPos(hwnd, x, y, false);
+        }
+
         public static bool LeftClickAtPos(
-            IntPtr hWnd, int x, int y, bool doubleClick = false, bool restore = true, Func<bool> restoreCondition = null, CharacterProfile profile = null)
+            IntPtr hWnd, int x, int y, bool doubleClick = false, bool restore = true,
+            Func<bool> restoreCondition = null, CharacterProfile profile = null)
+        {
+            return ClickAtPos(hWnd, x, y, true, doubleClick, restore, restoreCondition, profile);
+        }
+
+        private static bool ClickAtPos(
+            IntPtr hWnd, int x, int y, bool left, bool doubleClick = false, bool restore = true,
+            Func<bool> restoreCondition = null, CharacterProfile profile = null)
         {
             var wndBounds = GetWindowRect(hWnd);
             double fScreenWidth = NativeMethods.GetSystemMetrics(NativeMethods.SystemMetric.SM_CXSCREEN) - 1;
             double fScreenHeight = NativeMethods.GetSystemMetrics(NativeMethods.SystemMetric.SM_CYSCREEN) - 1;
-            var fx = (wndBounds.Left + x)*(65535.0f/fScreenWidth);
-            var fy = (wndBounds.Top + y)*(65535.0f/fScreenHeight);
+            var fx = (wndBounds.Left + x) * (65535.0f / fScreenWidth);
+            var fy = (wndBounds.Top + y) * (65535.0f / fScreenHeight);
 
-            var structInput = new NativeMethods.Input {type = NativeMethods.SendInputEventType.InputMouse};
-            structInput.mkhi.mi.dwFlags = NativeMethods.MouseEventFlags.ABSOLUTE | NativeMethods.MouseEventFlags.MOVE;
+            var structInput = new NativeMethods.Input { type = NativeMethods.SendInputEventType.InputMouse };
+            structInput.mkhi.mi.dwFlags = NativeMethods.MouseEventFlags.ABSOLUTE |
+                                          NativeMethods.MouseEventFlags.MOVE;
 
-            structInput.mkhi.mi.dx = (int) fx;
-            structInput.mkhi.mi.dy = (int) fy;
+            structInput.mkhi.mi.dx = (int)fx;
+            structInput.mkhi.mi.dy = (int)fy;
 
+            var forefroundWindow = NativeMethods.GetForegroundWindow();
 
             if (restore)
                 SaveForegroundWindowAndMouse();
@@ -336,15 +395,19 @@ namespace HighVoltz.HBRelog
                 NativeMethods.SendInput(1, ref structInput, SizeOfInput);
                 Thread.Sleep(80);
 
-                structInput.mkhi.mi.dwFlags = NativeMethods.MouseEventFlags.LEFTDOWN
-                    | NativeMethods.MouseEventFlags.LEFTUP;
+                if (left)
+                    structInput.mkhi.mi.dwFlags = NativeMethods.MouseEventFlags.LEFTDOWN |
+                                                   NativeMethods.MouseEventFlags.LEFTUP;
+                else
+                    structInput.mkhi.mi.dwFlags = NativeMethods.MouseEventFlags.RIGHTDOWN |
+                                                   NativeMethods.MouseEventFlags.RIGHTUP;
 
                 NativeMethods.SendInput(1, ref structInput, SizeOfInput);
-                SleepOfMouseInputReaction();
+                SleepForMouseInputReaction();
                 if (doubleClick)
                 {
                     NativeMethods.SendInput(1, ref structInput, SizeOfInput);
-                    SleepOfMouseInputReaction();
+                    SleepForMouseInputReaction();
                 }
             }
             finally
@@ -373,7 +436,7 @@ namespace HighVoltz.HBRelog
             return true;
         }
 
-        private static void SleepOfMouseInputReaction()
+        private static void SleepForMouseInputReaction()
         {
             Thread.Sleep(Rand.Next(100, 150));
         }

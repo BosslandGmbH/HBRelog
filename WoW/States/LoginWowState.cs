@@ -36,8 +36,8 @@ namespace HighVoltz.HBRelog.WoW.States
 
         public override void Run()
         {
-	        if (_wowManager.Globals == null)
-		        return;
+            if (_wowManager.Globals == null)
+                return;
 
             if (_wowManager.Throttled)
                 return;
@@ -45,12 +45,12 @@ namespace HighVoltz.HBRelog.WoW.States
             if (_wowManager.StalledLogin)
             {
                 _wowManager.Profile.Log("Failed to log into WoW; Restarting");
-				_wowManager.LockToken.ReleaseLock();
-				_wowManager.GameProcess.Kill();
-				return;
+                _wowManager.LockToken.ReleaseLock();
+                _wowManager.GameProcess.Kill();
+                return;
             }
 
-			bool isBanned = IsBanned, isSuspended = IsSuspended, isSuspiciousLocked = IsLockedSuspiciousActivity, isLockedLicense = IsLockedLicense;
+            bool isBanned = IsBanned, isSuspended = IsSuspended, isSuspiciousLocked = IsLockedSuspiciousActivity, isLockedLicense = IsLockedLicense;
             if (isBanned || isSuspended || isSuspiciousLocked || isLockedLicense)
             {
                 string reason = isBanned ? "banned" : isSuspended ? "suspended" : isSuspiciousLocked ? "locked due to suspicious activity" : "locked license";
@@ -58,7 +58,7 @@ namespace HighVoltz.HBRelog.WoW.States
                 _wowManager.Profile.Status = $"Account is {reason}";
                 _wowManager.Profile.Log("Pausing profile because account is {0}.", reason);
 
-				_wowManager.Profile.Pause();
+                _wowManager.Profile.Pause();
                 return;
             }
 
@@ -98,7 +98,7 @@ namespace HighVoltz.HBRelog.WoW.States
             if (!HandleAccountSelectionDialog())
                 return;
 
-            if (_wowManager.IsConnectiongOrLoading || IsConnecting)
+            if (_wowManager.IsConnectingOrLoading || IsConnecting)
             {
                 _wowManager.Profile.Log("Connecting...");
                 return;
@@ -121,7 +121,7 @@ namespace HighVoltz.HBRelog.WoW.States
             SetGameTitle();
 
             // everything looks good. Press 'Enter' key to login.
-            Utility.SendBackgroundKey(_wowManager.GameProcess.MainWindowHandle, (char)Keys.Enter, false);
+            Utility.SendBackgroundKey(_wowManager.GameWindow, (char)Keys.Enter, false);
         }
 
 
@@ -159,56 +159,56 @@ namespace HighVoltz.HBRelog.WoW.States
             {
                 var glueDialog = UIObject.GetUIObjectByName<Frame>(_wowManager, "GlueDialog");
 
-	            if (glueDialog != null && glueDialog.IsVisible)
-	            {
-		            var which = _wowManager.GetLuaObject("GlueDialog.which");
-					if (which != null && !string.IsNullOrEmpty(which.String.Value))
-						return which.String.Value;
-				}
+                if (glueDialog != null && glueDialog.IsVisible)
+                {
+                    var which = _wowManager.GetLuaObject("GlueDialog.which");
+                    if (which != null && !string.IsNullOrEmpty(which.String.Value))
+                        return which.String.Value;
+                }
                 return string.Empty;
             }
         }
 
-		private string GlueDialogData
-		{
-			get
-			{
-				var glueDialog = UIObject.GetUIObjectByName<Frame>(_wowManager, "GlueDialog");
+        private string GlueDialogData
+        {
+            get
+            {
+                var glueDialog = UIObject.GetUIObjectByName<Frame>(_wowManager, "GlueDialog");
 
-				if (glueDialog != null && glueDialog.IsVisible)
-				{
-					var data = _wowManager.GetLuaObject("GlueDialog.data");
-					if (data != null && data.Pointer != IntPtr.Zero && data.Type != LuaType.Nil && !string.IsNullOrEmpty(data.String.Value))
-						return data.String.Value;
-				}
-				return string.Empty;
-			}
-		}
+                if (glueDialog != null && glueDialog.IsVisible)
+                {
+                    var data = _wowManager.GetLuaObject("GlueDialog.data");
+                    if (data != null && data.Pointer != IntPtr.Zero && data.Type != LuaType.Nil && !string.IsNullOrEmpty(data.String.Value))
+                        return data.String.Value;
+                }
+                return string.Empty;
+            }
+        }
 
-		private string GlueDialogHtmlFormatText
-		{
-			get
-			{
-				var glueDialogHTML = UIObject.GetUIObjectByName<Frame>(_wowManager, "GlueDialogHTML");
+        private string GlueDialogHtmlFormatText
+        {
+            get
+            {
+                var glueDialogHTML = UIObject.GetUIObjectByName<Frame>(_wowManager, "GlueDialogHTML");
 
-				if (glueDialogHTML != null && glueDialogHTML.IsVisible)
-					return glueDialogHTML.Regions.OfType<FontString>().FirstOrDefault()?.Text ?? "";
-				return "";
-			}
-		}
+                if (glueDialogHTML != null && glueDialogHTML.IsVisible)
+                    return glueDialogHTML.Regions.OfType<FontString>().FirstOrDefault()?.Text ?? "";
+                return "";
+            }
+        }
 
-		string GlueDialogTitle
-		{
-			get
-			{
-				var glueDialogTitleFontString = UIObject.GetUIObjectByName<FontString>(_wowManager, "GlueDialogTitle");
-				if (glueDialogTitleFontString != null && glueDialogTitleFontString.IsVisible)
-					return glueDialogTitleFontString.Text;
-				return string.Empty;
-			}
-		}
+        string GlueDialogTitle
+        {
+            get
+            {
+                var glueDialogTitleFontString = UIObject.GetUIObjectByName<FontString>(_wowManager, "GlueDialogTitle");
+                if (glueDialogTitleFontString != null && glueDialogTitleFontString.IsVisible)
+                    return glueDialogTitleFontString.Text;
+                return string.Empty;
+            }
+        }
 
-		string GlueDialogText
+        string GlueDialogText
         {
             get
             {
@@ -236,16 +236,16 @@ namespace HighVoltz.HBRelog.WoW.States
         {
             get
             {
-	            var dialogData = GlueDialogData;
+                var dialogData = GlueDialogData;
 
                 if (string.IsNullOrEmpty(dialogData))
                     return false;
-	            return dialogData == GlueDialogData_IncorrectPassword;
+                return dialogData == GlueDialogData_IncorrectPassword;
             }
         }
 
 
-		bool IsSuspended => IsGlueDialogHtmlVisible("BLZ51900053");
+        bool IsSuspended => IsGlueDialogHtmlVisible("BLZ51900053");
 
         private bool IsBanned => IsGlueDialogHtmlVisible("BLZ51900052");
 
@@ -255,21 +255,21 @@ namespace HighVoltz.HBRelog.WoW.States
         // ToDo: Implement IsLockedSuspiciousActivity
         bool IsLockedSuspiciousActivity => false;
 
-		private bool IsGlueDialogHtmlVisible(string partialFormat)
-		{
-			var text = GlueDialogHtmlFormatText;
-			if (string.IsNullOrEmpty(text))
-				return false;
-			return text.Contains(partialFormat);
-		}
+        private bool IsGlueDialogHtmlVisible(string partialFormat)
+        {
+            var text = GlueDialogHtmlFormatText;
+            if (string.IsNullOrEmpty(text))
+                return false;
+            return text.Contains(partialFormat);
+        }
 
-	    private string GetGlobalString(string str)
-	    {
-		    return _wowManager.Globals.GetValue(str)?.String.Value;
-	    }
+        private string GetGlobalString(string str)
+        {
+            return _wowManager.Globals.GetValue(str)?.String.Value;
+        }
 
 
-		private string _okayText;
+        private string _okayText;
 
         private bool CloseDialogs()
         {
@@ -282,7 +282,7 @@ namespace HighVoltz.HBRelog.WoW.States
                 return false;
 
             _wowManager.Profile.Log("Pressing 'Esc' key to close dialog.");
-            Utility.SendBackgroundKey(_wowManager.GameProcess.MainWindowHandle, (char)Keys.Escape, false);
+            Utility.SendBackgroundKey(_wowManager.GameWindow, (char)Keys.Escape, false);
             return true;
         }
 
@@ -299,41 +299,41 @@ namespace HighVoltz.HBRelog.WoW.States
 
         private bool HandleBattleNetToken()
         {
-	        var serial = _wowManager.Settings.AuthenticatorSerial;
-	        var restoreCode = _wowManager.Settings.AuthenticatorRestoreCode;
+            var serial = _wowManager.Settings.AuthenticatorSerial;
+            var restoreCode = _wowManager.Settings.AuthenticatorRestoreCode;
 
-			if (string.IsNullOrEmpty(serial) || string.IsNullOrEmpty(restoreCode)) 
-				return false;
+            if (string.IsNullOrEmpty(serial) || string.IsNullOrEmpty(restoreCode))
+                return false;
 
-			if (string.IsNullOrEmpty(_wowManager.Settings.AuthenticatorSerial))
-				return false;
+            if (string.IsNullOrEmpty(_wowManager.Settings.AuthenticatorSerial))
+                return false;
 
-			var frame = UIObject.GetUIObjectByName<Frame>(_wowManager, "AccountLogin.UI.TokenEntryDialog");
+            var frame = UIObject.GetUIObjectByName<Frame>(_wowManager, "AccountLogin.UI.TokenEntryDialog");
             if (frame == null || !frame.IsVisible || !frame.IsShown) return false;
 
             var editBox = UIObject.GetUIObjectByName<EditBox>(_wowManager, "AccountLogin.UI.TokenEntryDialog.Background.EditBox");
 
-	        var auth = new BattleNetAuthenticator();
+            var auth = new BattleNetAuthenticator();
 
-	        try
-	        {
-				auth.Restore(serial, restoreCode);
-	        }
-	        catch (Exception ex)
-	        {
-				_wowManager.Profile.Err("Could not get auth token: {0}", ex.Message);
-		        return false;
-	        }
+            try
+            {
+                auth.Restore(serial, restoreCode);
+            }
+            catch (Exception ex)
+            {
+                _wowManager.Profile.Err("Could not get auth token: {0}", ex.Message);
+                return false;
+            }
 
             if (!string.IsNullOrEmpty(editBox.Text))
             {
-                Utility.SendBackgroundKey(_wowManager.GameProcess.MainWindowHandle, (char)Keys.End, false);
-                Utility.SendBackgroundString(_wowManager.GameProcess.MainWindowHandle, new string('\b', "AccountLoginTokenEdit".Length * 2), false);
+                Utility.SendBackgroundKey(_wowManager.GameWindow, (char)Keys.End, false);
+                Utility.SendBackgroundString(_wowManager.GameWindow, new string('\b', "AccountLoginTokenEdit".Length * 2), false);
                 _wowManager.Profile.Log("Pressing 'end' + delete keys to remove contents from {0}", "AccountLoginTokenEdit");
             }
 
-            Utility.SendBackgroundString(_wowManager.GameProcess.MainWindowHandle, auth.CurrentCode);
-            Utility.SendBackgroundKey(_wowManager.GameProcess.MainWindowHandle, (char)Keys.Enter, false);
+            Utility.SendBackgroundString(_wowManager.GameWindow, auth.CurrentCode);
+            Utility.SendBackgroundKey(_wowManager.GameWindow, (char)Keys.Enter, false);
             _wowManager.Profile.Log("Accepting Battle net token.");
             return true;
         }
@@ -353,7 +353,7 @@ namespace HighVoltz.HBRelog.WoW.States
             var accountLoginDropDownButton = UIObject.GetUIObjectByName<Button>(_wowManager, "AccountLoginDropDownButton");
             _wowManager.Profile.Log("Opening account selection drop-down");
             var clickPos = _wowManager.ConvertWidgetCenterToWin32Coord(accountLoginDropDownButton);
-            Utility.LeftClickAtPos(_wowManager.GameProcess.MainWindowHandle, (int)clickPos.X, (int)clickPos.Y, false);
+            Utility.LeftClickAtPos(_wowManager.GameWindow, (int)clickPos.X, (int)clickPos.Y, false);
 
             var dropdownList = UIObject.GetUIObjectByName<Frame>(_wowManager, "DropDownList1");
             if (dropdownList == null || !dropdownList.IsVisible)
@@ -369,7 +369,7 @@ namespace HighVoltz.HBRelog.WoW.States
             }
 
             clickPos = _wowManager.ConvertWidgetCenterToWin32Coord(wantedButton);
-            Utility.LeftClickAtPos(_wowManager.GameProcess.MainWindowHandle, (int)clickPos.X, (int)clickPos.Y, false);
+            Utility.LeftClickAtPos(_wowManager.GameWindow, (int)clickPos.X, (int)clickPos.Y, false);
 
             Thread.Sleep(4000);
             return true;
@@ -381,13 +381,13 @@ namespace HighVoltz.HBRelog.WoW.States
         /// <returns></returns>
         private bool HandleAccountSelectionDialog()
         {
-	        var accountContainer = UIObject.GetUIObjectByName<Frame>(_wowManager, "AccountLogin.UI.WoWAccountSelectDialog.Background.Container");
-	        if (accountContainer == null)
-		        return true;
+            var accountContainer = UIObject.GetUIObjectByName<Frame>(_wowManager, "AccountLogin.UI.WoWAccountSelectDialog.Background.Container");
+            if (accountContainer == null)
+                return true;
 
-			var accountButtons = accountContainer.Children.OfType<Button>().Where(b => b.IsVisible).ToList();
-			if (!accountButtons.Any())
-				return true;
+            var accountButtons = accountContainer.Children.OfType<Button>().Where(b => b.IsVisible).ToList();
+            if (!accountButtons.Any())
+                return true;
 
             var wantedAccountButton =
                 accountButtons.FirstOrDefault(b => string.Equals(b.Text, _wowManager.Settings.AcountName, StringComparison.InvariantCultureIgnoreCase));
@@ -401,27 +401,21 @@ namespace HighVoltz.HBRelog.WoW.States
             var buttonIndex = wantedAccountButton.Id;
             var currentIndex = SelectedAccountIndex;
 
-			if (buttonIndex == currentIndex)
-			{
-				_wowManager.Profile.Log("Accepting current account selection");
-				Utility.SendBackgroundKey(_wowManager.GameProcess.MainWindowHandle, (char)Keys.Enter, false);
-				return true;
-			}
+            if (buttonIndex == currentIndex)
+            {
+                _wowManager.Profile.Log("Accepting current account selection");
+                Utility.SendBackgroundKey(_wowManager.GameWindow, (char)Keys.Enter, false);
+                return true;
+            }
 
-			_wowManager.Profile.Log("Selecting Account");
-			var clickPos = _wowManager.ConvertWidgetCenterToWin32Coord(wantedAccountButton);
-			Utility.LeftClickAtPos(_wowManager.GameProcess.MainWindowHandle, (int)clickPos.X, (int)clickPos.Y, true);
+            _wowManager.Profile.Log("Selecting Account");
+            var clickPos = _wowManager.ConvertWidgetCenterToWin32Coord(wantedAccountButton);
+            Utility.LeftClickAtPos(_wowManager.GameWindow, (int)clickPos.X, (int)clickPos.Y, true);
             Thread.Sleep(4000);
             return true;
         }
 
-        int SelectedAccountIndex
-        {
-            get
-            {
-                return (int)_wowManager.GetLuaObject("AccountLogin.UI.WoWAccountSelectDialog.selectedAccount").Value.Number;
-            }
-        }
+        int SelectedAccountIndex => (int)_wowManager.GetLuaObject("CURRENT_SELECTED_WOW_ACCOUNT").Value.Number;
 
         bool EnterTextInEditBox(string editBoxName, string text)
         {
@@ -430,30 +424,30 @@ namespace HighVoltz.HBRelog.WoW.States
                 return false;
 
             var editBoxText = editBox.Text;
-	        if (editBox.MaxLetters > 0 && text.Length > editBox.MaxLetters)
-		        text = text.Substring(0, editBox.MaxLetters);
+            if (editBox.MaxLetters > 0 && text.Length > editBox.MaxLetters)
+                text = text.Substring(0, editBox.MaxLetters);
 
             if (string.Equals(editBoxText, text, StringComparison.InvariantCultureIgnoreCase))
-		        return false;
+                return false;
 
-	        // do we have focus?
-	        if (!editBox.HasFocus)
-	        {
-		        Utility.SendBackgroundString(_wowManager.GameProcess.MainWindowHandle, "\t", false);
-		        _wowManager.Profile.Log("Pressing 'tab' key to gain set focus to {0}", editBoxName);
-		        Utility.SleepUntil(() => editBox.HasFocus, TimeSpan.FromSeconds(2));
-		        return true;
-	        }
-	        // check if we need to remove exisiting text.
-	        if (!string.IsNullOrEmpty(editBoxText))
-	        {
-		        Utility.SendBackgroundKey(_wowManager.GameProcess.MainWindowHandle, (char)Keys.End, false);
-		        Utility.SendBackgroundString(_wowManager.GameProcess.MainWindowHandle, new string('\b', editBoxText.Length * 2), false);
-		        _wowManager.Profile.Log("Pressing 'end' + delete keys to remove contents from {0}", editBoxName);
-	        }
-	        Utility.SendBackgroundString(_wowManager.GameProcess.MainWindowHandle, text);
-	        _wowManager.Profile.Log("Sending {0}letters to {1}", editBox.IsPassword ? "" : text.Length + " ", editBoxName);
-	        return true;
+            // do we have focus?
+            if (!editBox.HasFocus)
+            {
+                Utility.SendBackgroundString(_wowManager.GameWindow, "\t", false);
+                _wowManager.Profile.Log("Pressing 'tab' key to gain set focus to {0}", editBoxName);
+                Utility.SleepUntil(() => editBox.HasFocus, TimeSpan.FromSeconds(2));
+                return true;
+            }
+            // check if we need to remove exisiting text.
+            if (!string.IsNullOrEmpty(editBoxText))
+            {
+                Utility.SendBackgroundKey(_wowManager.GameWindow, (char)Keys.End, false);
+                Utility.SendBackgroundString(_wowManager.GameWindow, new string('\b', editBoxText.Length * 2), false);
+                _wowManager.Profile.Log("Pressing 'end' + delete keys to remove contents from {0}", editBoxName);
+            }
+            Utility.SendBackgroundString(_wowManager.GameWindow, text);
+            _wowManager.Profile.Log("Sending {0}letters to {1}", editBox.IsPassword ? "" : text.Length + " ", editBoxName);
+            return true;
         }
 
         private void SetGameTitle()
@@ -474,7 +468,7 @@ namespace HighVoltz.HBRelog.WoW.States
                     _wowManager.GameProcess.Id.ToString(CultureInfo.InvariantCulture));
 
             // change window title
-            NativeMethods.SetWindowText(_wowManager.GameProcess.MainWindowHandle, title);
+            NativeMethods.SetWindowText(_wowManager.GameWindow, title);
         }
 
     }

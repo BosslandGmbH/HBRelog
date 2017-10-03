@@ -219,6 +219,11 @@ namespace GreyMagic
         public virtual void Dispose()
         {
             Process.LeaveDebugMode();
+            if (Process != null)
+            {
+               Process.Dispose();
+               Process = null;
+            }
         }
 
         #endregion

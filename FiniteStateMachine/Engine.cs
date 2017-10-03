@@ -23,8 +23,7 @@ namespace HighVoltz.HBRelog.FiniteStateMachine
                     _states = value;
                     // Remember: We implemented the IComparer, and IComparable
                     // interfaces on the State class!
-                    if (_states != null)
-                        _states.Sort();
+                    _states?.Sort((s1, s2) => s2.Priority.CompareTo(s1.Priority));
                 }
             }
 

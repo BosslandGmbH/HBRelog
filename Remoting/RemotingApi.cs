@@ -23,17 +23,22 @@ namespace HighVoltz.HBRelog.Remoting
 						Equals(name, StringComparison.InvariantCultureIgnoreCase));
 		}
 
-		public bool Init(int hbProcID)
+		public bool Init(int hbProcID, out HBRelogHelperSettings hbRelogHelperSettings)
 		{
 			CharacterProfile profile = GetProfileByHbProcID(hbProcID);
 			if (profile != null)
 			{
 				profile.TaskManager.HonorbuddyManager.SetStartupSequenceToComplete();
 				profile.Log("Opened communication with HBRelogHelper");
-				return true;
+                hbRelogHelperSettings = new HBRelogHelperSettings(
+                    checkWowResponsiveness: HbRelogManager.Settings.CheckWowResponsiveness);
+
+                return true;
 			}
+
 			Log.Write("Received communication from an unknown process Id: {0}", hbProcID);
-			return false;
+            hbRelogHelperSettings = null;
+            return false;
 		}
 
 	    public void Heartbeat(int hbProcID)
@@ -179,7 +184,14 @@ namespace HighVoltz.HBRelog.Remoting
 				profile.Status = status;
 		}
 
-		public void SetBotInfoToolTip(int hbProcID, string tooltip)
+        public void ProfileLog(int hbProcID, string msg)
+        {
+            CharacterProfile profile = GetProfileByHbProcID(hbProcID);
+            if (profile != null)
+                profile.Log(msg);
+        }
+
+        public void SetBotInfoToolTip(int hbProcID, string tooltip)
 		{
 			CharacterProfile profile = GetProfileByHbProcID(hbProcID);
 			if (profile != null)
@@ -209,5 +221,6 @@ namespace HighVoltz.HBRelog.Remoting
 				Log.Write("Could not find a profile with the name: {0}", profileName);
 			}
 		}
-	}
+
+    }
 }

@@ -12,16 +12,38 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
 using Styx.Common.Helpers;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Collections.Generic;
+using System.Text;
+using System.Runtime.Serialization;
+using Styx.WoWInternals;
 
 namespace HighVoltz.HBRelog.Remoting
 {
+
+    [DataContract]
+    internal class HBRelogHelperSettings
+    {
+        public HBRelogHelperSettings(bool checkWowResponsiveness)
+        {
+            CheckWowResponsiveness = checkWowResponsiveness;
+        }
+
+        [DataMember]
+        public bool CheckWowResponsiveness { get; private set; }
+    }
+
+
     [ServiceContract]
     internal interface IRemotingApi
     {
         [OperationContract]
-        bool Init(int hbProcID);
+        bool Init(int hbProcId, out HBRelogHelperSettings hbRelogHelperSettings);
+
         [OperationContract(IsOneWay = true)]
         void Heartbeat(int hbProcID);
+
         [OperationContract(IsOneWay = true)]
         void RestartHB(int hbProcID);
 
@@ -56,6 +78,10 @@ namespace HighVoltz.HBRelog.Remoting
         void SetProfileStatusText(int hbProcID, string status);
 
         [OperationContract(IsOneWay = true)]
+        void ProfileLog(int hbProcID, string msg);
+
+
+        [OperationContract(IsOneWay = true)]
         void SetBotInfoToolTip(int hbProcID, string tooltip);
 
         [OperationContract(IsOneWay = true)]
@@ -67,10 +93,42 @@ namespace HighVoltz.HBRelogHelper
 {
     public class HBRelogHelper : HBPlugin
     {
-        static public bool IsConnected { get; private set; }
-        static internal IRemotingApi HBRelogRemoteApi { get; private set; }
-        static internal int HbProcId { get; private set; }
-        static internal string CurrentProfileName { get; private set; }
+
+        #region Overrides
+
+        public override string Author { get; } = "HighVoltz";
+
+
+        public override string Name { get; } = "HBRelogHelper";
+
+        public override void Pulse()
+        {
+        }
+
+        public override Version Version { get; } =  new Version(1, 0);
+
+        public override bool WantButton { get; } = false;
+
+        public override void OnButtonPress()
+        {
+            Logging.Write("IsConnected: {0}", IsConnected);
+            foreach (string name in HBRelogRemoteApi.GetProfileNames())
+            {
+                Logging.Write("{1}: GetProfileStatus: {0}", HBRelogRemoteApi.GetProfileStatus(name), name);
+                HBRelogRemoteApi.SetProfileStatusText(HbProcId, TreeRoot.StatusText);
+            }
+        }
+
+        #endregion
+
+        public static bool IsConnected { get; private set; }
+
+        internal static HBRelogHelperSettings Settings { get; private set; }
+
+        internal static IRemotingApi HBRelogRemoteApi { get; private set; }
+        internal static int HbProcId { get; private set; }
+        internal static string CurrentProfileName { get; private set; }
+
         private static DispatcherTimer _monitorTimer;
 
         //static IpcChannel _ipcChannel;
@@ -91,24 +149,28 @@ namespace HighVoltz.HBRelogHelper
                         new EndpointAddress("net.pipe://localhost/HBRelog/Server"));
 
                 HBRelogRemoteApi = _pipeFactory.CreateChannel();
-                //instead of spawning a new thread use the GUI one.
-                Application.Current.Dispatcher.Invoke(new Action(
-                    delegate
-                    {
-                        _monitorTimer = new DispatcherTimer();
-                        _monitorTimer.Tick += MonitorTimerCb;
-                        _monitorTimer.Interval = TimeSpan.FromSeconds(10);
-                        _monitorTimer.Start();
-                    }));
-                IsConnected = HBRelogRemoteApi.Init(HbProcId);
+
+                HBRelogHelperSettings settings;
+                IsConnected = HBRelogRemoteApi.Init(HbProcId, out settings);
+                Settings = settings;
                 if (IsConnected)
                 {
-                    Logging.Write("HBRelogHelper: Connected with HBRelog");
+                    Log("Connected with HBRelog");
+                    //instead of spawning a new thread use the GUI one.
+                    Application.Current.Dispatcher.Invoke(new Action(
+                        delegate
+                        {
+                            _monitorTimer = new DispatcherTimer();
+                            _monitorTimer.Tick += MonitorTimerCb;
+                            _monitorTimer.Interval = TimeSpan.FromSeconds(10);
+                            _monitorTimer.Start();
+                        }));
+
                     CurrentProfileName = HBRelogRemoteApi.GetCurrentProfileName(HbProcId);
                 }
                 else
                 {
-                    Logging.Write("HBRelogHelper: Could not connect to HBRelog");
+                    Log("Could not connect to HBRelog");
                 }
             }
             catch (Exception ex)
@@ -116,9 +178,6 @@ namespace HighVoltz.HBRelogHelper
                 // fail silently.
                 Logging.Write(Colors.Red, ex.ToString());
             }
-            // since theres no point of this plugin showing up in plugin list lets just throw an exception.
-            // new HB doesn't catch exceptions
-            //  throw new Exception("Ignore this exception");
         }
 
         private void Shutdown()
@@ -155,15 +214,17 @@ namespace HighVoltz.HBRelogHelper
             {
                 if (!IsConnected)
                     return;
+
+                CheckWowHealth();
+
                 if (!StyxWoW.IsInGame)
                     return;
 
                 if (TreeRoot.StatusText != _lastStatus && !string.IsNullOrEmpty(TreeRoot.StatusText))
                 {
-                    HBRelogRemoteApi.SetProfileStatusText(HbProcId, TreeRoot.StatusText);
+                    HBRelogApi.SetProfileStatusText(TreeRoot.StatusText);
                     _lastStatus = TreeRoot.StatusText;
                 }
-
 
                 if (HeartbeatTimer.IsFinished)
                 {
@@ -179,9 +240,40 @@ namespace HighVoltz.HBRelogHelper
                 if (ex is CommunicationObjectFaultedException)
                     return;
                 if (ex is EndpointNotFoundException)
-                    Logging.Write("Unable to connect to HBRelog");
+                    Log("Unable to connect to HBRelog");
                 Logging.WriteException(ex);
             }
+        }
+
+        private static void CheckWowHealth()
+        {
+            KillWoWCrashDialogs();
+
+            var wowProblem = FindWowProblem();
+            if (wowProblem == WowProblem.None)
+                return;
+
+            switch (wowProblem)
+            {
+                case WowProblem.Crash:
+                    HBRelogApi.ProfileLog("WoW has crashed.. So lets restart WoW");
+                    HBRelogApi.SetProfileStatusText("WoW has crashed. restarting");
+                    break;
+                case WowProblem.Disconnected:
+                    HBRelogApi.ProfileLog("WoW has disconnected.. So lets restart WoW");
+                    HBRelogApi.SetProfileStatusText("WoW has DCed. restarting");
+                    break;
+                case WowProblem.Unresponsive:
+                    HBRelogApi.ProfileLog("WoW is not responding.. So lets restart WoW");
+                    HBRelogApi.SetProfileStatusText("WoW is not responding. restarting");
+                    break;
+                case WowProblem.LoggedOutForTooLong:
+                    HBRelogApi.ProfileLog("Restarting wow because it was logged out for more than 40 seconds");
+                    HBRelogApi.SetProfileStatusText("WoW was logged out for too long. restarting");
+                    break;
+            }
+
+            TreeRoot.Shutdown(HonorbuddyExitCode.Default, true);
         }
 
         private static void UpdateTooltip()
@@ -225,61 +317,222 @@ namespace HighVoltz.HBRelogHelper
             }
         }
 
-        public override string Author
+        private static void KillWoWCrashDialogs()
         {
-            get { return "HighVoltz"; }
-        }
+            var processes = Process.GetProcessesByName("BlizzardError")
+                .Concat(Process.GetProcessesByName("WerFault")
+                .Where(p => p.MainWindowTitle == "World of Warcraft"));
 
-        public override string Name
-        {
-            get { return "HBRelogHelper"; }
-        }
-
-        public override void Pulse()
-        {
-        }
-
-        public override Version Version
-        {
-            get { return new Version(1, 0); }
-        }
-
-        public override bool WantButton { get { return false; } }
-
-        public override void OnButtonPress()
-        {
-            Logging.Write("IsConnected: {0}", IsConnected);
-            foreach (string name in HBRelogRemoteApi.GetProfileNames())
+            // check for wow error windows
+            foreach (var process in processes)
             {
-                Logging.Write("{1}: GetProfileStatus: {0}", HBRelogRemoteApi.GetProfileStatus(name), name);
-                HBRelogRemoteApi.SetProfileStatusText(HbProcId, TreeRoot.StatusText);
+                process.Kill();
+                Log("Killing crashed WoW process");
             }
+        }
+
+        private static WowProblem FindWowProblem()
+        {
+            if (GlueScreen == GlueScreen.Login)
+                return WowProblem.Disconnected;
+
+            if (WowIsLoggedOutForTooLong)
+                return WowProblem.LoggedOutForTooLong;
+
+            if (Settings.CheckWowResponsiveness && WowIsUnresponsive)
+                return WowProblem.Unresponsive;
+
+            if (WowHasCrashed)
+                return WowProblem.Crash;
+
+            return WowProblem.None;
+        }
+
+        private static bool WowHasCrashed => NativeMethods.EnumerateProcessWindowHandles(StyxWoW.Memory.Process.Id)
+                    .Select(NativeMethods.GetWindowText).Any(caption => caption == "Wow");
+
+        private static Stopwatch _loggedOutTimer;
+        private static bool WowIsLoggedOutForTooLong
+        {
+            get
+            {
+                if (!StyxWoW.IsInGame)
+                {
+                    if (_loggedOutTimer == null)
+                        _loggedOutTimer = Stopwatch.StartNew();
+                }
+                else if (_loggedOutTimer != null)
+                {
+                    _loggedOutTimer = null;
+                }
+                return _loggedOutTimer != null && _loggedOutTimer.Elapsed >= TimeSpan.FromMinutes(2);
+            }
+        }
+
+        private static Stopwatch _wowRespondingTimer;
+
+        private static bool WowIsUnresponsive
+        {
+            get
+            {
+                if (!StyxWoW.Memory.Process.Responding)
+                {
+                    if (_wowRespondingTimer == null)
+                        _wowRespondingTimer = Stopwatch.StartNew();
+                }
+                else if (_wowRespondingTimer != null)
+                    _wowRespondingTimer = null;
+
+                return _wowRespondingTimer != null && _wowRespondingTimer.Elapsed >= TimeSpan.FromSeconds(30);
+            }
+        }
+
+        private static void Log(string msg)
+        {
+            Logging.Write("HBRelogHelper: " + msg);
+        }
+
+
+        internal static LuaTValue GetLuaObject(string luaAccessorCode)
+        {
+            LuaTable curTable = Lua.State.Globals;
+            string[] split = luaAccessorCode.Split('.');
+            for (int i = 0; i < split.Length - 1; i++)
+            {
+                if (curTable == null)
+                    return null;
+
+                LuaTValue val = curTable.GetField(split[i]);
+                if (val == null || val.Type != LuaType.Table)
+                    return null;
+
+                curTable = val.Value.Table;
+            }
+
+            return curTable.GetField(split.Last());
+        }
+
+        private static GlueScreen GlueScreen
+        {
+            get
+            {
+                LuaTValue secondary = GetLuaObject("GlueParent.currentSecondaryScreen");
+                if (secondary != null && secondary.Type == LuaType.String)
+                {
+                    switch (secondary.Value.String.Value)
+                    {
+                        case "cinematics":
+                            return GlueScreen.Cinematics;
+                        case "movie":
+                            return GlueScreen.Movie;
+                        case "credits":
+                            return GlueScreen.Credits;
+                        case "options":
+                            return GlueScreen.Options;
+                    }
+                }
+
+                LuaTValue primary = GetLuaObject("GlueParent.currentScreen");
+                if (primary != null && primary.Type == LuaType.String)
+                {
+                    switch (primary.Value.String.Value)
+                    {
+                        case "login":
+                            return GlueScreen.Login;
+                        case "realmlist":
+                            return GlueScreen.RealmList;
+                        case "charselect":
+                            return GlueScreen.CharSelect;
+                        case "charcreate":
+                            return GlueScreen.CharCreate;
+                    }
+                }
+
+                return GlueScreen.None;
+            }
+        }
+
+    }
+
+    internal enum GlueScreen
+    {
+        None,
+        Login,
+        RealmList,
+        CharSelect,
+        CharCreate,
+
+        Cinematics,
+        Credits,
+        Movie,
+        Options
+    }
+
+
+    internal enum WowProblem
+    {
+        None,
+        Disconnected,
+        LoggedOutForTooLong,
+        Unresponsive,
+        Crash
+    }
+
+    internal static class NativeMethods
+    {
+        public delegate bool EnumWindowProc(IntPtr hWnd, IntPtr parameter);
+
+
+        [DllImport("user32.dll")]
+        public static extern bool EnumThreadWindows(int dwThreadId, EnumWindowProc lpfn, IntPtr lParam);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
+
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        private static extern int GetWindowTextLength(IntPtr hWnd);
+
+
+        public static List<IntPtr> EnumerateProcessWindowHandles(int processId)
+        {
+            var handles = new List<IntPtr>();
+
+            foreach (ProcessThread thread in Process.GetProcessById(processId).Threads)
+                EnumThreadWindows(
+                    thread.Id, (hWnd, lParam) =>
+                    {
+                        handles.Add(hWnd);
+                        return true;
+                    }, IntPtr.Zero);
+
+            return handles;
+        }
+
+        public static string GetWindowText(IntPtr hWnd)
+        {
+            // Allocate correct string length first
+            int length = GetWindowTextLength(hWnd);
+            var sb = new StringBuilder(length + 1);
+            GetWindowText(hWnd, sb, sb.Capacity);
+            return sb.ToString();
         }
     }
 
-    static public class HBRelogApi
+    public static class HBRelogApi
     {
-        private static int HbProcID
-        { get { return HBRelogHelper.HbProcId; } }
-        private static IRemotingApi HBRelogRemoteApi
-        { get { return HBRelogHelper.HBRelogRemoteApi; } }
-        public static bool IsConnected { get { return HBRelogHelper.IsConnected; } }
-        public static string CurrentProfileName { get { return HBRelogHelper.CurrentProfileName; } }
+        private static int HbProcID => HBRelogHelper.HbProcId;
 
-        public static void RestartWow()
-        {
-            HBRelogRemoteApi.RestartWow(HbProcID);
-        }
+        private static IRemotingApi HBRelogRemoteApi => HBRelogHelper.HBRelogRemoteApi;
 
-        public static void RestartHB()
-        {
-            HBRelogRemoteApi.RestartHB(HbProcID);
-        }
+        public static bool IsConnected => HBRelogHelper.IsConnected;
 
-        public static string[] GetProfileNames()
-        {
-            return HBRelogRemoteApi.GetProfileNames();
-        }
+        public static string CurrentProfileName => HBRelogHelper.CurrentProfileName;
+
+        public static void RestartWow() => HBRelogRemoteApi.RestartWow(HbProcID);
+
+        public static void RestartHB() => HBRelogRemoteApi.RestartHB(HbProcID);
+
+        public static string[] GetProfileNames() => HBRelogRemoteApi.GetProfileNames();
 
         public static void StartProfile(string profileName)
         {
@@ -314,6 +567,11 @@ namespace HighVoltz.HBRelogHelper
         public static void SetProfileStatusText(string status)
         {
             HBRelogRemoteApi.SetProfileStatusText(HbProcID, status);
+        }
+
+        public static void ProfileLog(string msg)
+        {
+            HBRelogRemoteApi.ProfileLog(HbProcID, msg);
         }
 
         public static void SkipCurrentTask(string profileName)

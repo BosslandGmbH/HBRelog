@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using GreyMagic;
 using HighVoltz.Launcher;
+using System.Runtime.InteropServices;
 
 namespace HighVoltz.HBRelog.WoW
 {
@@ -104,6 +105,7 @@ namespace HighVoltz.HBRelog.WoW
 					if (wowProcess != null)
 					{
                         _lockOwner.Profile.Log($"WoW Launcher Pid: {_launcherProc.Id} launched WoW Pid: {wowProcess.Id}");
+                        _launcherProc.Dispose();
                         _launcherProc = null;
                         _dialogDisplayTimer = null;
                         Helpers.ResumeProcess(wowProcess.Id);
@@ -131,6 +133,7 @@ namespace HighVoltz.HBRelog.WoW
                 // need to refresh everytime because of the dialog at startup
                 _wowProcess.Refresh();
                 // return if wow isn't ready for input.
+                IntPtr wowWindow = FindWowWindowHandle(_wowProcess);
                 if (_wowProcess.MainWindowHandle == IntPtr.Zero)
 				{
 					_lockOwner.Profile.Status = "Waiting for Wow to start";
@@ -156,10 +159,11 @@ namespace HighVoltz.HBRelog.WoW
                     }
 					return;
 				}
-
-				_lockOwner.GameProcess = _wowProcess;
-				_lockOwner.Memory = new ExternalProcessReader(_wowProcess);
-				_wowProcess = null;
+                _lockOwner.GameWindow = wowWindow;
+                _lockOwner.GameProcessId = _wowProcess.Id;
+                _lockOwner.GameProcessName = _wowProcess.ProcessName;
+                _lockOwner.Memory = new ExternalProcessReader(_wowProcess);
+                _wowProcess = null;
 				_lockOwner.Profile.Log("Wow is ready to login.");
 			}
 		}
@@ -171,7 +175,11 @@ namespace HighVoltz.HBRelog.WoW
             _lockOwner.Profile.Status = "Starting WoW";
 
             _lockOwner.StartupSequenceIsComplete = false;
-            _lockOwner.Memory = null;
+            if (_lockOwner.Memory != null)
+            {
+                _lockOwner.Memory.Dispose();
+                _lockOwner.Memory = null;
+            }
             _dialogDisplayTimer = null;
             bool lanchingWoW = IsWoWPath(_lockOwner.Settings.WowPath);
 
@@ -205,7 +213,30 @@ namespace HighVoltz.HBRelog.WoW
         }
 
 
-		private bool IsWoWPath(string path)
+        private IntPtr FindWowWindowHandle(Process wowProcess)
+        {
+            return
+                NativeMethods.EnumerateProcessWindowHandles(wowProcess.Id)
+                                 .FirstOrDefault(h => GetClassName(h) == "GxWindowClass");
+        }
+
+        private string GetClassName(IntPtr window)
+        {
+            // Pre-allocate 256 characters, since this is the maximum class name length.
+            StringBuilder className = new StringBuilder(256);
+            //Get the window class name
+            var nRet = GetClassName(window, className, className.Capacity);
+            if (nRet != 0)
+                return className.ToString();
+
+            return "";
+        }
+
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
+
+
+        private bool IsWoWPath(string path)
 		{
 			var originalExeFileName = FileVersionInfo.GetVersionInfo(path).OriginalFilename;
 			return originalExeFileName == "WoW.exe"

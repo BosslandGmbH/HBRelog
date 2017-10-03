@@ -39,9 +39,7 @@ namespace HighVoltz.HBRelog.Honorbuddy.States
             {
                 return _hbManager.Profile.IsRunning 
                     && _hbManager.BotProcess == null 
-                    && _hbManager.Profile.TaskManager.WowManager.GameProcess != null 
-                    && !_hbManager.Profile.TaskManager.WowManager.GameProcess.HasExitedSafe()
-                    && _hbManager.Profile.TaskManager.WowManager.InGame;
+                    && _hbManager.Profile.TaskManager.WowManager.StartupSequenceIsComplete;
             }
         }
 

@@ -34,20 +34,21 @@ namespace HighVoltz.HBRelog.Settings
             Region = WowRegion.Auto;
         }
 
-	    private string _loginData;
+        private string _loginData;
         public string LoginData { get { return _loginData; } set { _loginData = value; } }
-		/// <summary>
-		/// The Battlenet email address
-		/// </summary>
-		public string Login
+
+        /// <summary>
+        /// The Battlenet email address
+        /// </summary>
+        public string Login
         {
             get
             {
                 try
                 {
-					return GlobalSettings.Instance.EncryptSettings
-						? Utility.DecrptDpapi(LoginData)
-						: LoginData;
+                    return GlobalSettings.Instance.EncryptSettings
+                        ? Utility.DecrptDpapi(LoginData)
+                        : LoginData;
                 }
                 catch
                 {
@@ -58,26 +59,26 @@ namespace HighVoltz.HBRelog.Settings
             }
             set
             {
-				string val = GlobalSettings.Instance.EncryptSettings ? Utility.EncrptDpapi(value) : value;
-				NotifyPropertyChanged(ref _loginData, ref val, nameof(Login));
-			}
+                string val = GlobalSettings.Instance.EncryptSettings ? Utility.EncrptDpapi(value) : value;
+                NotifyPropertyChanged(ref _loginData, ref val, nameof(Login));
+            }
         }
 
 
-	    private string _passwordData;
+        private string _passwordData;
         public string PasswordData { get { return _passwordData; } set { _passwordData = value; } }
 
-		public string Password
+        public string Password
         {
             get
             {
                 try
                 {
-	                if (!GlobalSettings.Instance.EncryptSettings)
-		                return PasswordData;
+                    if (!GlobalSettings.Instance.EncryptSettings)
+                        return PasswordData;
 
-					var pass = Utility.DecrptDpapi(PasswordData);
-					return Utility.DecrptDpapi(PasswordData).Substring(0, Math.Min(16, pass.Length));
+                    var pass = Utility.DecrptDpapi(PasswordData);
+                    return Utility.DecrptDpapi(PasswordData).Substring(0, Math.Min(16, pass.Length));
                 }
                 catch
                 {
@@ -87,139 +88,161 @@ namespace HighVoltz.HBRelog.Settings
             }
             set
             {
-				string val = GlobalSettings.Instance.EncryptSettings ? Utility.EncrptDpapi(value) : value;
-				NotifyPropertyChanged(ref _passwordData, ref val, nameof(Password));
+                string val = GlobalSettings.Instance.EncryptSettings ? Utility.EncrptDpapi(value) : value;
+                NotifyPropertyChanged(ref _passwordData, ref val, nameof(Password));
             }
         }
 
         private string _acountName;
+
         /// <summary>
         /// The name of the wow account. Only used if the battlenet acount has 2+ acounts attached.
         /// </summary>
         public string AcountName
         {
             get { return _acountName; }
-			set { NotifyPropertyChanged(ref _acountName, ref value, nameof(AcountName)); }
-		}
-
-		private string _authenticatorRestoreCodeData;
-		public string AuthenticatorRestoreCodeData { get { return _authenticatorRestoreCodeData; } set{ _authenticatorRestoreCodeData = value;} }
-
-		public string AuthenticatorRestoreCode
-        {
-	        get
-	        {
-				if (string.IsNullOrEmpty(AuthenticatorRestoreCodeData))
-					return "";
-				try
-				{
-					return GlobalSettings.Instance.EncryptSettings
-						? Utility.DecrptDpapi(AuthenticatorRestoreCodeData)
-						: AuthenticatorRestoreCodeData;
-				}
-				catch
-				{
-					MessageBox.Show(
-						$"Error decrypting Authenticator Restore code for {CharacterName}. Try setting the restore code again.");
-					return "";
-				}
-	        }
-	        set
-	        {
-				string val = GlobalSettings.Instance.EncryptSettings ? Utility.EncrptDpapi(value) : value;
-				NotifyPropertyChanged(ref _authenticatorRestoreCodeData, ref val, nameof(AuthenticatorRestoreCode));
-			}
+            set { NotifyPropertyChanged(ref _acountName, ref value, nameof(AcountName)); }
         }
 
-	    private string _authenticatorSerialData;
-        public string AuthenticatorSerialData { get { return _authenticatorSerialData; } set { _authenticatorSerialData = value; } }
+        private string _authenticatorRestoreCodeData;
 
-		public string AuthenticatorSerial
-		{
-			get
-			{
-				if (string.IsNullOrEmpty(AuthenticatorSerialData))
-					return "";
-				try
-				{
-					return GlobalSettings.Instance.EncryptSettings
-						? Utility.DecrptDpapi(AuthenticatorSerialData)
-						: AuthenticatorSerialData;
-				}
-				catch
-				{
-					MessageBox.Show($"Error decrypting Authenticator Serial for {CharacterName}. Try setting the serial again.");
-					return "";
-				}
-			}
-			set
-			{
-				string val = GlobalSettings.Instance.EncryptSettings ? Utility.EncrptDpapi(value) : value;
+        public string AuthenticatorRestoreCodeData
+        {
+            get { return _authenticatorRestoreCodeData; }
+            set { _authenticatorRestoreCodeData = value; }
+        }
+
+        public string AuthenticatorRestoreCode
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(AuthenticatorRestoreCodeData))
+                    return "";
+                try
+                {
+                    return GlobalSettings.Instance.EncryptSettings
+                        ? Utility.DecrptDpapi(AuthenticatorRestoreCodeData)
+                        : AuthenticatorRestoreCodeData;
+                }
+                catch
+                {
+                    MessageBox.Show(
+                        $"Error decrypting Authenticator Restore code for {CharacterName}. Try setting the restore code again.");
+                    return "";
+                }
+            }
+            set
+            {
+                string val = GlobalSettings.Instance.EncryptSettings ? Utility.EncrptDpapi(value) : value;
+                NotifyPropertyChanged(ref _authenticatorRestoreCodeData, ref val,
+                                      nameof(AuthenticatorRestoreCode));
+            }
+        }
+
+        private string _authenticatorSerialData;
+
+        public string AuthenticatorSerialData
+        {
+            get { return _authenticatorSerialData; }
+            set { _authenticatorSerialData = value; }
+        }
+
+        public string AuthenticatorSerial
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(AuthenticatorSerialData))
+                    return "";
+                try
+                {
+                    return GlobalSettings.Instance.EncryptSettings
+                        ? Utility.DecrptDpapi(AuthenticatorSerialData)
+                        : AuthenticatorSerialData;
+                }
+                catch
+                {
+                    MessageBox.Show(
+                        $"Error decrypting Authenticator Serial for {CharacterName}. Try setting the serial again.");
+                    return "";
+                }
+            }
+            set
+            {
+                string val = GlobalSettings.Instance.EncryptSettings ? Utility.EncrptDpapi(value) : value;
                 NotifyPropertyChanged(ref _authenticatorSerialData, ref val, nameof(AuthenticatorSerial));
-			}
-		}
+            }
+        }
 
-		private string _characterName;
+        private string _characterName;
+
         /// <summary>
         /// The in-game character name
         /// </summary>
         public string CharacterName
         {
             get { return _characterName; }
-			set { NotifyPropertyChanged(ref _characterName, ref value, nameof(CharacterName)); }
-		}
+            set { NotifyPropertyChanged(ref _characterName, ref value, nameof(CharacterName)); }
+        }
 
-		private string _serverName;
+        private string _serverName;
+
         /// <summary>
         /// Name of the WoW server
         /// </summary>
         public string ServerName
         {
             get { return _serverName; }
-			set { NotifyPropertyChanged(ref _serverName, ref value, nameof(ServerName)); }
-		}
-		private string _wowPath;
+            set { NotifyPropertyChanged(ref _serverName, ref value, nameof(ServerName)); }
+        }
+
+        private string _wowPath;
+
         /// <summary>
         /// Path to your WoW.Exe
         /// </summary>
         public string WowPath
         {
             get { return _wowPath; }
-			set { NotifyPropertyChanged(ref _wowPath, ref value, nameof(WowPath)); }
-		}
+            set { NotifyPropertyChanged(ref _wowPath, ref value, nameof(WowPath)); }
+        }
 
-		private string _wowArgs;
+        private string _wowArgs;
+
         /// <summary>
         /// Command-line arguments to pass to WoW or launcher (Advanced)
         /// </summary>
         public string WowArgs
         {
             get { return _wowArgs; }
-			set { NotifyPropertyChanged(ref _wowArgs, ref value, nameof(WowArgs)); }
-		}
+            set { NotifyPropertyChanged(ref _wowArgs, ref value, nameof(WowArgs)); }
+        }
 
-		private int _wowWindowWidth;
+        private int _wowWindowWidth;
+
         public int WowWindowWidth
         {
             get { return _wowWindowWidth; }
-			set { NotifyPropertyChanged(ref _wowWindowWidth, ref value, nameof(WowWindowWidth)); }
-		}
+            set { NotifyPropertyChanged(ref _wowWindowWidth, ref value, nameof(WowWindowWidth)); }
+        }
 
-		private int _wowWindowHeight;
+        private int _wowWindowHeight;
+
         public int WowWindowHeight
         {
             get { return _wowWindowHeight; }
-			set { NotifyPropertyChanged(ref _wowWindowHeight, ref value, nameof(WowWindowHeight)); }
+            set { NotifyPropertyChanged(ref _wowWindowHeight, ref value, nameof(WowWindowHeight)); }
         }
 
         private int _wowWindowX;
+
         public int WowWindowX
         {
             get { return _wowWindowX; }
             set { NotifyPropertyChanged(ref _wowWindowX, ref value, nameof(WowWindowX)); }
-		}
+        }
 
         private int _wowWindowY;
+
         public int WowWindowY
         {
             get { return _wowWindowY; }
@@ -228,11 +251,11 @@ namespace HighVoltz.HBRelog.Settings
 
         private WowRegion _region;
 
-	    public WowRegion Region
-	    {
-		    get { return _region; }
-		    set { NotifyPropertyChanged(ref _region, ref value, nameof(Region)); }
-	    }
+        public WowRegion Region
+        {
+            get { return _region; }
+            set { NotifyPropertyChanged(ref _region, ref value, nameof(Region)); }
+        }
 
         public WowSettings ShadowCopy()
         {
@@ -241,19 +264,20 @@ namespace HighVoltz.HBRelog.Settings
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-		private bool NotifyPropertyChanged<T>(ref T oldValue, ref T newValue, string propertyName)
-		{
-			if (Equals(oldValue, newValue))
-				return false;
-			oldValue = newValue;
-			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-			if (GlobalSettings.Instance != null)
-				GlobalSettings.Instance.QueueSave();
-			return true;
-		}
+        private bool NotifyPropertyChanged<T>(ref T oldValue, ref T newValue, string propertyName)
+        {
+            if (Equals(oldValue, newValue))
+                return false;
+            oldValue = newValue;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            if (GlobalSettings.Instance != null)
+                GlobalSettings.Instance.QueueSave();
+            return true;
+        }
 
-		#region Embeded type - WowRegion
-		public enum WowRegion
+        #region Embeded type - WowRegion
+
+        public enum WowRegion
         {
             Auto,
             US,
@@ -262,6 +286,7 @@ namespace HighVoltz.HBRelog.Settings
             China,
             Taiwan
         }
+
         #endregion
 
     }

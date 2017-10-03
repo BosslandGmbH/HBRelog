@@ -43,6 +43,8 @@ namespace HighVoltz.HBRelog
                     AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
                     s_cmdLineArgs = ProcessCmdLineArgs(args);
+                    if (s_cmdLineArgs.ContainsKey("AUTOSTART"))
+                        HbRelogManager.Settings.AutoStart = true;
                     if (s_cmdLineArgs.ContainsKey("WOWDELAY"))
                         HbRelogManager.Settings.WowDelay = GetCmdLineArgVal<int>(s_cmdLineArgs["WOWDELAY"]);
                     if (s_cmdLineArgs.ContainsKey("HBDELAY"))

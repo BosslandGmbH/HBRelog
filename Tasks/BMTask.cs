@@ -83,8 +83,6 @@ namespace HighVoltz.HBRelog.Tasks
 
         protected Process BotProcess { get { return Profile.TaskManager.HonorbuddyManager.BotProcess; } }
 
-        protected Process GameProcess { get { return Profile.TaskManager.WowManager.GameProcess; } }
-
         public void SetProfile(CharacterProfile profile)
         {
             Profile = profile;
