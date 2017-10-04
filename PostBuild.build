@@ -6,7 +6,7 @@
 		<echo message="Building default target" />
 	</target>
 	<target name="CreateZip">
-		<zip zipfile="HBRelog v${build.version}.zip" includeemptydirs="True" ziplevel="9">
+		<zip zipfile="HBRelog v${build.version}.zip" includeemptydirs="True" S>
 			<fileset>
 				<!-- Exclude all this shit. We don't want it in the release! -->
 				<exclude name="**/*.csproj" />
