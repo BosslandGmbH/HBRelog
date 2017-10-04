@@ -52,8 +52,12 @@ namespace HighVoltz.HBRelog.WoW
 					_wowProcess.Kill();
 				}
 				_wowProcess = null;
-				_launcherProc = null;
-				_lockOwner = null;
+                if (_launcherProc != null)
+                {
+                    _launcherProc.Dispose();
+                    _launcherProc = null;
+                }
+                _lockOwner = null;
                 _dialogDisplayTimer = null;
             }
 		}
@@ -135,7 +139,7 @@ namespace HighVoltz.HBRelog.WoW
                 _wowProcess.Refresh();
                 // return if wow isn't ready for input.
                 IntPtr wowWindow = FindWowWindowHandle(_wowProcess);
-                if (_wowProcess.MainWindowHandle == IntPtr.Zero)
+                if (wowWindow == IntPtr.Zero)
 				{
 					_lockOwner.Profile.Status = "Waiting for Wow to start";
 					_lockOwner.Profile.Log(_lockOwner.Profile.Status);

@@ -32,6 +32,7 @@ using HighVoltz.HBRelog.WoW.States;
 using ICSharpCode.SharpZipLib.Zip;
 using Microsoft.Win32.SafeHandles;
 using MonitorState = HighVoltz.HBRelog.Honorbuddy.States.MonitorState;
+using System.Text.RegularExpressions;
 
 namespace HighVoltz.HBRelog.Honorbuddy
 {
@@ -103,6 +104,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
                     .ContinueWith(o =>
                     {
                         _isExiting = false;
+                        BotProcess.Dispose();
                         BotProcess = null;
                         if (o.IsFaulted)
                             Profile.Log("{0}", o.Exception.Flatten().ToString());
@@ -152,6 +154,7 @@ namespace HighVoltz.HBRelog.Honorbuddy
                 }
 
                 Profile.Log($"HB Launcher Pid: {_launcherProc.Id} launched HB Pid: {botProcess.Id}");
+                _launcherProc.Dispose();
                 _launcherProc = null;
                 BotProcess = botProcess;
                 return;
@@ -188,9 +191,20 @@ namespace HighVoltz.HBRelog.Honorbuddy
 
 
             if (launchingHB)
-                BotProcess = Process.Start(procStartI);
+            {
+                procStartI.UseShellExecute = false;
+                procStartI.RedirectStandardOutput = true;
+                var proc = Process.Start(procStartI);
+                string output = proc.StandardOutput.ReadToEnd();
+                proc.WaitForExit();
+                proc.Dispose();
+                int pid = int.Parse(Regex.Match(output, @"PID (?<id>[0-9]+)").Groups["id"].Value);
+                BotProcess = Process.GetProcessById(pid);
+            }
             else
+            {
                 _launcherProc = Process.Start(procStartI);
+            }
 
             HbStartupTimeStamp = DateTime.Now;
         }
@@ -214,9 +228,14 @@ namespace HighVoltz.HBRelog.Honorbuddy
                 if (BotProcess != null)
                 {
                     if (!BotProcess.HasExitedSafe())
+                    {
                         CloseBotProcess();
+                    }
                     else
+                    {
+                        BotProcess.Dispose();
                         BotProcess = null;
+                    }
                 }
 
                 LastHeartbeat.Reset();

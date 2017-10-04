@@ -41,7 +41,6 @@ namespace HighVoltz.HBRelog.WoW
 		private readonly object _lockObject = new object();
 		internal readonly Stopwatch LoginTimer = new Stopwatch();
 
-		private bool _isExiting;
 		private GlueScreen _lastGlueScreen = GlueScreen.None;
 		private DateTime _throttleTimeStamp = DateTime.Now;
 		internal bool ProcessIsReadyForInput;

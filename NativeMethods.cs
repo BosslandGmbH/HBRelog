@@ -141,15 +141,23 @@ namespace HighVoltz.HBRelog
         public static List<IntPtr> EnumerateProcessWindowHandles(int processId)
         {
             var handles = new List<IntPtr>();
+            var proc = Process.GetProcessById(processId);
 
-            foreach (ProcessThread thread in Process.GetProcessById(processId).Threads)
-                EnumThreadWindows(
-                    thread.Id, (hWnd, lParam) =>
-                    {
-                        handles.Add(hWnd);
-                        return true;
-                    }, IntPtr.Zero);
+            try
+            {
+                foreach (ProcessThread thread in proc.Threads)
+                    EnumThreadWindows(
+                        thread.Id, (hWnd, lParam) =>
+                        {
+                            handles.Add(hWnd);
+                            return true;
+                        }, IntPtr.Zero);
 
+            }
+            finally
+            {
+                proc.Dispose();
+            }
             return handles;
         }
 

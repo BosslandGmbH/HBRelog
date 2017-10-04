@@ -58,7 +58,13 @@ namespace HighVoltz.HBRelog.WoW.States
 
         private bool ProcessExists(int id)
         {
-            return Process.GetProcesses().Any(x => x.Id == id);
+            bool result = false;
+            foreach (Process p in Process.GetProcesses())
+            {
+                result |= p.Id == id;
+                p.Dispose();
+            }
+            return result;
         }
 
     }

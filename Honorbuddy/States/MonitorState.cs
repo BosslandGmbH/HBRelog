@@ -87,8 +87,8 @@ namespace HighVoltz.HBRelog.Honorbuddy.States
         {
             try
             {
-                return _hbManager.BotProcess != null && _hbManager.BotProcess.HasExitedSafe()
-                    ? _hbManager.BotProcess.ExitCode : 0;
+                return proc != null && proc.HasExitedSafe()
+                    ? proc.ExitCode : 0;
             }
             catch (Exception)
             {
