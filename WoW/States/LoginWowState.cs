@@ -415,7 +415,7 @@ namespace HighVoltz.HBRelog.WoW.States
             return true;
         }
 
-        int SelectedAccountIndex => (int)_wowManager.GetLuaObject("CURRENT_SELECTED_WOW_ACCOUNT").Value.Number;
+        int SelectedAccountIndex => (int)_wowManager.GetLuaObject("AccountLogin.UI.WoWAccountSelectDialog.selectedAccount").Value.Number;
 
         bool EnterTextInEditBox(string editBoxName, string text)
         {
