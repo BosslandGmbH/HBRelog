@@ -21,20 +21,6 @@ using Styx.WoWInternals;
 
 namespace HighVoltz.HBRelog.Remoting
 {
-
-    [DataContract]
-    internal class HBRelogHelperSettings
-    {
-        public HBRelogHelperSettings()
-        {
-        }
-
-        //[DataMember]
-        //public bool CheckWowResponsiveness { get; private set; }
-
-    }
-
-
     [ServiceContract]
     internal interface IRemotingApi
     {
