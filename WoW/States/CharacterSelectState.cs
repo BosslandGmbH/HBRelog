@@ -50,7 +50,7 @@ namespace HighVoltz.HBRelog.WoW.States
                 _wowManager.Profile.Pause();
                 return;
             }
-	        
+
 			// trial account will have a promotion frame that requires clicking a 'Play Trial' button to enter game.
 			if (ClickPlayTrial())
 	        {
@@ -149,6 +149,14 @@ namespace HighVoltz.HBRelog.WoW.States
         {
             if (_realmChangeSw.IsRunning && _realmChangeSw.Elapsed < TimeSpan.FromSeconds(5))
                 return;
+
+            if (UnableToSwitchRealm)
+            {
+                _wowManager.Profile.Log("Unable to switch realms. Trying a restart of WoW.");
+                _wowManager.CloseGameProcess();
+                return;
+            }
+
             var changeRealmButton = UIObject.GetUIObjectByName<Button>(_wowManager, "CharSelectChangeRealmButton");
             var clickPos = _wowManager.ConvertWidgetCenterToWin32Coord(changeRealmButton);
             Utility.LeftClickAtPos(_wowManager.GameWindow, (int)clickPos.X, (int)clickPos.Y);
@@ -184,5 +192,9 @@ namespace HighVoltz.HBRelog.WoW.States
                 return promotionFrame != null && promotionFrame.IsVisible;
             }
         }
+
+        private const string GlueDialogData_BuggedRealmSwitch = "WOW51900314";
+        bool UnableToSwitchRealm => _wowManager.GlueDialogData == GlueDialogData_BuggedRealmSwitch;
+
     }
 }

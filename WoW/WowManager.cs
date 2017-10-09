@@ -482,10 +482,91 @@ namespace HighVoltz.HBRelog.WoW
         #region Embeded Types
 
         #endregion
+
+        #region GlueDialog
+
+        public string GlueDialogType
+        {
+            get
+            {
+                var glueDialog = UIObject.GetUIObjectByName<Frame>(this, "GlueDialog");
+
+                if (glueDialog != null && glueDialog.IsVisible)
+                {
+                    var which = GetLuaObject("GlueDialog.which");
+                    if (which != null && !string.IsNullOrEmpty(which.String.Value))
+                        return which.String.Value;
+                }
+                return string.Empty;
+            }
+        }
+
+        public string GlueDialogData
+        {
+            get
+            {
+                var glueDialog = UIObject.GetUIObjectByName<Frame>(this, "GlueDialog");
+
+                if (glueDialog != null && glueDialog.IsVisible)
+                {
+                    var data = GetLuaObject("GlueDialog.data");
+                    if (data != null && data.Pointer != IntPtr.Zero && data.Type != LuaType.Nil && !string.IsNullOrEmpty(data.String.Value))
+                        return data.String.Value;
+                }
+                return string.Empty;
+            }
+        }
+
+        public string GlueDialogHtmlFormatText
+        {
+            get
+            {
+                var glueDialogHTML = UIObject.GetUIObjectByName<Frame>(this, "GlueDialogHTML");
+
+                if (glueDialogHTML != null && glueDialogHTML.IsVisible)
+                    return glueDialogHTML.Regions.OfType<FontString>().FirstOrDefault()?.Text ?? "";
+                return "";
+            }
+        }
+
+        public string GlueDialogTitle
+        {
+            get
+            {
+                var glueDialogTitleFontString = UIObject.GetUIObjectByName<FontString>(this, "GlueDialogTitle");
+                if (glueDialogTitleFontString != null && glueDialogTitleFontString.IsVisible)
+                    return glueDialogTitleFontString.Text;
+                return string.Empty;
+            }
+        }
+
+        public string GlueDialogText
+        {
+            get
+            {
+                var glueDialogTextContol = UIObject.GetUIObjectByName<FontString>(this, "GlueDialogText");
+                if (glueDialogTextContol != null && glueDialogTextContol.IsVisible)
+                    return glueDialogTextContol.Text;
+                return string.Empty;
+            }
+        }
+
+        public string GlueDialogButton1Text
+        {
+            get
+            {
+                var glueDialogButton1Text = UIObject.GetUIObjectByName<Button>(this, "GlueDialogButton1");
+                if (glueDialogButton1Text != null && glueDialogButton1Text.IsVisible)
+                    return glueDialogButton1Text.Text;
+                return string.Empty;
+            }
+        }
     }
 
-	// incomplete. missing Server Queue (if there is one).
-	public enum GlueScreen
+    #endregion
+
+    // incomplete. missing Server Queue (if there is one).
+    public enum GlueScreen
 	{
 		None,
 		Login,
