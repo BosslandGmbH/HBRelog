@@ -19,7 +19,7 @@ namespace HighVoltz.HBRelog.WoW.States
 
         public override int Priority
         {
-            get { return 400; }
+            get { return 300; }
         }
 
         public override bool NeedToRun

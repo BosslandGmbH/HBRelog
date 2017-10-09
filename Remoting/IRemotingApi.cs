@@ -4,23 +4,11 @@ using System.ServiceModel;
 
 namespace HighVoltz.HBRelog.Remoting
 {
-    [DataContract]
-    internal class HBRelogHelperSettings
-    {
-        public HBRelogHelperSettings(bool checkWowResponsiveness)
-        {
-            CheckWowResponsiveness = checkWowResponsiveness;
-        }
-
-        [DataMember]
-        public bool CheckWowResponsiveness { get; private set; }
-    }
-
     [ServiceContract]
     internal interface IRemotingApi
     {
         [OperationContract]
-        bool Init(int hbProcId, out HBRelogHelperSettings hbRelogHelperSettings);
+        bool Init(int hbProcId);
 
         [OperationContract(IsOneWay = true)]
         void Heartbeat(int hbProcID);

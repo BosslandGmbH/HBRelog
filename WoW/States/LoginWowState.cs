@@ -27,7 +27,7 @@ namespace HighVoltz.HBRelog.WoW.States
 
         public override int Priority
         {
-            get { return 700; }
+            get { return 600; }
         }
 
         public override bool NeedToRun => (_wowManager.GameProcess != null && !_wowManager.GameProcess.HasExitedSafe())
@@ -130,7 +130,7 @@ namespace HighVoltz.HBRelog.WoW.States
         {
             get
             {
-                var dialogButtonText = GlueDialogButton1Text;
+                var dialogButtonText = _wowManager.GlueDialogButton1Text;
                 if (string.IsNullOrEmpty(dialogButtonText))
                     return false;
                 if (_cancelText == null)
@@ -143,89 +143,12 @@ namespace HighVoltz.HBRelog.WoW.States
         {
             get
             {
-                var dialogText = GlueDialogText;
+                var dialogText = _wowManager.GlueDialogText;
                 if (!string.IsNullOrEmpty(dialogText))
                 {
                     var text = dialogText.Replace("\n", ". ");
                     return text;
                 }
-                return string.Empty;
-            }
-        }
-
-        private string GlueDialogType
-        {
-            get
-            {
-                var glueDialog = UIObject.GetUIObjectByName<Frame>(_wowManager, "GlueDialog");
-
-                if (glueDialog != null && glueDialog.IsVisible)
-                {
-                    var which = _wowManager.GetLuaObject("GlueDialog.which");
-                    if (which != null && !string.IsNullOrEmpty(which.String.Value))
-                        return which.String.Value;
-                }
-                return string.Empty;
-            }
-        }
-
-        private string GlueDialogData
-        {
-            get
-            {
-                var glueDialog = UIObject.GetUIObjectByName<Frame>(_wowManager, "GlueDialog");
-
-                if (glueDialog != null && glueDialog.IsVisible)
-                {
-                    var data = _wowManager.GetLuaObject("GlueDialog.data");
-                    if (data != null && data.Pointer != IntPtr.Zero && data.Type != LuaType.Nil && !string.IsNullOrEmpty(data.String.Value))
-                        return data.String.Value;
-                }
-                return string.Empty;
-            }
-        }
-
-        private string GlueDialogHtmlFormatText
-        {
-            get
-            {
-                var glueDialogHTML = UIObject.GetUIObjectByName<Frame>(_wowManager, "GlueDialogHTML");
-
-                if (glueDialogHTML != null && glueDialogHTML.IsVisible)
-                    return glueDialogHTML.Regions.OfType<FontString>().FirstOrDefault()?.Text ?? "";
-                return "";
-            }
-        }
-
-        string GlueDialogTitle
-        {
-            get
-            {
-                var glueDialogTitleFontString = UIObject.GetUIObjectByName<FontString>(_wowManager, "GlueDialogTitle");
-                if (glueDialogTitleFontString != null && glueDialogTitleFontString.IsVisible)
-                    return glueDialogTitleFontString.Text;
-                return string.Empty;
-            }
-        }
-
-        string GlueDialogText
-        {
-            get
-            {
-                var glueDialogTextContol = UIObject.GetUIObjectByName<FontString>(_wowManager, "GlueDialogText");
-                if (glueDialogTextContol != null && glueDialogTextContol.IsVisible)
-                    return glueDialogTextContol.Text;
-                return string.Empty;
-            }
-        }
-
-        string GlueDialogButton1Text
-        {
-            get
-            {
-                var glueDialogButton1Text = UIObject.GetUIObjectByName<Button>(_wowManager, "GlueDialogButton1");
-                if (glueDialogButton1Text != null && glueDialogButton1Text.IsVisible)
-                    return glueDialogButton1Text.Text;
                 return string.Empty;
             }
         }
@@ -236,7 +159,7 @@ namespace HighVoltz.HBRelog.WoW.States
         {
             get
             {
-                var dialogData = GlueDialogData;
+                var dialogData = _wowManager.GlueDialogData;
 
                 if (string.IsNullOrEmpty(dialogData))
                     return false;
@@ -257,7 +180,7 @@ namespace HighVoltz.HBRelog.WoW.States
 
         private bool IsGlueDialogHtmlVisible(string partialFormat)
         {
-            var text = GlueDialogHtmlFormatText;
+            var text = _wowManager.GlueDialogHtmlFormatText;
             if (string.IsNullOrEmpty(text))
                 return false;
             return text.Contains(partialFormat);
