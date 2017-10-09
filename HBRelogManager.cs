@@ -89,6 +89,7 @@ namespace HighVoltz.HBRelog
 
                         if (_crashCheckTimer.ElapsedMilliseconds >= 5000)
                         {
+                            KillWoWCrashDialogs();
                             KillHonorbuddyCrashDialogs();
                             _crashCheckTimer.Restart();
                         }
@@ -145,6 +146,21 @@ namespace HighVoltz.HBRelog
             {
                 process.Kill();
                 Log.Write("Killing crashed Honorbuddy process");
+            }
+        }
+
+        private static void KillWoWCrashDialogs()
+        {
+            var processes = Process.GetProcessesByName("BlizzardError")
+                .Concat(Process.GetProcessesByName("WerFault")
+                .Where(p => p.MainWindowTitle == "World of Warcraft"));
+
+            // check for wow error windows
+            foreach (var process in processes)
+            {
+                process.Kill();
+                Log.Write("Killing crashed WoW process");
+                process.Dispose();
             }
         }
     }

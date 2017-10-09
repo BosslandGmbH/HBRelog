@@ -23,21 +23,17 @@ namespace HighVoltz.HBRelog.Remoting
 						Equals(name, StringComparison.InvariantCultureIgnoreCase));
 		}
 
-		public bool Init(int hbProcID, out HBRelogHelperSettings hbRelogHelperSettings)
+		public bool Init(int hbProcID)
 		{
 			CharacterProfile profile = GetProfileByHbProcID(hbProcID);
 			if (profile != null)
 			{
 				profile.TaskManager.HonorbuddyManager.SetStartupSequenceToComplete();
 				profile.Log("Opened communication with HBRelogHelper");
-                hbRelogHelperSettings = new HBRelogHelperSettings(
-                    checkWowResponsiveness: HbRelogManager.Settings.CheckWowResponsiveness);
-
                 return true;
 			}
 
 			Log.Write("Received communication from an unknown process Id: {0}", hbProcID);
-            hbRelogHelperSettings = null;
             return false;
 		}
 

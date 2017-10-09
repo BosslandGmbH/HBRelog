@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
@@ -134,31 +135,28 @@ namespace HighVoltz.HBRelog
         [DllImport("user32.dll")]
         public static extern bool EnumThreadWindows(int dwThreadId, EnumWindowProc lpfn, IntPtr lParam);
 
+        [DllImport("user32.dll")]
+        protected static extern bool EnumWindows(EnumWindowProc enumProc, IntPtr lParam);
+
         [DllImport("user32")]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool EnumChildWindows(IntPtr window, EnumWindowProc callback, IntPtr i);
 
         public static List<IntPtr> EnumerateProcessWindowHandles(int processId)
         {
-            var handles = new List<IntPtr>();
-            var proc = Process.GetProcessById(processId);
-
+            var allWindows = new List<IntPtr>();
+            GCHandle listHandle = GCHandle.Alloc(allWindows);
             try
             {
-                foreach (ProcessThread thread in proc.Threads)
-                    EnumThreadWindows(
-                        thread.Id, (hWnd, lParam) =>
-                        {
-                            handles.Add(hWnd);
-                            return true;
-                        }, IntPtr.Zero);
-
+                EnumWindows(EnumWindow, GCHandle.ToIntPtr(listHandle));
             }
             finally
             {
-                proc.Dispose();
+                if (listHandle.IsAllocated)
+                    listHandle.Free();
             }
-            return handles;
+
+            return allWindows.Where(h => GetWindowProcessId(h) == processId).ToList();
         }
 
         /// <summary>

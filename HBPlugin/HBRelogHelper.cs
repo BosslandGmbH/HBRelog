@@ -25,13 +25,13 @@ namespace HighVoltz.HBRelog.Remoting
     [DataContract]
     internal class HBRelogHelperSettings
     {
-        public HBRelogHelperSettings(bool checkWowResponsiveness)
+        public HBRelogHelperSettings()
         {
-            CheckWowResponsiveness = checkWowResponsiveness;
         }
 
-        [DataMember]
-        public bool CheckWowResponsiveness { get; private set; }
+        //[DataMember]
+        //public bool CheckWowResponsiveness { get; private set; }
+
     }
 
 
@@ -39,7 +39,7 @@ namespace HighVoltz.HBRelog.Remoting
     internal interface IRemotingApi
     {
         [OperationContract]
-        bool Init(int hbProcId, out HBRelogHelperSettings hbRelogHelperSettings);
+        bool Init(int hbProcId);
 
         [OperationContract(IsOneWay = true)]
         void Heartbeat(int hbProcID);
@@ -123,8 +123,6 @@ namespace HighVoltz.HBRelogHelper
 
         public static bool IsConnected { get; private set; }
 
-        internal static HBRelogHelperSettings Settings { get; private set; }
-
         internal static IRemotingApi HBRelogRemoteApi { get; private set; }
         internal static int HbProcId { get; private set; }
         internal static string CurrentProfileName { get; private set; }
@@ -150,9 +148,7 @@ namespace HighVoltz.HBRelogHelper
 
                 HBRelogRemoteApi = _pipeFactory.CreateChannel();
 
-                HBRelogHelperSettings settings;
-                IsConnected = HBRelogRemoteApi.Init(HbProcId, out settings);
-                Settings = settings;
+                IsConnected = HBRelogRemoteApi.Init(HbProcId);
                 if (IsConnected)
                 {
                     Log("Connected with HBRelog");
@@ -167,6 +163,7 @@ namespace HighVoltz.HBRelogHelper
                         }));
 
                     CurrentProfileName = HBRelogRemoteApi.GetCurrentProfileName(HbProcId);
+                    BotEvents.OnPulse += BotEvents_OnPulse;
                 }
                 else
                 {
@@ -179,6 +176,19 @@ namespace HighVoltz.HBRelogHelper
                 Logging.Write(Colors.Red, ex.ToString());
             }
         }
+
+        private void BotEvents_OnPulse(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void BotEvents_OnBotStopped(EventArgs args)
+        {
+            CheckWowHealth();
+            if (GameStats.IsMeasuring)
+                UpdateTooltip();
+        }
+
 
         private void Shutdown()
         {
@@ -215,11 +225,6 @@ namespace HighVoltz.HBRelogHelper
                 if (!IsConnected)
                     return;
 
-                CheckWowHealth();
-
-                if (!StyxWoW.IsInGame)
-                    return;
-
                 if (TreeRoot.StatusText != _lastStatus && !string.IsNullOrEmpty(TreeRoot.StatusText))
                 {
                     HBRelogApi.SetProfileStatusText(TreeRoot.StatusText);
@@ -232,8 +237,6 @@ namespace HighVoltz.HBRelogHelper
                     HeartbeatTimer.Reset();
                 }
 
-                if (GameStats.IsMeasuring)
-                    UpdateTooltip();
             }
             catch (Exception ex)
             {
@@ -247,25 +250,15 @@ namespace HighVoltz.HBRelogHelper
 
         private static void CheckWowHealth()
         {
-            KillWoWCrashDialogs();
-
             var wowProblem = FindWowProblem();
             if (wowProblem == WowProblem.None)
                 return;
 
             switch (wowProblem)
             {
-                case WowProblem.Crash:
-                    HBRelogApi.ProfileLog("WoW has crashed.. So lets restart WoW");
-                    HBRelogApi.SetProfileStatusText("WoW has crashed. restarting");
-                    break;
                 case WowProblem.Disconnected:
                     HBRelogApi.ProfileLog("WoW has disconnected.. So lets restart WoW");
                     HBRelogApi.SetProfileStatusText("WoW has DCed. restarting");
-                    break;
-                case WowProblem.Unresponsive:
-                    HBRelogApi.ProfileLog("WoW is not responding.. So lets restart WoW");
-                    HBRelogApi.SetProfileStatusText("WoW is not responding. restarting");
                     break;
                 case WowProblem.LoggedOutForTooLong:
                     HBRelogApi.ProfileLog("Restarting wow because it was logged out for more than 40 seconds");
@@ -317,20 +310,6 @@ namespace HighVoltz.HBRelogHelper
             }
         }
 
-        private static void KillWoWCrashDialogs()
-        {
-            var processes = Process.GetProcessesByName("BlizzardError")
-                .Concat(Process.GetProcessesByName("WerFault")
-                .Where(p => p.MainWindowTitle == "World of Warcraft"));
-
-            // check for wow error windows
-            foreach (var process in processes)
-            {
-                process.Kill();
-                Log("Killing crashed WoW process");
-            }
-        }
-
         private static WowProblem FindWowProblem()
         {
             if (GlueScreen == GlueScreen.Login)
@@ -339,17 +318,8 @@ namespace HighVoltz.HBRelogHelper
             if (WowIsLoggedOutForTooLong)
                 return WowProblem.LoggedOutForTooLong;
 
-            if (Settings.CheckWowResponsiveness && WowIsUnresponsive)
-                return WowProblem.Unresponsive;
-
-            if (WowHasCrashed)
-                return WowProblem.Crash;
-
             return WowProblem.None;
         }
-
-        private static bool WowHasCrashed => NativeMethods.EnumerateProcessWindowHandles(StyxWoW.Memory.Process.Id)
-                    .Select(NativeMethods.GetWindowText).Any(caption => caption == "Wow");
 
         private static Stopwatch _loggedOutTimer;
         private static bool WowIsLoggedOutForTooLong
@@ -366,24 +336,6 @@ namespace HighVoltz.HBRelogHelper
                     _loggedOutTimer = null;
                 }
                 return _loggedOutTimer != null && _loggedOutTimer.Elapsed >= TimeSpan.FromMinutes(2);
-            }
-        }
-
-        private static Stopwatch _wowRespondingTimer;
-
-        private static bool WowIsUnresponsive
-        {
-            get
-            {
-                if (!StyxWoW.Memory.Process.Responding)
-                {
-                    if (_wowRespondingTimer == null)
-                        _wowRespondingTimer = Stopwatch.StartNew();
-                }
-                else if (_wowRespondingTimer != null)
-                    _wowRespondingTimer = null;
-
-                return _wowRespondingTimer != null && _wowRespondingTimer.Elapsed >= TimeSpan.FromSeconds(30);
             }
         }
 
@@ -474,8 +426,6 @@ namespace HighVoltz.HBRelogHelper
         None,
         Disconnected,
         LoggedOutForTooLong,
-        Unresponsive,
-        Crash
     }
 
     internal static class NativeMethods
@@ -491,23 +441,6 @@ namespace HighVoltz.HBRelogHelper
 
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         private static extern int GetWindowTextLength(IntPtr hWnd);
-
-
-        public static List<IntPtr> EnumerateProcessWindowHandles(int processId)
-        {
-            var handles = new List<IntPtr>();
-
-            foreach (ProcessThread thread in Process.GetProcessById(processId).Threads)
-                EnumThreadWindows(
-                    thread.Id, (hWnd, lParam) =>
-                    {
-                        handles.Add(hWnd);
-                        return true;
-                    }, IntPtr.Zero);
-
-            return handles;
-        }
-
         public static string GetWindowText(IntPtr hWnd)
         {
             // Allocate correct string length first
