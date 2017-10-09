@@ -21,20 +21,6 @@ using Styx.WoWInternals;
 
 namespace HighVoltz.HBRelog.Remoting
 {
-
-    [DataContract]
-    internal class HBRelogHelperSettings
-    {
-        public HBRelogHelperSettings()
-        {
-        }
-
-        //[DataMember]
-        //public bool CheckWowResponsiveness { get; private set; }
-
-    }
-
-
     [ServiceContract]
     internal interface IRemotingApi
     {
@@ -178,11 +164,6 @@ namespace HighVoltz.HBRelogHelper
         }
 
         private void BotEvents_OnPulse(object sender, EventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
-        private void BotEvents_OnBotStopped(EventArgs args)
         {
             CheckWowHealth();
             if (GameStats.IsMeasuring)
