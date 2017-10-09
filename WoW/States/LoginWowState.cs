@@ -27,7 +27,7 @@ namespace HighVoltz.HBRelog.WoW.States
 
         public override int Priority
         {
-            get { return 700; }
+            get { return 600; }
         }
 
         public override bool NeedToRun => (_wowManager.GameProcess != null && !_wowManager.GameProcess.HasExitedSafe())

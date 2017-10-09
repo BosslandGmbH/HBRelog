@@ -26,13 +26,13 @@ namespace HighVoltz.HBRelog.WoW
 			States = new List<State>
 			{
 				new StartWowState(this),
-				new ScanOffsetsState(this),
+                new MonitorState(this),
+                new ScanOffsetsState(this),
 				new WowWindowPlacementState(this),
 				new LoginWowState(this),
 				new RealmSelectState(this),
 				new CharacterSelectState(this),
 				new CharacterCreationState(this),
-                new MonitorState(this),
 			};
 		}
 
