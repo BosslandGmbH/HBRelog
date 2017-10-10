@@ -149,7 +149,6 @@ namespace HighVoltz.HBRelogHelper
                         }));
 
                     CurrentProfileName = HBRelogRemoteApi.GetCurrentProfileName(HbProcId);
-                    BotEvents.OnPulse += BotEvents_OnPulse;
                 }
                 else
                 {
@@ -162,14 +161,6 @@ namespace HighVoltz.HBRelogHelper
                 Logging.Write(Colors.Red, ex.ToString());
             }
         }
-
-        private void BotEvents_OnPulse(object sender, EventArgs e)
-        {
-            CheckWowHealth();
-            if (GameStats.IsMeasuring)
-                UpdateTooltip();
-        }
-
 
         private void Shutdown()
         {
@@ -218,6 +209,10 @@ namespace HighVoltz.HBRelogHelper
                     HeartbeatTimer.Reset();
                 }
 
+                CheckWowHealth();
+                if (GameStats.IsMeasuring)
+                    UpdateTooltip();
+
             }
             catch (Exception ex)
             {
@@ -255,8 +250,9 @@ namespace HighVoltz.HBRelogHelper
             try
             {
                 string tooltip = string.Empty;
-                if (StyxWoW.Me.Level < 90)
+                if (StyxWoW.Me.Level < 110)
                     tooltip += string.Format("XP/hr: {0}\n", GameStats.XPPerHour);
+
                 if (TreeRoot.Current.Name == "BGBuddy")
                 {
                     tooltip += string.Format("BGs: {0} ({1}/hr)\n",
@@ -269,6 +265,7 @@ namespace HighVoltz.HBRelogHelper
                 }
                 else
                 {
+                    tooltip += $"Gold: {GameStats.GoldGained} ({GameStats.LootsPerHour}/hr)\n";
                     tooltip += string.Format("Loots: {0} ({1}/hr)\n",
                         GameStats.Loots, GameStats.LootsPerHour);
                     tooltip += string.Format("Deaths: {0} - ({1}/hr)\n",
