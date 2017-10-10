@@ -255,8 +255,9 @@ namespace HighVoltz.HBRelogHelper
             try
             {
                 string tooltip = string.Empty;
-                if (StyxWoW.Me.Level < 90)
+                if (StyxWoW.Me.Level < 110)
                     tooltip += string.Format("XP/hr: {0}\n", GameStats.XPPerHour);
+
                 if (TreeRoot.Current.Name == "BGBuddy")
                 {
                     tooltip += string.Format("BGs: {0} ({1}/hr)\n",
@@ -269,6 +270,7 @@ namespace HighVoltz.HBRelogHelper
                 }
                 else
                 {
+                    tooltip += $"Gold: {GameStats.GoldGained} ({GameStats.LootsPerHour}/hr)\n";
                     tooltip += string.Format("Loots: {0} ({1}/hr)\n",
                         GameStats.Loots, GameStats.LootsPerHour);
                     tooltip += string.Format("Deaths: {0} - ({1}/hr)\n",
