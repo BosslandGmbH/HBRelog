@@ -149,7 +149,6 @@ namespace HighVoltz.HBRelogHelper
                         }));
 
                     CurrentProfileName = HBRelogRemoteApi.GetCurrentProfileName(HbProcId);
-                    BotEvents.OnPulse += BotEvents_OnPulse;
                 }
                 else
                 {
@@ -162,14 +161,6 @@ namespace HighVoltz.HBRelogHelper
                 Logging.Write(Colors.Red, ex.ToString());
             }
         }
-
-        private void BotEvents_OnPulse(object sender, EventArgs e)
-        {
-            CheckWowHealth();
-            if (GameStats.IsMeasuring)
-                UpdateTooltip();
-        }
-
 
         private void Shutdown()
         {
@@ -217,6 +208,10 @@ namespace HighVoltz.HBRelogHelper
                     HBRelogRemoteApi.Heartbeat(HbProcId);
                     HeartbeatTimer.Reset();
                 }
+
+                CheckWowHealth();
+                if (GameStats.IsMeasuring)
+                    UpdateTooltip();
 
             }
             catch (Exception ex)
