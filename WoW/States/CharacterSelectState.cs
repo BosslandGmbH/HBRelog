@@ -156,7 +156,9 @@ namespace HighVoltz.HBRelog.WoW.States
                 _wowManager.CloseGameProcess();
                 return;
             }
-
+            // Inserts a delay before pressing button because pressing too fast causes the 'You have been disconnected' error.
+            // See https://github.com/BosslandGmbH/HBRelog/issues/49
+            Thread.Sleep(4000);
             var changeRealmButton = UIObject.GetUIObjectByName<Button>(_wowManager, "CharSelectChangeRealmButton");
             var clickPos = _wowManager.ConvertWidgetCenterToWin32Coord(changeRealmButton);
             Utility.LeftClickAtPos(_wowManager.GameWindow, (int)clickPos.X, (int)clickPos.Y);
