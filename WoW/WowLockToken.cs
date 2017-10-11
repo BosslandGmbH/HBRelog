@@ -155,7 +155,7 @@ namespace HighVoltz.HBRelog.WoW
                     {
                         _dialogDisplayTimer = Stopwatch.StartNew();
                     }
-                    else if (_dialogDisplayTimer.ElapsedMilliseconds > 30000)
+                    else if (_dialogDisplayTimer.ElapsedMilliseconds > 10000)
                     {
                         _lockOwner.Profile.Log($"WoW v{_wowProcess.VersionString()} failed to load and is a popup. " +
                             $"Make sure your WoW installation is updated and WoW is using windowed mode. Pausing profile.");
