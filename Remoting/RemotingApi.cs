@@ -201,7 +201,13 @@ namespace HighVoltz.HBRelog.Remoting
 			CharacterProfile profile = GetProfileByName(profileName);
 			if (profile != null)
 			{
-				BMTask currentTask = profile.TaskManager.CurrentTask;
+                if (!profile.IsRunning || profile.IsPaused)
+                {
+                    profile.Log("Could not skip current task because profile is not running or is paused.");
+                    return;
+                }
+
+                BMTask currentTask = profile.TaskManager.CurrentTask;
 				if (currentTask == null)
 				{
 					profile.Log("Could not skip current task because there is no task running.");
