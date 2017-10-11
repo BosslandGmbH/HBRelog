@@ -194,7 +194,7 @@ namespace HighVoltz.HBRelogHelper
         {
             try
             {
-                if (!IsConnected)
+                if (!IsConnected || ProfileState != ProfileState.Running)
                     return;
 
                 if (TreeRoot.StatusText != _lastStatus && !string.IsNullOrEmpty(TreeRoot.StatusText))
@@ -212,7 +212,6 @@ namespace HighVoltz.HBRelogHelper
                 CheckWowHealth();
                 if (GameStats.IsMeasuring)
                     UpdateTooltip();
-
             }
             catch (Exception ex)
             {
@@ -317,6 +316,8 @@ namespace HighVoltz.HBRelogHelper
             }
         }
 
+        private static ProfileState ProfileState => (ProfileState) HBRelogApi.GetProfileStatus(HBRelogApi.CurrentProfileName);
+
         private static void Log(string msg)
         {
             Logging.Write("HBRelogHelper: " + msg);
@@ -406,6 +407,14 @@ namespace HighVoltz.HBRelogHelper
         LoggedOutForTooLong,
     }
 
+    internal enum ProfileState
+    {
+        None,
+        Paused,
+        Running,
+        Stopped
+    }
+
     internal static class NativeMethods
     {
         public delegate bool EnumWindowProc(IntPtr hWnd, IntPtr parameter);
@@ -490,4 +499,5 @@ namespace HighVoltz.HBRelogHelper
             HBRelogRemoteApi.SkipCurrentTask(profileName);
         }
     }
+
 }
