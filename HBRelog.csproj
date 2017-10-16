@@ -80,6 +80,9 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="System.Runtime" />
+    <Reference Include="System.Globalization" />
+    <PackageReference Include="System.ValueTuple" Version="4.4.0" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Extensions.cs" />
@@ -297,6 +300,7 @@
     <Content Include="bin\Debug\HBRelog.pdb" />
     <Content Include="bin\Release\fasmdll_managed.dll" />
     <Content Include="bin\Release\HBRelog.exe" />
+    <Resource Include="MinRequiredVersion.txt" />
     <None Include="CREDITS.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

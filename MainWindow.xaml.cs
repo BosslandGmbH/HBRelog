@@ -26,6 +26,11 @@ using System.Windows.Input;
 using System.Windows.Media.Animation;
 using HighVoltz.HBRelog.Settings;
 using HighVoltz.HBRelog.Tasks;
+using System.Threading.Tasks;
+using System.Net;
+using System.IO;
+using System.Diagnostics;
+using System.Windows.Threading;
 
 namespace HighVoltz.HBRelog
 {
@@ -35,6 +40,7 @@ namespace HighVoltz.HBRelog
     public partial class MainWindow : Window
     {
         private Timer _autoCloseTimer;
+        private DispatcherTimer _minVersionCheckTimer;
 
         public MainWindow()
         {
@@ -149,7 +155,7 @@ namespace HighVoltz.HBRelog
             }
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
             OptionsTab.IsSelected = false;
             Version version = Assembly.GetExecutingAssembly().GetName().Version;
@@ -168,6 +174,17 @@ namespace HighVoltz.HBRelog
 			Log.Write("\t{0,-30} {1}", "Set GameWindow Title:", HbRelogManager.Settings.SetGameWindowTitle);
             Log.Write("\t{0,-30} {1}", "Wow Start Delay:", HbRelogManager.Settings.WowDelay);
 
+            // prevent user from starting any profiles until after version check is complete
+            Log.Write("Checking minimum required version.");
+            StartButton.IsEnabled = false;
+            await CheckMinimumRequiredVersion();
+
+            _minVersionCheckTimer = new DispatcherTimer();
+            _minVersionCheckTimer.Tick += MinVersionCheckTimer_Tick;
+            _minVersionCheckTimer.Interval = TimeSpan.FromMinutes(5);
+            _minVersionCheckTimer.Start();
+
+            StartButton.IsEnabled = true;
 
             string rawProfilesToStart;
 
@@ -314,6 +331,13 @@ namespace HighVoltz.HBRelog
             hbManager.CloseBotProcess();
         }
 
+
+        private void BringWoWToForeground_Click(object sender, RoutedEventArgs e)
+        {
+            var wowManager = ((CharacterProfile)((MenuItem)sender).Tag).TaskManager.WowManager;
+            Utility.BringWindowIntoFocus(wowManager.GameWindow, wowManager.Profile);
+        }
+
         private void DataGridRowContextMenuOpening(object sender, ContextMenuEventArgs e)
         {
             var row = (DataGridRow)sender;
@@ -343,6 +367,46 @@ namespace HighVoltz.HBRelog
                 bringHbToForegroundTaskMenuItem.Visibility = Visibility.Collapsed;
                 killHBMenu.Visibility = Visibility.Collapsed;
             }
+
+            var bringWowToForegroundMenu = (MenuItem)row.ContextMenu.Items[3];
+            bringWowToForegroundMenu.Visibility = wowManager.IsRunning && wowManager.GameWindow != IntPtr.Zero 
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+        }
+
+        private const string s_minRequireVersionUrl = "https://raw.githubusercontent.com/BosslandGmbH/HBRelog/master/MinRequiredVersion.txt";
+
+        private async void MinVersionCheckTimer_Tick(object sender, EventArgs e)
+        {
+            await CheckMinimumRequiredVersion();
+        }
+
+        private async Task CheckMinimumRequiredVersion()
+        {
+            var webClient = new WebClient();
+            var text = await webClient.DownloadStringTaskAsync(s_minRequireVersionUrl);
+            if (string.IsNullOrEmpty(text))
+                throw new InvalidDataException("Remote MinRequiredVersion.txt is empty.");
+            text = text.Trim();
+            var firstSpaceI = text.IndexOf(" ");
+            var versionTxt = firstSpaceI == -1 ? text : text.Substring(0, firstSpaceI);
+            var minVersion = Version.Parse(versionTxt);
+            var msg = firstSpaceI > 0 ? text.Substring(firstSpaceI + 1) : null;
+            var currentVersion = Version.Parse(Process.GetCurrentProcess().VersionString());
+            if (currentVersion.Major >= minVersion.Major && currentVersion.Minor >= minVersion.Minor && currentVersion.Build >= minVersion.Build)
+                return;
+
+            foreach (CharacterProfile profile in AccountGrid.Items)
+            {
+                if (profile.IsRunning)
+                    profile.Stop();
+            }
+
+            msg = $"Your HBRelog version {currentVersion} is no longer compatible or safe. " +
+                $"You need upgrade to version {minVersion} or higher.{(msg != null ?" " + msg : "")}";
+
+            MessageBox.Show(msg, "Incompatible HBRelog Version");
+            Process.GetCurrentProcess().Kill();
         }
     }
 }

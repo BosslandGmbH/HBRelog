@@ -22,10 +22,12 @@ using System.ServiceModel;
 using System.Windows;
 using System.ComponentModel;
 using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace HighVoltz.HBRelog
 {
-    class HbRelogManager
+    internal class HbRelogManager
     {
         public static GlobalSettings Settings => GlobalSettings.Instance;
 	    static public Thread WorkerThread { get; private set; }
@@ -71,7 +73,7 @@ namespace HighVoltz.HBRelog
             }
         }
 
-        static void DoWork()
+        internal static void DoWork()
         {
             int pulseStartTime = 0;
             while (true)

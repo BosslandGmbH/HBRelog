@@ -187,7 +187,14 @@
                                             <EventSetter Event="Click" Handler="KillHbMenuItem_Click" />
                                         </Style>
                                     </MenuItem.Style>
-                                </MenuItem>                                
+                                </MenuItem>
+                                <MenuItem  x:Name="BringWoWToForeground" Header="Bring WoW To Foreground"  Tag="{Binding}">
+                                    <MenuItem.Style>
+                                        <Style TargetType="{x:Type MenuItem}" BasedOn="{StaticResource  {x:Type MenuItem}}">
+                                            <EventSetter Event="Click" Handler="BringWoWToForeground_Click" />
+                                        </Style>
+                                    </MenuItem.Style>
+                                </MenuItem>
                             </ContextMenu>
                         </Setter.Value>
                     </Setter>
