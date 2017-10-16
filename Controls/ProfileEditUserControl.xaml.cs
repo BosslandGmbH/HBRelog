@@ -135,7 +135,7 @@ namespace HighVoltz.HBRelog.Controls
             if (MainWindow.Instance.AccountGrid.SelectedItem != null)
             {
                 CharacterProfile profile = (CharacterProfile)MainWindow.Instance.AccountGrid.SelectedItem;
-                if (profile.TaskManager.WowManager.Memory != null)
+                if (profile.TaskManager.WowManager.GameWindow != IntPtr.Zero)
                 {
                     var Rect = Utility.GetWindowRect(profile.TaskManager.WowManager.GameWindow);
                     profile.Settings.WowSettings.WowWindowX = Rect.Left;
@@ -226,7 +226,7 @@ namespace HighVoltz.HBRelog.Controls
             if (MainWindow.Instance.AccountGrid.SelectedItem != null)
             {
                 CharacterProfile profile = (CharacterProfile)MainWindow.Instance.AccountGrid.SelectedItem;
-                if (profile.TaskManager.WowManager.Memory != null)
+                if (profile.TaskManager.WowManager.GameWindow != IntPtr.Zero)
                 {
                     var screen = Screen.FromHandle(profile.TaskManager.WowManager.GameWindow);
                     try
