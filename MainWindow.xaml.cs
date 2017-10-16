@@ -331,6 +331,13 @@ namespace HighVoltz.HBRelog
             hbManager.CloseBotProcess();
         }
 
+
+        private void BringWoWToForeground_Click(object sender, RoutedEventArgs e)
+        {
+            var wowManager = ((CharacterProfile)((MenuItem)sender).Tag).TaskManager.WowManager;
+            Utility.BringWindowIntoFocus(wowManager.GameWindow, wowManager.Profile);
+        }
+
         private void DataGridRowContextMenuOpening(object sender, ContextMenuEventArgs e)
         {
             var row = (DataGridRow)sender;
@@ -360,6 +367,11 @@ namespace HighVoltz.HBRelog
                 bringHbToForegroundTaskMenuItem.Visibility = Visibility.Collapsed;
                 killHBMenu.Visibility = Visibility.Collapsed;
             }
+
+            var bringWowToForegroundMenu = (MenuItem)row.ContextMenu.Items[3];
+            bringWowToForegroundMenu.Visibility = wowManager.IsRunning && wowManager.GameWindow != IntPtr.Zero 
+                ? Visibility.Visible
+                : Visibility.Collapsed;
         }
 
         private const string s_minRequireVersionUrl = "https://raw.githubusercontent.com/BosslandGmbH/HBRelog/master/MinRequiredVersion.txt";
