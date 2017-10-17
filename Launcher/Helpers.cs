@@ -26,14 +26,6 @@ namespace HighVoltz.Launcher
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool CloseHandle(IntPtr hObject);
 
-        //   [DllImport("kernel32.dll", SetLastError = true)]
-        //   private static extern bool CreateProcess(string lpApplicationName,
-        //string lpCommandLine, ref SECURITY_ATTRIBUTES lpProcessAttributes,
-        //ref SECURITY_ATTRIBUTES lpThreadAttributes, bool bInheritHandles,
-        //uint dwCreationFlags, IntPtr lpEnvironment, string lpCurrentDirectory,
-        //[In] ref STARTUPINFO lpStartupInfo,
-        //out ProcessInfo lpProcessInformation);
-
         [DllImport("advapi32", SetLastError = true, CharSet = CharSet.Unicode)]
         private static extern bool CreateProcessWithTokenW(
             IntPtr hToken, int dwLogonFlags, string applicationName, string commandLine,
