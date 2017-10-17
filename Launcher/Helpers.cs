@@ -14,12 +14,12 @@ namespace HighVoltz.Launcher
         #region Imports
         
         [DllImport("kernel32.dll")]
-		internal static extern IntPtr OpenThread(ThreadAccess dwDesiredAccess, bool bInheritHandle, uint dwThreadId);
+        internal static extern IntPtr OpenThread(ThreadAccess dwDesiredAccess, bool bInheritHandle, uint dwThreadId);
 
-		[DllImport("kernel32.dll")]
+        [DllImport("kernel32.dll")]
         internal static extern uint SuspendThread(IntPtr hThread);
 
-		[DllImport("kernel32.dll")]
+        [DllImport("kernel32.dll")]
         internal static extern int ResumeThread(IntPtr hThread);
 
         [DllImport("kernel32.dll", SetLastError = true)]
