@@ -14,12 +14,14 @@ Copyright 2012 HighVoltz
    limitations under the License.
 */
 
+using System;
 using System.ComponentModel;
 using System.Windows;
+using System.Xml.Linq;
 
 namespace HighVoltz.HBRelog.Settings
 {
-    public class HonorbuddySettings : INotifyPropertyChanged
+    public class HonorbuddySettings : SettingsBase
     {
         public HonorbuddySettings()
         {
@@ -94,6 +96,7 @@ namespace HighVoltz.HBRelog.Settings
             get { return _honorbuddyProfile; }
 			set { NotifyPropertyChanged(ref _honorbuddyProfile, ref value, nameof(HonorbuddyProfile)); }
         }
+
         private string _customClass;
         /// <summary>
         /// The Honorbuddy CustomClass to use. It can be left empty
@@ -124,22 +127,40 @@ namespace HighVoltz.HBRelog.Settings
             get { return _useHBBeta; }
 			set { NotifyPropertyChanged(ref _useHBBeta, ref value, nameof(UseHBBeta)); }
         }
-        public HonorbuddySettings ShadowCopy()
+
+        public override SettingsBase ShadowCopy() => (HonorbuddySettings) MemberwiseClone();
+
+        public override void LoadFromXml(XElement element)
         {
-            return (HonorbuddySettings)MemberwiseClone();
+            try
+            {
+                IsLoaded = false;
+                HonorbuddyKeyData = GetElementValue<string>(element.Element("HonorbuddyKeyData"));
+                CustomClass = GetElementValue<string>(element.Element("CustomClass"));
+                HonorbuddyArgs = GetElementValue<string>(element.Element("HonorbuddyArgs"));
+                BotBase = GetElementValue<string>(element.Element("BotBase"));
+                HonorbuddyProfile = GetElementValue<string>(element.Element("HonorbuddyProfile"));
+                HonorbuddyPath = GetElementValue<string>(element.Element("HonorbuddyPath"));
+                UseHBBeta = GetElementValue<bool>(element.Element("UseHBBeta"));
+            }
+            finally
+            {
+                IsLoaded = true;
+            }
         }
 
-
-        public event PropertyChangedEventHandler PropertyChanged;
-		private bool NotifyPropertyChanged<T>(ref T oldValue, ref T newValue, string propertyName)
-		{
-			if (Equals(oldValue, newValue))
-				return false;
-			oldValue = newValue;
-			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-			if (GlobalSettings.Instance != null)
-				GlobalSettings.Instance.QueueSave();
-			return true;
-		}
-	}
+        public override XElement ConvertToXml()
+        {
+            var xml = new XElement("HonorbuddySettings");
+            // Honorbuddy Settings
+            xml.Add(new XElement("HonorbuddyKeyData", HonorbuddyKeyData));
+            xml.Add(new XElement("CustomClass", CustomClass));
+            xml.Add(new XElement("HonorbuddyArgs", HonorbuddyArgs));
+            xml.Add(new XElement("BotBase", BotBase));
+            xml.Add(new XElement("HonorbuddyProfile", HonorbuddyProfile));
+            xml.Add(new XElement("HonorbuddyPath", HonorbuddyPath));
+            xml.Add(new XElement("UseHBBeta", UseHBBeta));
+            return xml;
+        }
+    }
 }

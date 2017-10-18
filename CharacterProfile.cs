@@ -19,6 +19,14 @@ using System.ComponentModel;
 using System.Windows.Media;
 using HighVoltz.HBRelog.Tasks;
 using HighVoltz.HBRelog.Settings;
+using System.Xml.Linq;
+using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Linq;
+using System.Xml.Serialization;
+using System.Globalization;
+using System.Diagnostics;
 
 namespace HighVoltz.HBRelog
 {
@@ -176,17 +184,88 @@ namespace HighVoltz.HBRelog
             {
                 cp.Tasks.Add(bmTask.ShadowCopy());
             }
-            cp.Settings = Settings.ShadowCopy();
+            cp.Settings = (ProfileSettings)Settings.ShadowCopy();
             return cp;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
         private void NotifyPropertyChanged(string name)
         {
-            if (PropertyChanged != null)
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+
+        public void LoadFromXml(XElement element)
+        {
+            Settings.LoadFromXml(element.Element("Settings"));
+            
+            // Tasks
+            XElement tasksElement = element.Element("Tasks");
+            foreach (XElement taskElement in tasksElement.Elements())
             {
-                PropertyChanged(this, new PropertyChangedEventArgs(name));
+                Type taskType = Type.GetType("HighVoltz.HBRelog.Tasks." + taskElement.Name);
+                if (taskType != null)
+                {
+                    var task = (BMTask)Activator.CreateInstance(taskType);
+                    task.SetProfile(this);
+                    // Dictionary of property Names and the corresponding PropertyInfo
+                    Dictionary<string, PropertyInfo> propertyDict =
+                        task.GetType()
+                            .GetProperties()
+                            .Where(pi => pi.GetCustomAttributesData().All(cad => cad.Constructor.DeclaringType != typeof(XmlIgnoreAttribute)))
+                            .ToDictionary(k => k.Name);
+
+                    foreach (XAttribute attr in taskElement.Attributes())
+                    {
+                        string propKey = attr.Name.ToString();
+                        if (propertyDict.ContainsKey(propKey))
+                        {
+                            // if property is an enum then use Enum.Parse.. otherwise use Convert.ChangeValue
+                            object val = typeof(Enum).IsAssignableFrom(propertyDict[propKey].PropertyType)
+                                             ? Enum.Parse(propertyDict[propKey].PropertyType, attr.Value)
+                                             : Convert.ChangeType(attr.Value, propertyDict[propKey].PropertyType, CultureInfo.InvariantCulture);
+                            propertyDict[propKey].SetValue(task, val, null);
+                        }
+                        else
+                        {
+                            Err("{0} does not have a property called {1}", taskElement.Name, attr.Name);
+                        }
+                    }
+                    Tasks.Add(task);
+                }
+                else
+                {
+                    Err("{0} is not a known task type", taskElement.Name);
+                }
             }
+        }
+
+        public XElement ConvertToXml()
+        {
+            var xml = new XElement("CharacterProfile");
+            var settingsElement = Settings.ConvertToXml();
+            xml.Add(settingsElement);
+
+            // Tasks
+            var tasksElement = new XElement("Tasks");
+            foreach (BMTask task in Tasks)
+            {
+                var taskElement = new XElement(task.GetType().Name);
+                // get a list of propertyes that don't have [XmlIgnore] custom attribute attached.
+                List<PropertyInfo> propertyList =
+                    task.GetType()
+                        .GetProperties()
+                        .Where(pi => pi.GetCustomAttributesData().All(cad => cad.Constructor.DeclaringType != typeof(XmlIgnoreAttribute)))
+                        .ToList();
+                foreach (PropertyInfo property in propertyList)
+                {
+                    var value = property.GetValue(task, null);
+                    Debug.Assert(value != null, string.Format("value for {0} != null", property.Name));
+                    taskElement.Add(new XAttribute(property.Name, value));
+                }
+                tasksElement.Add(taskElement);
+            }
+            xml.Add(tasksElement);
+            return xml;
         }
     }
 }

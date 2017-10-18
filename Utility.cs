@@ -21,7 +21,9 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Security.AccessControl;
 using System.Security.Cryptography;
+using System.Security.Principal;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -528,6 +530,33 @@ namespace HighVoltz.HBRelog
             {
                 process = null;
                 return false;
+            }
+        }
+
+        public static void EnsureFileOwnerIsAdmin(string path)
+        {
+            var accessControl = File.GetAccessControl(path, AccessControlSections.Owner);
+            string user = accessControl.GetOwner(typeof(NTAccount)).ToString();
+            if (user != "BUILTIN\\Administrators")
+            {
+                var ntAccount = new NTAccount("BUILTIN\\Administrators");
+                accessControl.SetOwner(ntAccount);
+                File.SetAccessControl(path, accessControl);
+            }
+        }
+
+
+        public static void EnsureStandardUserCannotReadFile(string path)
+        {
+            var accessControl = File.GetAccessControl(path, AccessControlSections.Access);
+            var rules = accessControl.GetAccessRules(true, true, typeof(NTAccount));
+            var loggedInUser = $"{Environment.UserDomainName}\\{Environment.UserName}";
+            var userRules = rules.OfType<FileSystemAccessRule>().FirstOrDefault(r => r.IdentityReference.Value == "BUILTIN\\Users" || r.IdentityReference.Value == loggedInUser);
+            if (userRules != null && (userRules.FileSystemRights | FileSystemRights.Read) != 0)
+            {
+                var newUserRules = new FileSystemAccessRule(userRules.IdentityReference, FileSystemRights.Write, AccessControlType.Allow);
+                accessControl.SetAccessRule(newUserRules);
+                File.SetAccessControl(path, accessControl);
             }
         }
     }

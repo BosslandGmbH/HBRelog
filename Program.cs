@@ -128,5 +128,10 @@ namespace HighVoltz.HBRelog
                 return default(T);
             }
         }
+
+        private static void CreateLauncher()
+        {
+
+        }
     }
 }

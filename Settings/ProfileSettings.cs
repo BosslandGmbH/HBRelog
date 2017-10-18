@@ -14,11 +14,18 @@ Copyright 2012 HighVoltz
    limitations under the License.
 */
 
+using HighVoltz.HBRelog.Tasks;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
+using System.Linq;
+using System.Reflection;
+using System.Xml.Linq;
 
 namespace HighVoltz.HBRelog.Settings
 {
-    public class ProfileSettings : INotifyPropertyChanged
+    public class ProfileSettings : SettingsBase
     {
         public HonorbuddySettings HonorbuddySettings { get; set; }
         public WowSettings WowSettings { get; set; }
@@ -36,8 +43,8 @@ namespace HighVoltz.HBRelog.Settings
         /// </summary>
         public string ProfileName
         {
-            get { return _profileName; }
-            set { _profileName = value; NotifyPropertyChanged("ProfileName"); }
+            get => _profileName;
+            set => NotifyPropertyChanged(ref _profileName, ref value, nameof(ProfileName));
         }
 
         private bool _isEnabled;
@@ -46,32 +53,57 @@ namespace HighVoltz.HBRelog.Settings
         /// </summary>
         public bool IsEnabled
         {
-            get { return _isEnabled; }
-            set
-            {
-                _isEnabled = value;
-                NotifyPropertyChanged("IsEnabled");
-            }
+            get => _isEnabled;
+            set => NotifyPropertyChanged(ref _isEnabled, ref value, nameof(IsEnabled));
         }
 
-        public ProfileSettings ShadowCopy()
+        public override SettingsBase ShadowCopy()
         {
             var settings = (ProfileSettings)MemberwiseClone();
-            settings.WowSettings = WowSettings.ShadowCopy();
-            settings.HonorbuddySettings = HonorbuddySettings.ShadowCopy();
+            settings.WowSettings = (WowSettings)WowSettings.ShadowCopy();
+            settings.HonorbuddySettings = (HonorbuddySettings)HonorbuddySettings.ShadowCopy();
             return settings;
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-        private void NotifyPropertyChanged(string name)
+        public override void LoadFromXml(XElement element)
         {
-            if (PropertyChanged != null)
+            try
             {
-                PropertyChanged(this, new PropertyChangedEventArgs(name));
+                IsLoaded = false;
+                ProfileName = GetElementValue<string>(element.Element("ProfileName"));
+                IsEnabled = GetElementValue<bool>(element.Element("IsEnabled"));
+
+                // Wow Settings 
+                XElement wowSettingsElement = element.Element("WowSettings");
+                if (wowSettingsElement != null)
+                    WowSettings.LoadFromXml(wowSettingsElement);
+
+                // Honorbuddy Settings
+                XElement hbSettingsElement = element.Element("HonorbuddySettings");
+                if (hbSettingsElement != null)
+                    HonorbuddySettings.LoadFromXml(hbSettingsElement);
             }
-            if (HbRelogManager.Settings != null)
-                HbRelogManager.Settings.QueueSave();
+            finally
+            {
+                IsLoaded = true;
+            }
         }
 
+        public override XElement ConvertToXml()
+        {
+            var xml = new XElement("Settings");
+            xml.Add(new XElement("ProfileName", ProfileName));
+            xml.Add(new XElement("IsEnabled", IsEnabled));
+
+            // Wow Settings 
+            var wowSettingsElement = WowSettings.ConvertToXml();
+            xml.Add(wowSettingsElement);
+
+            // Honorbuddy Settings
+            var hbSettingsElement = HonorbuddySettings.ConvertToXml();
+            xml.Add(hbSettingsElement);
+
+            return xml;
+        }
     }
 }

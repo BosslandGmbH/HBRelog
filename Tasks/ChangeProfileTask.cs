@@ -18,6 +18,7 @@ using System.Globalization;
 using System.IO;
 using System.Xml.Serialization;
 using HighVoltz.HBRelog.Controls;
+using HighVoltz.HBRelog.Settings;
 
 namespace HighVoltz.HBRelog.Tasks
 {
@@ -67,7 +68,7 @@ namespace HighVoltz.HBRelog.Tasks
                     Profile.Settings.ProfileName, ProfilePath, !string.IsNullOrEmpty(Bot) ? "switching to bot " + Bot : "using current bot");
 				Profile.Status = "Changing to Honorbuddy profile: " + Path.GetFileNameWithoutExtension(ProfilePath);
                 Profile.TaskManager.HonorbuddyManager.Stop();
-                var hbSettings = Profile.Settings.HonorbuddySettings.ShadowCopy();
+                var hbSettings = (HonorbuddySettings)Profile.Settings.HonorbuddySettings.ShadowCopy();
                 hbSettings.HonorbuddyProfile = ProfilePath;
                 if (!string.IsNullOrEmpty(Bot))
                     hbSettings.BotBase = Bot;

@@ -255,7 +255,7 @@ namespace HighVoltz.Launcher
             }
         }
 
-        private static int StartProcessSuspended(string exePath, string arguments)
+        private static Process StartProcessSuspended(string exePath, string arguments)
         {
             var pInfo = new ProcessInformation();
             var sInfo = new StartupInfo();
@@ -267,11 +267,11 @@ namespace HighVoltz.Launcher
             if (!CreateProcess(null, exePath + " " + arguments, ref pSec, ref tSec, false, CreateSuspended, IntPtr.Zero, null, ref sInfo, out pInfo))
                 throw new Win32Exception(Marshal.GetLastWin32Error());
 
-            return pInfo.ProcessId;
+            return Process.GetProcessById(pInfo.ProcessId);
         }
 
         // Based on http://blogs.microsoft.co.il/sasha/2009/07/09/launch-a-process-as-standard-user-from-an-elevated-process/
-        public static int CreateProcessAsStandardUserSuspended(string exePath, string arguments)
+        public static Process CreateProcessAsStandardUser(string exePath, string arguments, bool launchSuspended = false)
         {
             if (!IsUacEnabled)
                 return StartProcessSuspended(exePath, arguments);
@@ -333,13 +333,13 @@ namespace HighVoltz.Launcher
                 //Start the target process with the new token.
                 StartupInfo startupInfo = new StartupInfo();
                 ProcessInformation pi = new ProcessInformation();
-
-                if (!CreateProcessWithTokenW(hPrimaryToken, 0, exePath, exePath + " " + arguments, CreateSuspended, IntPtr.Zero, IntPtr.Zero, ref startupInfo, out pi))
+                var creationFlags = launchSuspended ? CreateSuspended : 0;
+                if (!CreateProcessWithTokenW(hPrimaryToken, 0, exePath, exePath + " " + arguments, creationFlags, IntPtr.Zero, IntPtr.Zero, ref startupInfo, out pi))
                     throw new Win32Exception(Marshal.GetLastWin32Error());
 
                 CloseHandle(pi.ProcessHandle);
                 CloseHandle(pi.ThreadHandle);
-                return pi.ProcessId;
+                return Process.GetProcessById(pi.ProcessId);
             }
             finally
             {

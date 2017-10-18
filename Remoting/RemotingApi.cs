@@ -3,6 +3,7 @@ using System.Linq;
 using System.ServiceModel;
 using System.Threading;
 using HighVoltz.HBRelog.Tasks;
+using HighVoltz.HBRelog.Settings;
 
 namespace HighVoltz.HBRelog.Remoting
 {
@@ -130,8 +131,8 @@ namespace HighVoltz.HBRelog.Remoting
 			CharacterProfile profile = GetProfileByHbProcID(hbProcID);
 			if (profile != null)
 			{
-				var wowSettings = profile.Settings.WowSettings.ShadowCopy();
-				var hbSettings = profile.Settings.HonorbuddySettings.ShadowCopy();
+				var wowSettings = (WowSettings)profile.Settings.WowSettings.ShadowCopy();
+				var hbSettings = (HonorbuddySettings)profile.Settings.HonorbuddySettings.ShadowCopy();
 
 				if (!string.IsNullOrEmpty(character))
 					wowSettings.CharacterName = character;
