@@ -20,7 +20,7 @@ namespace HighVoltz.Launcher
 			}
 			string programPath = args[0];
 			string arg = args.Length > 1 ? args[1] : "";
-			Helpers.CreateProcessAsStandardUserSuspended(programPath, arg);
+			Helpers.CreateProcessAsStandardUser(programPath, arg, true);
 			return 0;
 		}
 

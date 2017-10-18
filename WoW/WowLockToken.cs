@@ -197,22 +197,21 @@ namespace HighVoltz.HBRelog.WoW
                 _lockOwner.Settings.WowArgs += "-noautolaunch64bit";
             }
 
-            var pi = new ProcessStartInfo() { UseShellExecute = false };
 
             if (lanchingWoW)
             {
+                var pi = new ProcessStartInfo() { UseShellExecute = false };
                 var launcherPath = Path.Combine(Utility.AssemblyDirectory, "Launcher.exe");
                 pi.FileName = launcherPath;
                 var args = string.Format("\"{0}\" \"{1}\"", _lockOwner.Settings.WowPath, _lockOwner.Settings.WowArgs);
                 pi.Arguments = args;
+                _launcherProc = Process.Start(pi);
             }
             else
             {
-                pi.FileName = _lockOwner.Settings.WowPath;
-                pi.Arguments = _lockOwner.Settings.WowArgs;
+                _launcherProc = Helpers.CreateProcessAsStandardUser(_lockOwner.Settings.WowPath, _lockOwner.Settings.WowArgs);
             }
 
-            _launcherProc = Process.Start(pi);
             _lockOwner.ProcessIsReadyForInput = false;
             _lockOwner.LoginTimer.Reset();
         }
