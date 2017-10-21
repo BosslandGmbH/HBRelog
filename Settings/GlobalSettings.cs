@@ -78,16 +78,15 @@ namespace HighVoltz.HBRelog.Settings
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                     "HighVoltz\\HBRelog\\Setting.xml");
 
-        private static string GetSettingsPath()
+        internal static string GetSettingsPath()
         {
             if (File.Exists(LocalSettingsPath))
                 return LocalSettingsPath;
 
-            // Rename old file to new file name
-            if (File.Exists(OldUserSettingsPath))
-                File.Move(OldUserSettingsPath, UserSettingsPath);
+            if (File.Exists(UserSettingsPath))
+                return UserSettingsPath;
 
-            return UserSettingsPath;
+            return LocalSettingsPath;
         }
 
 	    public string SettingsPath { get; private set; }

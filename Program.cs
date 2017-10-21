@@ -24,18 +24,20 @@ using System.Windows.Shell;
 using System.Linq;
 using System.Reflection;
 using System.IO;
+using Microsoft.Win32;
+using HighVoltz.HBRelog.Settings;
 
 namespace HighVoltz.HBRelog
 {
     public class Program
     {
         private static Dictionary<string, string> s_cmdLineArgs = new Dictionary<string, string>();
-
         [STAThread]
         public static void Main(params string[] args)
         {
-            bool newInstance;
-            using (Mutex m = new Mutex(true, "HBRelog", out newInstance))
+            var settingsPath = GlobalSettings.GetSettingsPath();
+            var mutexName = Fnv1($"{GlobalSettings.GetSettingsPath()}|HBRelog|{MachineGuid}").ToString();
+            using (Mutex m = new Mutex(true, mutexName, out bool newInstance))
             {
                 if (newInstance)
                 {
@@ -59,12 +61,7 @@ namespace HighVoltz.HBRelog
                 }
                 else
                 {
-                    Process currentProc = Process.GetCurrentProcess();
-                    Process mutexOwner = Process.GetProcessesByName(currentProc.ProcessName).FirstOrDefault(p => p.Id != currentProc.Id);
-                    if (mutexOwner != null)
-                    {
-                        NativeMethods.SetForegroundWindow(mutexOwner.MainWindowHandle);
-                    }
+                    // ToDO find the mutex owner and bring the process to foreground
                 }
             }
         }
@@ -129,9 +126,53 @@ namespace HighVoltz.HBRelog
             }
         }
 
-        private static void CreateLauncher()
+        private static void LoadHBrelog()
+        {
+            var loaderName = GetLoaderName();
+            var loaderExeName = loaderName + ".exe";
+            if (!File.Exists(loaderName))
+            {
+                CreateLoader(loaderName);
+            }
+        }
+
+        private static void CreateLoader(string loaderName)
         {
 
+        }
+
+        private static string GetLoaderName()
+        {
+            return Fnv1($"{MachineGuid}|HBRelog").ToString();
+        }
+
+        //   unique?
+
+        private static string MachineGuid
+        {
+            get
+            {
+                //Check the HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Cryptography\MachineGuid registry value.
+                RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Cryptography", false);
+                return (string)(key?.GetValue("MachineGuid"));
+            }
+        }
+
+        private static int Fnv1(string s)
+        {
+            unchecked
+            {
+                uint hash = 0x811C9DC5;
+                foreach (char c in s)
+                {
+                    hash *= 16777619;
+                    hash ^= (byte)c;
+                    hash *= 16777619;
+                    hash ^= (byte)(c >> 8);
+                }
+
+                return (int)hash;
+            }
         }
     }
 }

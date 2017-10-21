@@ -242,10 +242,6 @@ namespace HighVoltz.HBRelog
 
         private void SelectAllButtonClick(object sender, RoutedEventArgs e)
         {
-            // my debug button :)
-            if (Environment.UserName == "highvoltz")
-            {
-            }
             AccountGrid.SelectAll();
         }
 
@@ -388,14 +384,23 @@ namespace HighVoltz.HBRelog
         private async Task CheckMinimumRequiredVersion()
         {
             var webClient = new WebClient();
-            var text = await webClient.DownloadStringTaskAsync(s_minRequireVersionUrl);
+            string text;
+            try
+            {
+                text = await webClient.DownloadStringTaskAsync(s_minRequireVersionUrl);
+            }
+            catch(WebException)
+            {
+                // just silently return if failed to connect to github.
+                return;
+            }
+
             if (string.IsNullOrEmpty(text))
                 throw new InvalidDataException("Remote MinRequiredVersion.txt is empty.");
             text = text.Trim();
             var firstSpaceI = text.IndexOf(" ");
             var versionTxt = firstSpaceI == -1 ? text : text.Substring(0, firstSpaceI);
             var minVersion = Version.Parse(versionTxt);
-            var msg = firstSpaceI > 0 ? text.Substring(firstSpaceI + 1) : null;
             var currentVersion = Version.Parse(Process.GetCurrentProcess().VersionString());
             if (currentVersion.Major >= minVersion.Major && currentVersion.Minor >= minVersion.Minor && currentVersion.Build >= minVersion.Build)
                 return;
@@ -406,9 +411,11 @@ namespace HighVoltz.HBRelog
                     profile.Stop();
             }
 
+            var msg = firstSpaceI > 0 ? text.Substring(firstSpaceI + 1) : null;
             msg = $"Your HBRelog version {currentVersion} is no longer compatible or safe. " +
                 $"You need upgrade to version {minVersion} or higher.{(msg != null ?" " + msg : "")}";
 
+            Log.Write(msg);
             MessageBox.Show(msg, "Incompatible HBRelog Version");
             Process.GetCurrentProcess().Kill();
         }
