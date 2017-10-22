@@ -82,7 +82,6 @@
     <Reference Include="PresentationFramework" />
     <Reference Include="System.Runtime" />
     <Reference Include="System.Globalization" />
-    <PackageReference Include="System.ValueTuple" Version="4.4.0" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Extensions.cs" />
@@ -301,6 +300,9 @@
     <Content Include="bin\Debug\HBRelog.pdb" />
     <Content Include="bin\Release\fasmdll_managed.dll" />
     <Content Include="bin\Release\HBRelog.exe" />
+    <None Include="Tools\PsExec.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <Resource Include="MinRequiredVersion.txt" />
     <None Include="CREDITS.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

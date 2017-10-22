@@ -401,7 +401,7 @@ namespace HighVoltz.HBRelog
             var firstSpaceI = text.IndexOf(" ");
             var versionTxt = firstSpaceI == -1 ? text : text.Substring(0, firstSpaceI);
             var minVersion = Version.Parse(versionTxt);
-            var currentVersion = Version.Parse(Process.GetCurrentProcess().VersionString());
+            var currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
             if (currentVersion.Major >= minVersion.Major && currentVersion.Minor >= minVersion.Minor && currentVersion.Build >= minVersion.Build)
                 return;
 

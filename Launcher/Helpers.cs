@@ -273,9 +273,6 @@ namespace HighVoltz.Launcher
         // Based on http://blogs.microsoft.co.il/sasha/2009/07/09/launch-a-process-as-standard-user-from-an-elevated-process/
         public static Process CreateProcessAsStandardUser(string exePath, string arguments, bool launchSuspended = false)
         {
-            if (!IsUacEnabled)
-                return StartProcessSuspended(exePath, arguments);
-
             //Enable SeIncreaseQuotaPrivilege in this process.  (This requires administrative privileges.)
             IntPtr hProcessToken = IntPtr.Zero;
             var currentProcess = Process.GetCurrentProcess();
