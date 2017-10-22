@@ -39,6 +39,8 @@ namespace HighVoltz.HBRelog
             {
                 if (newInstance)
                 {
+                    // Required since HB runs as a different user
+                    Process.EnterDebugMode();
                     AppDomain.CurrentDomain.ProcessExit += CurrentDomainProcessExit;
                     AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 

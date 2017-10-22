@@ -36,7 +36,6 @@ namespace GreyMagic
             proc.ErrorDataReceived += OutputDataReceived;
             proc.OutputDataReceived += OutputDataReceived;
 
-            Process.EnterDebugMode();
             ProcessAccessFlags a = ProcessAccessFlags.PROCESS_CREATE_THREAD |
                                    ProcessAccessFlags.PROCESS_QUERY_INFORMATION |
                                    ProcessAccessFlags.PROCESS_SET_INFORMATION | ProcessAccessFlags.PROCESS_TERMINATE |
@@ -218,7 +217,6 @@ namespace GreyMagic
         /// <remarks>Created 2012-02-15</remarks>
         public virtual void Dispose()
         {
-            Process.LeaveDebugMode();
             if (Process != null)
             {
                Process.Dispose();
