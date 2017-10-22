@@ -26,6 +26,9 @@ using System.Reflection;
 using System.IO;
 using Microsoft.Win32;
 using HighVoltz.HBRelog.Settings;
+using System.CodeDom.Compiler;
+using System.Security.Principal;
+using System.Security.AccessControl;
 
 namespace HighVoltz.HBRelog
 {
@@ -35,35 +38,48 @@ namespace HighVoltz.HBRelog
         [STAThread]
         public static void Main(params string[] args)
         {
+
             var settingsPath = GlobalSettings.GetSettingsPath();
             var mutexName = Fnv1($"{GlobalSettings.GetSettingsPath()}|HBRelog|{MachineGuid}").ToString();
             using (Mutex m = new Mutex(true, mutexName, out bool newInstance))
             {
-                if (newInstance)
+                var stage1Loading = AppDomain.CurrentDomain.IsDefaultAppDomain();
+                if (stage1Loading)
                 {
-                    // Required since HB runs as a different user
-                    Process.EnterDebugMode();
-                    AppDomain.CurrentDomain.ProcessExit += CurrentDomainProcessExit;
-                    AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
-
-                    s_cmdLineArgs = ProcessCmdLineArgs(args);
-                    if (s_cmdLineArgs.ContainsKey("AUTOSTART"))
-                        HbRelogManager.Settings.AutoStart = true;
-                    if (s_cmdLineArgs.ContainsKey("WOWDELAY"))
-                        HbRelogManager.Settings.WowDelay = GetCmdLineArgVal<int>(s_cmdLineArgs["WOWDELAY"]);
-                    if (s_cmdLineArgs.ContainsKey("HBDELAY"))
-                        HbRelogManager.Settings.HBDelay = GetCmdLineArgVal<int>(s_cmdLineArgs["HBDELAY"]);
-
-                    var app = new Application();
-                    Window window = new MainWindow();
-                    window.Show();
-                    app.Run(window);
+                    if (!newInstance)
+                    {
+                        // ToDO find the mutex owner and bring the process to foreground
+                        return;
+                    }
+                    LoadHBrelog(args);
+                    return;
                 }
-                else
-                {
-                    // ToDO find the mutex owner and bring the process to foreground
-                }
+
+                var loaderPath = Process.GetCurrentProcess().MainModule.FileName;
+                EnsureLoaderPermissions(loaderPath);
+                AppDomain.CurrentDomain.ProcessExit += CurrentDomainProcessExit;
+                AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+                AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+
+                s_cmdLineArgs = ProcessCmdLineArgs(args);
+                if (s_cmdLineArgs.ContainsKey("AUTOSTART"))
+                    HbRelogManager.Settings.AutoStart = true;
+                if (s_cmdLineArgs.ContainsKey("WOWDELAY"))
+                    HbRelogManager.Settings.WowDelay = GetCmdLineArgVal<int>(s_cmdLineArgs["WOWDELAY"]);
+                if (s_cmdLineArgs.ContainsKey("HBDELAY"))
+                    HbRelogManager.Settings.HBDelay = GetCmdLineArgVal<int>(s_cmdLineArgs["HBDELAY"]);
+
+                var app = new Application();
+                Window window = new MainWindow();
+                window.Show();
+                app.Run(window);
             }
+        }
+
+        private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            return Assembly.GetExecutingAssembly();
+            throw new NotImplementedException();
         }
 
         private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
@@ -126,27 +142,98 @@ namespace HighVoltz.HBRelog
             }
         }
 
-        private static void LoadHBrelog()
+        private static void LoadHBrelog(params string[] args)
         {
+            var baseDirectory = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
             var loaderName = GetLoaderName();
-            var loaderExeName = loaderName + ".exe";
-            if (!File.Exists(loaderName))
+            var cachePath = Path.Combine(baseDirectory, "Cache");
+            if (!Directory.Exists(cachePath))
+                Directory.CreateDirectory(cachePath);
+
+            var loaderPath = Path.Combine(cachePath, loaderName + ".exe");
+            if (!File.Exists(loaderPath) && !CreateLoader(loaderPath))
+                return;
+
+            ProcessStartInfo psi = new ProcessStartInfo();
+            var hbrelogArgs = args.Any() ? '"' + string.Join("\" \"", args) + '"' : "";
+
+            psi.Arguments = $"-accepteula -nobanner -i -s \"{loaderPath}\" {hbrelogArgs}";
+            psi.UseShellExecute = false;
+            psi.CreateNoWindow = true;
+            psi.FileName = Path.Combine(baseDirectory, "Tools", "PsExec.exe");
+            Process.Start(psi);
+        }
+
+        private static bool CreateLoader(string loaderPath)
+        {
+            var baseDir = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+            var hbRelogPath = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "..", "HBRelog.exe");
+            var src = @"
+using System;
+using System.IO;
+using System.Windows;
+using System.Reflection;
+namespace __Loader__
+{
+    public class Program
+    {
+        [STAThread]
+        public static int Main(params string[] args)
+        {
+            var hbRelogInstallPath = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "".."");
+            var hbRelogPath = Path.Combine(hbRelogInstallPath, ""HBRelog.exe"");
+            var setup = new AppDomainSetup
             {
-                CreateLoader(loaderName);
+                ApplicationBase = hbRelogInstallPath,
+            };
+
+            return AppDomain.CreateDomain(""Domain"", null, setup).ExecuteAssembly(hbRelogPath, args);
+        }
+    }
+}
+";
+
+            using (CodeDomProvider cc = CodeDomProvider.CreateProvider("CSharp"))
+            {
+                CompilerParameters cp = new CompilerParameters();
+                cp.GenerateInMemory = false;
+                cp.GenerateExecutable = true;
+                cp.OutputAssembly = loaderPath;
+                cp.IncludeDebugInformation = false;
+                cp.CompilerOptions = "/optimize /platform:x86 /target:winexe";
+
+                foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    cp.ReferencedAssemblies.Add(asm.Location);
+                }
+
+                var results = cc.CompileAssemblyFromSource(cp, src);
+                if (results.Errors.HasErrors)
+                {
+                    foreach (var err in results.Errors.OfType<CompilerError>())
+                        Log.Err($"{err}");
+                    return false;
+                }
+                return true;
+            } 
+        }
+
+        public static void EnsureLoaderPermissions(string path)
+        {
+            var accessControl = File.GetAccessControl(path, AccessControlSections.Owner);
+            string user = accessControl.GetOwner(typeof(NTAccount)).ToString();
+            if (user != "NT AUTHORITY\\SYSTEM")
+            {
+                var ntAccount = new NTAccount("NT AUTHORITY\\SYSTEM");
+                accessControl.SetOwner(ntAccount);
+                File.SetAccessControl(path, accessControl);
             }
         }
 
-        private static void CreateLoader(string loaderName)
+        static string GetLoaderName()
         {
-
+            return Fnv1($"{MachineGuid}|HBRelog|{GlobalSettings.GetSettingsPath()}").ToString();
         }
-
-        private static string GetLoaderName()
-        {
-            return Fnv1($"{MachineGuid}|HBRelog").ToString();
-        }
-
-        //   unique?
 
         private static string MachineGuid
         {

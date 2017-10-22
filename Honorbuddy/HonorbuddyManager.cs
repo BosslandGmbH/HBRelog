@@ -203,8 +203,6 @@ namespace HighVoltz.HBRelog.Honorbuddy
                 if (BotProcess != null && Launcher.Helpers.IsUacEnabled)
                 {
                     var path = BotProcess.MainModule.FileName;
-                    Utility.EnsureFileOwnerIsAdmin(path);
-                    Utility.EnsureStandardUserCannotReadFile(path);
                 }
             }
             else

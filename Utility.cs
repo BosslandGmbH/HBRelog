@@ -533,19 +533,6 @@ namespace HighVoltz.HBRelog
             }
         }
 
-        public static void EnsureFileOwnerIsAdmin(string path)
-        {
-            var accessControl = File.GetAccessControl(path, AccessControlSections.Owner);
-            string user = accessControl.GetOwner(typeof(NTAccount)).ToString();
-            if (user != "BUILTIN\\Administrators")
-            {
-                var ntAccount = new NTAccount("BUILTIN\\Administrators");
-                accessControl.SetOwner(ntAccount);
-                File.SetAccessControl(path, accessControl);
-            }
-        }
-
-
         public static void EnsureStandardUserCannotReadFile(string path)
         {
             var accessControl = File.GetAccessControl(path, AccessControlSections.Access);
