@@ -200,10 +200,6 @@ namespace HighVoltz.HBRelog.Honorbuddy
                 proc.Dispose();
                 int pid = int.Parse(Regex.Match(output, @"PID (?<id>[0-9]+)").Groups["id"].Value);
                 BotProcess = Process.GetProcessById(pid);
-                if (BotProcess != null && Launcher.Helpers.IsUacEnabled)
-                {
-                    var path = BotProcess.MainModule.FileName;
-                }
             }
             else
             {

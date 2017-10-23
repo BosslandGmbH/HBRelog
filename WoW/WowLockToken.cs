@@ -5,9 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using GreyMagic;
-using HighVoltz.Launcher;
 using System.Runtime.InteropServices;
 using HighVoltz.HBRelog.Settings;
+using HighVoltz.Launcher;
 
 namespace HighVoltz.HBRelog.WoW
 {
@@ -200,12 +200,15 @@ namespace HighVoltz.HBRelog.WoW
 
             if (lanchingWoW)
             {
-                var pi = new ProcessStartInfo() { UseShellExecute = false };
-                var launcherPath = Path.Combine(Utility.AssemblyDirectory, "Launcher.exe");
-                pi.FileName = launcherPath;
-                var args = string.Format("\"{0}\" \"{1}\"", _lockOwner.Settings.WowPath, _lockOwner.Settings.WowArgs);
-                pi.Arguments = args;
-                _launcherProc = Process.Start(pi);
+                var launcherPath = Path.Combine(Utility.AssemblyDirectory, "Tools", "Launcher.exe");
+                var psi = new ProcessStartInfo(launcherPath, _lockOwner.Settings.WowArgs);
+                psi.UseShellExecute = false;
+                psi.CreateNoWindow = true;
+                psi.RedirectStandardInput = true;
+                psi.RedirectStandardOutput = false;
+                _launcherProc = Process.Start(psi);
+                _launcherProc.StandardInput.WriteLine("WoW");
+                _launcherProc.StandardInput.WriteLine(_lockOwner.Settings.WowPath);
             }
             else
             {
