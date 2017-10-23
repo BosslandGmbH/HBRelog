@@ -86,8 +86,8 @@ namespace HighVoltz.Launcher
         private static extern bool ConvertStringSidToSid(string stringSid, out IntPtr ptrSid);
 
         [DllImport("advapi32.dll", SetLastError = true)]
-        private static extern bool SetTokenInformation(IntPtr tokenHandle, TokenInformationClass tokenInformationClass,
-            ref TokenMandatoryLabel tokenInformation, int tokenInformationLength);
+        private unsafe static extern bool SetTokenInformation(IntPtr tokenHandle, TokenInformationClass tokenInformationClass,
+            void *tokenInformation, int tokenInformationLength);
 
         [DllImport("advapi32.dll")]
         static extern int GetLengthSid(IntPtr pSid);
@@ -163,6 +163,12 @@ namespace HighVoltz.Launcher
         private struct TokenMandatoryLabel
         {
             public SidAndAttributes Label;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct TokenElevation
+        {
+            public uint IsElevated;
         }
 
         public enum TokenInformationClass
@@ -297,7 +303,7 @@ namespace HighVoltz.Launcher
         }
 
         // Based on http://blogs.microsoft.co.il/sasha/2009/07/09/launch-a-process-as-standard-user-from-an-elevated-process/
-        public static Process CreateProcessAsStandardUser(string exePath, string arguments, bool launchSuspended = false)
+        public unsafe static Process CreateProcessAsStandardUser(string exePath, string arguments, bool launchSuspended = false)
         {
             //Enable SeIncreaseQuotaPrivilege in this process.  (This requires administrative privileges.)
             IntPtr hProcessToken = IntPtr.Zero;
@@ -349,19 +355,28 @@ namespace HighVoltz.Launcher
                     throw new Win32Exception(Marshal.GetLastWin32Error());
 
                 //Duplicate the shell's process token to get a primary token.
-                const TokenAcess tokenRights = TokenAcess.Query | TokenAcess.AssignPrimary | TokenAcess.Duplicate | TokenAcess.AdjustDefault | TokenAcess.AdjustSessionId;
+                const TokenAcess tokenRights =TokenAcess.AllAccess;
                 if (!DuplicateTokenEx(hShellProcessToken, tokenRights, IntPtr.Zero, SecurityImpersonationLevel.Impersonation, TokenType.Primary, out hPrimaryToken))
                     throw new Win32Exception(Marshal.GetLastWin32Error());
 
-                if (!ConvertStringSidToSid(MediumIntegritySid, out IntPtr sid))
-                    throw new Win32Exception(Marshal.GetLastWin32Error());
+                if (!IsUacEnabled)
+                {
+                    if (!ConvertStringSidToSid(MediumIntegritySid, out IntPtr sid))
+                        throw new Win32Exception(Marshal.GetLastWin32Error());
+                    
+                    // Set integrity level to Medium
+                    TokenMandatoryLabel tokenMandatoryLabel = new TokenMandatoryLabel();
+                    tokenMandatoryLabel.Label.Attributes = GroupIntegrity;
+                    tokenMandatoryLabel.Label.Sid = sid;
+                    var size = Marshal.SizeOf(tokenMandatoryLabel) + GetLengthSid(sid);
+                    if (!SetTokenInformation(hPrimaryToken, TokenInformationClass.IntegrityLevel, &tokenMandatoryLabel, size))
+                        throw new Win32Exception(Marshal.GetLastWin32Error());
 
-                TokenMandatoryLabel tokenMandatoryLabel = new TokenMandatoryLabel();
-                tokenMandatoryLabel.Label.Attributes = GroupIntegrity;
-                tokenMandatoryLabel.Label.Sid = sid;
-                var size = Marshal.SizeOf(tokenMandatoryLabel) + GetLengthSid(sid);
-                if (!SetTokenInformation(hPrimaryToken, TokenInformationClass.IntegrityLevel, ref tokenMandatoryLabel, size))
-                    throw new Win32Exception(Marshal.GetLastWin32Error());
+                    //// Remove elevation from token - Commented out because I couldn't get it to work.
+                    //TokenElevation elevation = new TokenElevation();
+                    //if (!SetTokenInformation(hPrimaryToken, TokenInformationClass.Elevation, &elevation, 4))
+                    //    throw new Win32Exception(Marshal.GetLastWin32Error());
+                }
 
                 //Start the target process with the new token.
                 StartupInfo startupInfo = new StartupInfo();
