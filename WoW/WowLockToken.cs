@@ -200,7 +200,6 @@ namespace HighVoltz.HBRelog.WoW
 
             if (lanchingWoW)
             {
-<<<<<<< HEAD
                 var launcherPath = Path.Combine(Utility.AssemblyDirectory, "Tools", "Launcher.exe");
                 var psi = new ProcessStartInfo(launcherPath, _lockOwner.Settings.WowArgs);
                 psi.UseShellExecute = false;
@@ -210,14 +209,6 @@ namespace HighVoltz.HBRelog.WoW
                 _launcherProc = Process.Start(psi);
                 _launcherProc.StandardInput.WriteLine("WoW");
                 _launcherProc.StandardInput.WriteLine(_lockOwner.Settings.WowPath);
-=======
-                var pi = new ProcessStartInfo() { UseShellExecute = false };
-                var launcherPath = Path.Combine(Utility.AssemblyDirectory, "Launcher.exe");
-                pi.FileName = launcherPath;
-                var args = string.Format("\"{0}\" \"{1}\"", _lockOwner.Settings.WowPath, _lockOwner.Settings.WowArgs);
-                pi.Arguments = args;
-                _launcherProc = Process.Start(pi);
->>>>>>> 20671d1f80b24cdac66d80c2bcc94ae837a0aa5d
             }
             else
             {

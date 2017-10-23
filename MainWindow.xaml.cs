@@ -31,6 +31,7 @@ using System.Net;
 using System.IO;
 using System.Diagnostics;
 using System.Windows.Threading;
+using System.Text;
 
 namespace HighVoltz.HBRelog
 {
@@ -49,6 +50,8 @@ namespace HighVoltz.HBRelog
             LoadStyle();
             var resourceLocater = new Uri("/HBRelog;component/mainwindow.xaml", UriKind.Relative);
             Application.LoadComponent(this, resourceLocater);
+            Title = InsertRandomZeroWidthSpaces(Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().Location));
+            Title = Title.Length.ToString();
         }
 
         public static MainWindow Instance { get; private set; }
@@ -173,10 +176,6 @@ namespace HighVoltz.HBRelog
             Log.Write("\t{0,-30} {1}", "Store Settings Locally", HbRelogManager.Settings.UseLocalSettings);
 			Log.Write("\t{0,-30} {1}", "Set GameWindow Title:", HbRelogManager.Settings.SetGameWindowTitle);
             Log.Write("\t{0,-30} {1}", "Wow Start Delay:", HbRelogManager.Settings.WowDelay);
-
-            if (!Launcher.Helpers.IsUacEnabled)
-                Log.Write(System.Windows.Media.Colors.Red, $"UAC is disabled. It's highly recommended that UAC is enabled to increase security.");
-
 
             // prevent user from starting any profiles until after version check is complete
             Log.Write("Checking minimum required version.");
@@ -418,6 +417,18 @@ namespace HighVoltz.HBRelog
             Log.Write(msg);
             MessageBox.Show(msg, "Incompatible HBRelog Version");
             Process.GetCurrentProcess().Kill();
+        }
+
+        private static string InsertRandomZeroWidthSpaces(string str)
+        {
+            var sb = new StringBuilder(str);
+            for (int i = sb.Length; i >= 0; i--)
+            {
+                if (Utility.Rand.Next(0, 50) == 0)
+                    continue;
+                sb.Insert(i, new string('​', Utility.Rand.Next(0, 50)));
+            }
+            return sb.ToString();
         }
     }
 }
