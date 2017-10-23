@@ -532,19 +532,5 @@ namespace HighVoltz.HBRelog
                 return false;
             }
         }
-
-        public static void EnsureStandardUserCannotReadFile(string path)
-        {
-            var accessControl = File.GetAccessControl(path, AccessControlSections.Access);
-            var rules = accessControl.GetAccessRules(true, true, typeof(NTAccount));
-            var loggedInUser = $"{Environment.UserDomainName}\\{Environment.UserName}";
-            var userRules = rules.OfType<FileSystemAccessRule>().FirstOrDefault(r => r.IdentityReference.Value == "BUILTIN\\Users" || r.IdentityReference.Value == loggedInUser);
-            if (userRules != null && (userRules.FileSystemRights | FileSystemRights.Read) != 0)
-            {
-                var newUserRules = new FileSystemAccessRule(userRules.IdentityReference, FileSystemRights.Write, AccessControlType.Allow);
-                accessControl.SetAccessRule(newUserRules);
-                File.SetAccessControl(path, accessControl);
-            }
-        }
     }
 }
