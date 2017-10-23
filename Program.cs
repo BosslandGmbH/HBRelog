@@ -38,6 +38,7 @@ namespace HighVoltz.HBRelog
         [STAThread]
         public static void Main(params string[] args)
         {
+<<<<<<< HEAD
             var baseDirectory = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
             // Run under 'System' user
             using (var identity = WindowsIdentity.GetCurrent())
@@ -96,6 +97,27 @@ namespace HighVoltz.HBRelog
                     // ToDO find the mutex owner and bring the process to foreground
                     return;
                 }
+=======
+
+            var settingsPath = GlobalSettings.GetSettingsPath();
+            var mutexName = Fnv1($"{GlobalSettings.GetSettingsPath()}|HBRelog|{MachineGuid}").ToString();
+            using (Mutex m = new Mutex(true, mutexName, out bool newInstance))
+            {
+                var stage1Loading = AppDomain.CurrentDomain.IsDefaultAppDomain();
+                if (stage1Loading)
+                {
+                    if (!newInstance)
+                    {
+                        // ToDO find the mutex owner and bring the process to foreground
+                        return;
+                    }
+                    LoadHBrelog(args);
+                    return;
+                }
+
+                var loaderPath = Process.GetCurrentProcess().MainModule.FileName;
+                EnsureLoaderPermissions(loaderPath);
+>>>>>>> 20671d1f80b24cdac66d80c2bcc94ae837a0aa5d
                 AppDomain.CurrentDomain.ProcessExit += CurrentDomainProcessExit;
                 AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
                 AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
@@ -111,13 +133,17 @@ namespace HighVoltz.HBRelog
                 var app = new Application();
                 Window window = new MainWindow();
                 window.Show();
+<<<<<<< HEAD
                 window.Activate();
+=======
+>>>>>>> 20671d1f80b24cdac66d80c2bcc94ae837a0aa5d
                 app.Run(window);
             }
         }
 
         private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
+<<<<<<< HEAD
             AssemblyName askedAssembly = new AssemblyName(args.Name);
             string[] fields = args.Name.Split(',');
             string name = fields[0];
@@ -141,6 +167,10 @@ namespace HighVoltz.HBRelog
                 return Assembly.LoadFrom(path);
 
             return null;
+=======
+            return Assembly.GetExecutingAssembly();
+            throw new NotImplementedException();
+>>>>>>> 20671d1f80b24cdac66d80c2bcc94ae837a0aa5d
         }
 
         private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
@@ -203,6 +233,7 @@ namespace HighVoltz.HBRelog
             }
         }
 
+<<<<<<< HEAD
         public static void EnsureLoaderPermissions(string path)
         {
             var fs = new FileSecurity();
@@ -220,6 +251,94 @@ namespace HighVoltz.HBRelog
                     AccessControlType.Allow));
 
             File.SetAccessControl(path, fs);
+=======
+        private static void LoadHBrelog(params string[] args)
+        {
+            var baseDirectory = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+            var loaderName = GetLoaderName();
+            var cachePath = Path.Combine(baseDirectory, "Cache");
+            if (!Directory.Exists(cachePath))
+                Directory.CreateDirectory(cachePath);
+
+            var loaderPath = Path.Combine(cachePath, loaderName + ".exe");
+            if (!File.Exists(loaderPath) && !CreateLoader(loaderPath))
+                return;
+
+            ProcessStartInfo psi = new ProcessStartInfo();
+            var hbrelogArgs = args.Any() ? '"' + string.Join("\" \"", args) + '"' : "";
+
+            psi.Arguments = $"-accepteula -nobanner -i -s \"{loaderPath}\" {hbrelogArgs}";
+            psi.UseShellExecute = false;
+            psi.CreateNoWindow = true;
+            psi.FileName = Path.Combine(baseDirectory, "Tools", "PsExec.exe");
+            Process.Start(psi);
+        }
+
+        private static bool CreateLoader(string loaderPath)
+        {
+            var baseDir = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+            var hbRelogPath = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "..", "HBRelog.exe");
+            var src = @"
+using System;
+using System.IO;
+using System.Windows;
+using System.Reflection;
+namespace __Loader__
+{
+    public class Program
+    {
+        [STAThread]
+        public static int Main(params string[] args)
+        {
+            var hbRelogInstallPath = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "".."");
+            var hbRelogPath = Path.Combine(hbRelogInstallPath, ""HBRelog.exe"");
+            var setup = new AppDomainSetup
+            {
+                ApplicationBase = hbRelogInstallPath,
+            };
+
+            return AppDomain.CreateDomain(""Domain"", null, setup).ExecuteAssembly(hbRelogPath, args);
+        }
+    }
+}
+";
+
+            using (CodeDomProvider cc = CodeDomProvider.CreateProvider("CSharp"))
+            {
+                CompilerParameters cp = new CompilerParameters();
+                cp.GenerateInMemory = false;
+                cp.GenerateExecutable = true;
+                cp.OutputAssembly = loaderPath;
+                cp.IncludeDebugInformation = false;
+                cp.CompilerOptions = "/optimize /platform:x86 /target:winexe";
+
+                foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    cp.ReferencedAssemblies.Add(asm.Location);
+                }
+
+                var results = cc.CompileAssemblyFromSource(cp, src);
+                if (results.Errors.HasErrors)
+                {
+                    foreach (var err in results.Errors.OfType<CompilerError>())
+                        Log.Err($"{err}");
+                    return false;
+                }
+                return true;
+            } 
+        }
+
+        public static void EnsureLoaderPermissions(string path)
+        {
+            var accessControl = File.GetAccessControl(path, AccessControlSections.Owner);
+            string user = accessControl.GetOwner(typeof(NTAccount)).ToString();
+            if (user != "NT AUTHORITY\\SYSTEM")
+            {
+                var ntAccount = new NTAccount("NT AUTHORITY\\SYSTEM");
+                accessControl.SetOwner(ntAccount);
+                File.SetAccessControl(path, accessControl);
+            }
+>>>>>>> 20671d1f80b24cdac66d80c2bcc94ae837a0aa5d
         }
 
         static string GetLoaderName()

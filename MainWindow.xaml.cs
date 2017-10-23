@@ -174,6 +174,10 @@ namespace HighVoltz.HBRelog
 			Log.Write("\t{0,-30} {1}", "Set GameWindow Title:", HbRelogManager.Settings.SetGameWindowTitle);
             Log.Write("\t{0,-30} {1}", "Wow Start Delay:", HbRelogManager.Settings.WowDelay);
 
+            if (!Launcher.Helpers.IsUacEnabled)
+                Log.Write(System.Windows.Media.Colors.Red, $"UAC is disabled. It's highly recommended that UAC is enabled to increase security.");
+
+
             // prevent user from starting any profiles until after version check is complete
             Log.Write("Checking minimum required version.");
             StartButton.IsEnabled = false;
