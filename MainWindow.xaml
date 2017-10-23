@@ -5,7 +5,7 @@
         xmlns:Controls="clr-namespace:HighVoltz.HBRelog.Controls" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d"
         x:Class="HighVoltz.HBRelog.MainWindow"
-        Title="HBRelog" Height="400" Width="750" MinWidth="750" MinHeight="400" Loaded="Window_Loaded"
+        Height="400" Width="750" MinWidth="750" MinHeight="400" Loaded="Window_Loaded"
         DataContext="{Binding CharacterProfiles, Source={x:Static local:HbRelogManager.Settings}}"
         Icon="Images/Logo.ico"
     >

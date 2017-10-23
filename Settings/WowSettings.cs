@@ -19,10 +19,11 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Windows;
+using System.Xml.Linq;
 
 namespace HighVoltz.HBRelog.Settings
 {
-    public class WowSettings : INotifyPropertyChanged
+    public class WowSettings : SettingsBase
     {
         public WowSettings()
         {
@@ -257,23 +258,58 @@ namespace HighVoltz.HBRelog.Settings
             set { NotifyPropertyChanged(ref _region, ref value, nameof(Region)); }
         }
 
-        public WowSettings ShadowCopy()
+        public override SettingsBase ShadowCopy()
         {
-            return (WowSettings)MemberwiseClone();
+            return (SettingsBase)MemberwiseClone();
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        private bool NotifyPropertyChanged<T>(ref T oldValue, ref T newValue, string propertyName)
+        public override void LoadFromXml(XElement element)
         {
-            if (Equals(oldValue, newValue))
-                return false;
-            oldValue = newValue;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-            if (GlobalSettings.Instance != null)
-                GlobalSettings.Instance.QueueSave();
-            return true;
+            try
+            {
+                IsLoaded = false;
+                LoginData = GetElementValue<string>(element.Element("LoginData"));
+                PasswordData = GetElementValue<string>(element.Element("PasswordData"));
+                AcountName = GetElementValue<string>(element.Element("AcountName"));
+                CharacterName = GetElementValue<string>(element.Element("CharacterName"));
+                ServerName = GetElementValue<string>(element.Element("ServerName"));
+                AuthenticatorSerialData = GetElementValue<string>(element.Element("AuthenticatorSerialData"));
+                AuthenticatorRestoreCodeData = GetElementValue<string>(element.Element("AuthenticatorRestoreCodeData"));
+                Region = GetElementValue<WowSettings.WowRegion>(element.Element("Region"));
+                WowPath = GetElementValue<string>(element.Element("WowPath"));
+                WowArgs = GetElementValue<string>(element.Element("WowArgs"));
+                WowWindowWidth = GetElementValue<int>(element.Element("WowWindowWidth"));
+                WowWindowHeight = GetElementValue<int>(element.Element("WowWindowHeight"));
+                WowWindowX = GetElementValue<int>(element.Element("WowWindowX"));
+                WowWindowY = GetElementValue<int>(element.Element("WowWindowY"));
+            }
+            finally
+            {
+                IsLoaded = true;
+            }
         }
+
+        public override XElement ConvertToXml()
+        {
+            var xml = new XElement("WowSettings");
+            // Wow Settings 
+            xml.Add(new XElement("LoginData", LoginData));
+            xml.Add(new XElement("PasswordData", PasswordData));
+            xml.Add(new XElement("AcountName", AcountName));
+            xml.Add(new XElement("CharacterName", CharacterName));
+            xml.Add(new XElement("ServerName", ServerName));
+            xml.Add(new XElement("AuthenticatorSerialData", AuthenticatorSerialData));
+            xml.Add(new XElement("AuthenticatorRestoreCodeData", AuthenticatorRestoreCodeData));
+            xml.Add(new XElement("Region", Region));
+            xml.Add(new XElement("WowPath", WowPath));
+            xml.Add(new XElement("WowArgs", WowArgs));
+            xml.Add(new XElement("WowWindowWidth", WowWindowWidth));
+            xml.Add(new XElement("WowWindowHeight", WowWindowHeight));
+            xml.Add(new XElement("WowWindowX", WowWindowX));
+            xml.Add(new XElement("WowWindowY", WowWindowY));
+            return xml;
+        }
+
 
         #region Embeded type - WowRegion
 

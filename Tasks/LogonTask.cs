@@ -16,6 +16,7 @@ Copyright 2012 HighVoltz
 
 using System.Xml.Serialization;
 using HighVoltz.HBRelog.Controls;
+using HighVoltz.HBRelog.Settings;
 
 namespace HighVoltz.HBRelog.Tasks
 {
@@ -69,8 +70,8 @@ namespace HighVoltz.HBRelog.Tasks
         {
             if (!_runOnce)
             {
-                var wowSettings = Profile.Settings.WowSettings.ShadowCopy();
-                var hbSettings = Profile.Settings.HonorbuddySettings.ShadowCopy();
+                var wowSettings = (WowSettings)Profile.Settings.WowSettings.ShadowCopy();
+                var hbSettings = (HonorbuddySettings)Profile.Settings.HonorbuddySettings.ShadowCopy();
 
                 if (!string.IsNullOrEmpty(CharacterName))
                     wowSettings.CharacterName = CharacterName;

@@ -1,27 +1,39 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Threading;
+using System.Reflection;
 using System.Windows.Forms;
 
 namespace HighVoltz.Launcher
 {
-	static class Program
+    public class Program
 	{
-
-		static int Main(params string[] args)
+        [STAThread]
+        public static int Main(params string[] args)
 		{
-			if (args.Length < 1)
-			{
-				Console.WriteLine("You must provide a path to a program to launch");
-				return -1;
-			}
-			string programPath = args[0];
-			string arg = args.Length > 1 ? args[1] : "";
-			Helpers.StartProcessSuspended(programPath, arg);
-			return 0;
+            string programType = Console.ReadLine();
+            string programPath = Console.ReadLine();
+
+            bool startHBRelog = programType.Equals("HBRelog", StringComparison.OrdinalIgnoreCase);
+            if (!startHBRelog && !programType.Equals("WoW", StringComparison.OrdinalIgnoreCase))
+                return -2;
+
+            if (startHBRelog)
+            {
+                var hbRelogInstallPath = Path.GetDirectoryName(programPath);
+                var setup = new AppDomainSetup
+                {
+                    ApplicationBase = hbRelogInstallPath,
+                    PrivateBinPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location)
+                };
+                return AppDomain.CreateDomain("Domain", null, setup).ExecuteAssembly(programPath, args);
+            }
+            else
+            {
+                var wowArgs = string.Join(" ", args.Select(a => $"\"{a}\""));
+                Helpers.CreateProcessAsStandardUser(programPath, wowArgs, true);
+            }
+            return 0;
 		}
 
 	}

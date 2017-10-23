@@ -82,13 +82,13 @@
     <Reference Include="PresentationFramework" />
     <Reference Include="System.Runtime" />
     <Reference Include="System.Globalization" />
-    <PackageReference Include="System.ValueTuple" Version="4.4.0" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Extensions.cs" />
     <Compile Include="Honorbuddy\States\MonitorState.cs" />
     <Compile Include="Honorbuddy\States\StartHonorbuddyState.cs" />
     <Compile Include="Honorbuddy\States\UpdateHonorbuddyState.cs" />
+    <Compile Include="Settings\SettingsBase.cs" />
     <Compile Include="Tasks\CustomTaskEditControlAttribute.cs" />
     <Compile Include="Tasks\ICustomTaskEditControlDataBound.cs" />
     <Compile Include="WoW\States\CharacterCreationState.cs" />
@@ -300,6 +300,9 @@
     <Content Include="bin\Debug\HBRelog.pdb" />
     <Content Include="bin\Release\fasmdll_managed.dll" />
     <Content Include="bin\Release\HBRelog.exe" />
+    <None Include="Tools\PsExec.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <Resource Include="MinRequiredVersion.txt" />
     <None Include="CREDITS.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -325,8 +328,7 @@
     </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PostBuildEvent>MOVE $(SolutionDir)$(OutDir)Launcher.exe $(SolutionDir)$(OutDir)Tools</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

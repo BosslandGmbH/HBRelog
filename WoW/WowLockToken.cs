@@ -5,9 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using GreyMagic;
-using HighVoltz.Launcher;
 using System.Runtime.InteropServices;
 using HighVoltz.HBRelog.Settings;
+using HighVoltz.Launcher;
 
 namespace HighVoltz.HBRelog.WoW
 {
@@ -197,22 +197,24 @@ namespace HighVoltz.HBRelog.WoW
                 _lockOwner.Settings.WowArgs += "-noautolaunch64bit";
             }
 
-            var pi = new ProcessStartInfo() { UseShellExecute = false };
 
             if (lanchingWoW)
             {
-                var launcherPath = Path.Combine(Utility.AssemblyDirectory, "Launcher.exe");
-                pi.FileName = launcherPath;
-                var args = string.Format("\"{0}\" \"{1}\"", _lockOwner.Settings.WowPath, _lockOwner.Settings.WowArgs);
-                pi.Arguments = args;
+                var launcherPath = Path.Combine(Utility.AssemblyDirectory, "Tools", "Launcher.exe");
+                var psi = new ProcessStartInfo(launcherPath, _lockOwner.Settings.WowArgs);
+                psi.UseShellExecute = false;
+                psi.CreateNoWindow = true;
+                psi.RedirectStandardInput = true;
+                psi.RedirectStandardOutput = false;
+                _launcherProc = Process.Start(psi);
+                _launcherProc.StandardInput.WriteLine("WoW");
+                _launcherProc.StandardInput.WriteLine(_lockOwner.Settings.WowPath);
             }
             else
             {
-                pi.FileName = _lockOwner.Settings.WowPath;
-                pi.Arguments = _lockOwner.Settings.WowArgs;
+                _launcherProc = Helpers.CreateProcessAsStandardUser(_lockOwner.Settings.WowPath, _lockOwner.Settings.WowArgs);
             }
 
-            _launcherProc = Process.Start(pi);
             _lockOwner.ProcessIsReadyForInput = false;
             _lockOwner.LoginTimer.Reset();
         }

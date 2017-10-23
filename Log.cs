@@ -18,6 +18,7 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Reflection;
 using System.Threading;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -37,7 +38,7 @@ namespace HighVoltz.HBRelog
             _logPath = Path.Combine(logFolder, $"Log[{DateTime.Now:yyyy-MM-dd_hh-mm-ss}].txt");
         }
 
-        public static string ApplicationPath => Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
+        public static string ApplicationPath => Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
         public static void Write(string format, params object[] args)
         {
