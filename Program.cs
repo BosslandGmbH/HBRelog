@@ -284,15 +284,9 @@ namespace __Loader__
             return Fnv1($"{MachineGuid}|HBRelog|{GlobalSettings.GetSettingsPath()}").ToString();
         }
 
-        private static string MachineGuid
-        {
-            get
-            {
-                //Check the HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Cryptography\MachineGuid registry value.
-                RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Cryptography", false);
-                return (string)(key?.GetValue("MachineGuid"));
-            }
-        }
+        //Check the HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Cryptography\MachineGuid registry value.
+        private static string MachineGuid 
+            => (string)(Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Cryptography", false)?.GetValue("MachineGuid"));
 
         private static int Fnv1(string s)
         {

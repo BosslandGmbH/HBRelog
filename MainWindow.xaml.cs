@@ -50,8 +50,7 @@ namespace HighVoltz.HBRelog
             LoadStyle();
             var resourceLocater = new Uri("/HBRelog;component/mainwindow.xaml", UriKind.Relative);
             Application.LoadComponent(this, resourceLocater);
-            Title = InsertRandomZeroWidthSpaces(Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().Location));
-            Title = Title.Length.ToString();
+            Title = Process.GetCurrentProcess().ProcessName;
         }
 
         public static MainWindow Instance { get; private set; }
@@ -119,8 +118,8 @@ namespace HighVoltz.HBRelog
         {
             if (charSettings != null)
             {
-	            var width = AccountConfigGridColumn.ActualWidth ;
-				var ani = new DoubleAnimation(width, new Duration(TimeSpan.Parse("0:0:0.4"))) { DecelerationRatio = 0.7 };
+                var width = AccountConfigGridColumn.ActualWidth;
+                var ani = new DoubleAnimation(width, new Duration(TimeSpan.Parse("0:0:0.4"))) { DecelerationRatio = 0.7 };
                 AccountConfigGrid.BeginAnimation(WidthProperty, ani);
                 AccountConfig.EditAccount(charSettings);
             }
@@ -174,7 +173,7 @@ namespace HighVoltz.HBRelog
             Log.Write("\t{0,-30} {1}", "HB Delay:", HbRelogManager.Settings.HBDelay);
             Log.Write("\t{0,-30} {1}", "Login Delay:", HbRelogManager.Settings.LoginDelay);
             Log.Write("\t{0,-30} {1}", "Store Settings Locally", HbRelogManager.Settings.UseLocalSettings);
-			Log.Write("\t{0,-30} {1}", "Set GameWindow Title:", HbRelogManager.Settings.SetGameWindowTitle);
+            Log.Write("\t{0,-30} {1}", "Set GameWindow Title:", HbRelogManager.Settings.SetGameWindowTitle);
             Log.Write("\t{0,-30} {1}", "Wow Start Delay:", HbRelogManager.Settings.WowDelay);
 
             // prevent user from starting any profiles until after version check is complete
@@ -191,7 +190,7 @@ namespace HighVoltz.HBRelog
 
             string rawProfilesToStart;
 
-            if (Program.GetCommandLineArgument("AutoStart", out rawProfilesToStart) 
+            if (Program.GetCommandLineArgument("AutoStart", out rawProfilesToStart)
                 || HbRelogManager.Settings.AutoStart)
             {
                 var profilesToStart = !string.IsNullOrEmpty(rawProfilesToStart)
@@ -368,7 +367,7 @@ namespace HighVoltz.HBRelog
             }
 
             var bringWowToForegroundMenu = (MenuItem)row.ContextMenu.Items[3];
-            bringWowToForegroundMenu.Visibility = wowManager.IsRunning && wowManager.GameWindow != IntPtr.Zero 
+            bringWowToForegroundMenu.Visibility = wowManager.IsRunning && wowManager.GameWindow != IntPtr.Zero
                 ? Visibility.Visible
                 : Visibility.Collapsed;
         }
@@ -388,7 +387,7 @@ namespace HighVoltz.HBRelog
             {
                 text = await webClient.DownloadStringTaskAsync(s_minRequireVersionUrl);
             }
-            catch(WebException)
+            catch (WebException)
             {
                 // just silently return if failed to connect to github.
                 return;
@@ -412,23 +411,11 @@ namespace HighVoltz.HBRelog
 
             var msg = firstSpaceI > 0 ? text.Substring(firstSpaceI + 1) : null;
             msg = $"Your HBRelog version {currentVersion} is no longer compatible or safe. " +
-                $"You need upgrade to version {minVersion} or higher.{(msg != null ?" " + msg : "")}";
+                $"You need upgrade to version {minVersion} or higher.{(msg != null ? " " + msg : "")}";
 
             Log.Write(msg);
             MessageBox.Show(msg, "Incompatible HBRelog Version");
             Process.GetCurrentProcess().Kill();
-        }
-
-        private static string InsertRandomZeroWidthSpaces(string str)
-        {
-            var sb = new StringBuilder(str);
-            for (int i = sb.Length; i >= 0; i--)
-            {
-                if (Utility.Rand.Next(0, 50) == 0)
-                    continue;
-                sb.Insert(i, new string('​', Utility.Rand.Next(0, 50)));
-            }
-            return sb.ToString();
         }
     }
 }

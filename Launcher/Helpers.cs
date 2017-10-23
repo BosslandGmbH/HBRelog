@@ -82,6 +82,16 @@ namespace HighVoltz.Launcher
         [DllImport("kernel32.dll")]
         private static extern IntPtr OpenProcess(int desiredAccess, bool inheritHandle, int processId);
 
+        [DllImport("advapi32.dll", SetLastError = true)]
+        private static extern bool ConvertStringSidToSid(string stringSid, out IntPtr ptrSid);
+
+        [DllImport("advapi32.dll", SetLastError = true)]
+        private static extern bool SetTokenInformation(IntPtr tokenHandle, TokenInformationClass tokenInformationClass,
+            ref TokenMandatoryLabel tokenInformation, int tokenInformationLength);
+
+        [DllImport("advapi32.dll")]
+        static extern int GetLengthSid(IntPtr pSid);
+
         #endregion
 
         #region Embedded Types
@@ -142,6 +152,18 @@ namespace HighVoltz.Launcher
             public uint Attributes;
         }
 
+        [StructLayout(LayoutKind.Sequential)]
+        private struct SidAndAttributes
+        {
+            public IntPtr Sid;
+            public uint Attributes;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct TokenMandatoryLabel
+        {
+            public SidAndAttributes Label;
+        }
 
         public enum TokenInformationClass
         {
@@ -236,12 +258,16 @@ namespace HighVoltz.Launcher
         #region Constants
 
         private const string IncreaseQuotaName = "SeIncreaseQuotaPrivilege";
+        private const string MediumIntegritySid = "S-1-16-8192";
+
         private const int PrivilegeEnabled = 0x00000002;
         private const int ProcessQueryInformation = 0x0400;
         private const uint CreateSuspended = 0x00000004;
 
         public const string UacRegistryKey = "Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System";
         public const string UacRegistryValue = "EnableLUA";
+
+        private const int GroupIntegrity = 0x20;
 
         #endregion
 
@@ -325,6 +351,16 @@ namespace HighVoltz.Launcher
                 //Duplicate the shell's process token to get a primary token.
                 const TokenAcess tokenRights = TokenAcess.Query | TokenAcess.AssignPrimary | TokenAcess.Duplicate | TokenAcess.AdjustDefault | TokenAcess.AdjustSessionId;
                 if (!DuplicateTokenEx(hShellProcessToken, tokenRights, IntPtr.Zero, SecurityImpersonationLevel.Impersonation, TokenType.Primary, out hPrimaryToken))
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
+
+                if (!ConvertStringSidToSid(MediumIntegritySid, out IntPtr sid))
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
+
+                TokenMandatoryLabel tokenMandatoryLabel = new TokenMandatoryLabel();
+                tokenMandatoryLabel.Label.Attributes = GroupIntegrity;
+                tokenMandatoryLabel.Label.Sid = sid;
+                var size = Marshal.SizeOf(tokenMandatoryLabel) + GetLengthSid(sid);
+                if (!SetTokenInformation(hPrimaryToken, TokenInformationClass.IntegrityLevel, ref tokenMandatoryLabel, size))
                     throw new Win32Exception(Marshal.GetLastWin32Error());
 
                 //Start the target process with the new token.
