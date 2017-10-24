@@ -7,9 +7,13 @@
 	</target>
 	<target name="CopyTools">
 		<copy todir="Tools">
-			<fileset basedir="..\..\">
-				<include name="Tools\PsExec.exe" />
-				<include name="Launcher\bin\x86\Release\Launcher.exe" />
+			<fileset basedir="..\..\Tools">
+				<include name="PsExec.exe" />
+			</fileset>
+		</copy>
+		<copy todir="Tools">
+			<fileset basedir="..\..\Launcher\bin\x86\Release">
+				<include name="Launcher.exe" />
 			</fileset>
 		</copy>
 	</target>
@@ -30,8 +34,8 @@
 				<include name="Fasm.NET.dll" />
 				<include name="GreyMagic.dll" />
 				<include name="*.md" />
+				<include name="Tools/*.exe" />
 			</fileset>
 		</zip>
-		<unzip zipfile="HBRelog v${build.version}.zip" todir="Release Files" />
 	</target>
 </project>
