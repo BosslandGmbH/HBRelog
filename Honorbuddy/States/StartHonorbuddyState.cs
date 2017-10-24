@@ -84,8 +84,11 @@ namespace HighVoltz.HBRelog.Honorbuddy.States
 				{
 					File.WriteAllText(pluginPath, pluginString);
 				}
-			}
-	    }
+
+                var pipeInfoPath = Path.Combine(pluginFolder, "pipeName.txt");
+                File.WriteAllText(pipeInfoPath, HbRelogManager.PipeName);
+            }
+        }
         #endregion
     }
 }

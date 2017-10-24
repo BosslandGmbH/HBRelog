@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Runtime.Serialization;
 using Styx.WoWInternals;
+using System.IO;
 
 namespace HighVoltz.HBRelog.Remoting
 {
@@ -129,9 +130,10 @@ namespace HighVoltz.HBRelogHelper
                 AppDomain.CurrentDomain.UnhandledException += CurrentDomainUnhandledException;
 
                 HbProcId = Process.GetCurrentProcess().Id;
+                var pipeInfoPath = Path.Combine(Utilities.AssemblyDirectory, "Plugins", "HBRelogHelper", "pipeName.txt");
+                var pipeName = File.ReadAllText(pipeInfoPath);
                 _pipeFactory = new ChannelFactory<IRemotingApi>(new NetNamedPipeBinding(),
-                        new EndpointAddress("net.pipe://localhost/HBRelog/Server"));
-
+                        new EndpointAddress($"net.pipe://localhost/{pipeName}/Server"));
                 HBRelogRemoteApi = _pipeFactory.CreateChannel();
 
                 IsConnected = HBRelogRemoteApi.Init(HbProcId);
