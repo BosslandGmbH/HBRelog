@@ -7,7 +7,7 @@
 	</target>
 	<target name="CopyTools">
 		<copy todir="bin\Release\Tools">
-			<fileset basedir="">
+			<fileset basedir="\">
 				<include name="Tools\PsExec.exe" />
 				<include name="Launcher\bin\x86\Release\Launcher.exe" />
 			</fileset>
