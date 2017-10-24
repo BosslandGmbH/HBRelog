@@ -12,7 +12,7 @@
 
 # Executables
 *.dll
-*.exe
+[Dd]ependencies/*
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
