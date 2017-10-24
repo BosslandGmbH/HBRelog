@@ -50,6 +50,7 @@ namespace HighVoltz.HBRelog
                     psi.UseShellExecute = false;
                     psi.CreateNoWindow = true;
                     psi.FileName = Path.Combine(baseDirectory, "Tools", "PsExec.exe");
+                    Utility.UnblockFileIfZoneRestricted(psi.FileName);
                     Process.Start(psi);
                     return;
                 }
@@ -68,6 +69,7 @@ namespace HighVoltz.HBRelog
                 if (!File.Exists(loaderPath)
                     || FileVersionInfo.GetVersionInfo(launcherPath).FileVersion != FileVersionInfo.GetVersionInfo(loaderPath).FileVersion)
                 {
+                    Utility.UnblockFileIfZoneRestricted(launcherPath);
                     File.Copy(launcherPath, loaderPath, true);
                     // ToDO set permissions
                     EnsureLoaderPermissions(loaderPath);
