@@ -37,10 +37,13 @@ namespace HighVoltz.HBRelog
         static readonly ServiceHost _host;
         public static WowRealmStatus WowRealmStatus { get; private set; }
 
+        public static string PipeName { get; private set; }
+
         static HbRelogManager()
         {
             try
             {
+                PipeName = Utility.RandomString(Utility.Rand.Next(8, 16));
                 // if in designer mode then return
                 if (MainWindow.Instance == null || DesignerProperties.GetIsInDesignMode(MainWindow.Instance))
                     return; 
@@ -48,7 +51,7 @@ namespace HighVoltz.HBRelog
                 WorkerThread.Start();
                 try
                 {
-                    _host = new ServiceHost(typeof(RemotingApi), new Uri("net.pipe://localhost/HBRelog"));
+                    _host = new ServiceHost(typeof(RemotingApi), new Uri($"net.pipe://localhost/{PipeName}"));
                     _host.AddServiceEndpoint(typeof(IRemotingApi),
                         new NetNamedPipeBinding() { ReceiveTimeout = TimeSpan.MaxValue },
                         "Server");

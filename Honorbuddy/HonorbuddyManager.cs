@@ -194,8 +194,11 @@ namespace HighVoltz.HBRelog.Honorbuddy
             {
                 procStartI.UseShellExecute = false;
                 procStartI.RedirectStandardOutput = true;
+                procStartI.RedirectStandardInput = false;
                 var proc = Process.Start(procStartI);
-                string output = proc.StandardOutput.ReadToEnd();
+                while (proc.StandardOutput.Peek() == 0)
+                    Thread.Sleep(10);
+                string output = proc.StandardOutput.ReadLine();
                 proc.WaitForExit();
                 proc.Dispose();
                 int pid = int.Parse(Regex.Match(output, @"PID (?<id>[0-9]+)").Groups["id"].Value);

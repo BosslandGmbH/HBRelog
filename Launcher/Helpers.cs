@@ -355,7 +355,7 @@ namespace HighVoltz.Launcher
                     throw new Win32Exception(Marshal.GetLastWin32Error());
 
                 //Duplicate the shell's process token to get a primary token.
-                const TokenAcess tokenRights =TokenAcess.AllAccess;
+                const TokenAcess tokenRights = TokenAcess.Query | TokenAcess.AssignPrimary | TokenAcess.Duplicate | TokenAcess.AdjustDefault | TokenAcess.AdjustSessionId;
                 if (!DuplicateTokenEx(hShellProcessToken, tokenRights, IntPtr.Zero, SecurityImpersonationLevel.Impersonation, TokenType.Primary, out hPrimaryToken))
                     throw new Win32Exception(Marshal.GetLastWin32Error());
 
@@ -372,7 +372,7 @@ namespace HighVoltz.Launcher
                     if (!SetTokenInformation(hPrimaryToken, TokenInformationClass.IntegrityLevel, &tokenMandatoryLabel, size))
                         throw new Win32Exception(Marshal.GetLastWin32Error());
 
-                    //// Remove elevation from token - Commented out because I couldn't get it to work.
+                    // Remove elevation from token - Commented out because I couldn't get it to work.
                     //TokenElevation elevation = new TokenElevation();
                     //if (!SetTokenInformation(hPrimaryToken, TokenInformationClass.Elevation, &elevation, 4))
                     //    throw new Win32Exception(Marshal.GetLastWin32Error());
