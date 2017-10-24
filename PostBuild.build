@@ -6,8 +6,8 @@
 		<echo message="Building default target" />
 	</target>
 	<target name="CopyTools">
-		<copy todir="bin\Release\Tools">
-			<fileset basedir="\">
+		<copy todir="Tools">
+			<fileset basedir="..\..\">
 				<include name="Tools\PsExec.exe" />
 				<include name="Launcher\bin\x86\Release\Launcher.exe" />
 			</fileset>
