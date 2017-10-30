@@ -82,6 +82,7 @@ namespace HighVoltz.HBRelog
                     EnsureLoaderPermissions(loaderPath);
                 }
 
+                // Grab and remove the user settings path from args array.
                 var userSettingsPath = args[0];
                 ProcessStartInfo psi = new ProcessStartInfo(loaderPath, string.Join(" ", args.Skip(1).Select(a => $"\"{a}\"")));
                 psi.UseShellExecute = false;
