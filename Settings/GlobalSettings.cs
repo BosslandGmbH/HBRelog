@@ -66,25 +66,15 @@ namespace HighVoltz.HBRelog.Settings
             AutoUpdateHB = CheckHbResponsiveness = UseDarkStyle = true;
         }
 
-        private static string LocalSettingsPath => Path.Combine(Utility.AssemblyDirectory, "Settings.xml");
-
-        private static string UserSettingsPath
-            =>
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                    "HighVoltz\\HBRelog\\Settings.xml");
-
-        private static string OldUserSettingsPath
-            =>
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                    "HighVoltz\\HBRelog\\Setting.xml");
+        private static string LocalSettingsPath => Path.Combine(Utility.AssemblyDirectory, "Settings.xml");    
 
         internal static string GetSettingsPath()
         {
             if (File.Exists(LocalSettingsPath))
                 return LocalSettingsPath;
 
-            if (File.Exists(UserSettingsPath))
-                return UserSettingsPath;
+            if (File.Exists(Program.UserSettingsPath))
+                return Program.UserSettingsPath;
 
             return LocalSettingsPath;
         }
@@ -236,7 +226,7 @@ namespace HighVoltz.HBRelog.Settings
         {
             try
             {
-                SettingsPath = path ?? (UseLocalSettings ? LocalSettingsPath : UserSettingsPath);
+                SettingsPath = path ?? (UseLocalSettings ? LocalSettingsPath : Program.UserSettingsPath);
                 var xml = ConvertToXml();
                 
                 var tempPath = GetTempSettingsPath(SettingsPath);
@@ -256,8 +246,8 @@ namespace HighVoltz.HBRelog.Settings
                     File.Move(tempPath, SettingsPath);
 
                     // Maintain only one copy of settings.
-                    if (UseLocalSettings && File.Exists(UserSettingsPath))
-                        File.Delete(UserSettingsPath);
+                    if (UseLocalSettings && File.Exists(Program.UserSettingsPath))
+                        File.Delete(Program.UserSettingsPath);
                     else if (!UseLocalSettings && File.Exists(LocalSettingsPath))
                         File.Delete(LocalSettingsPath);
                 }
@@ -342,7 +332,7 @@ namespace HighVoltz.HBRelog.Settings
                     LoadFromXml(root);
                 }
 
-                SettingsPath = UseLocalSettings ? LocalSettingsPath : UserSettingsPath;
+                SettingsPath = UseLocalSettings ? LocalSettingsPath : Program.UserSettingsPath;
             }
             catch (Exception ex)
             {
