@@ -35,15 +35,22 @@ namespace HighVoltz.HBRelog
     public class Program
     {
         private static Dictionary<string, string> s_cmdLineArgs = new Dictionary<string, string>();
+        internal static string UserSettingsPath { get; private set; }
+
         [STAThread]
         public static void Main(params string[] args)
         {
             var baseDirectory = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+
             // Run under 'System' user
             using (var identity = WindowsIdentity.GetCurrent())
             {
                 if (!identity.IsSystem)
                 {
+                    // We need to pass the HBRlog path for logged-in user before we relaunch to System user.
+                    var userSettingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    "HighVoltz\\HBRelog\\Settings.xml");
+                    args = new string[] { userSettingsPath }.Concat(args).ToArray();
                     var hbrelogArgs = string.Join(" ", args.Select(a => $"\"{a}\""));
                     ProcessStartInfo psi = new ProcessStartInfo();
                     psi.Arguments = $"-accepteula -nobanner -i -s \"{Assembly.GetEntryAssembly().Location}\" {hbrelogArgs}";
@@ -75,7 +82,9 @@ namespace HighVoltz.HBRelog
                     EnsureLoaderPermissions(loaderPath);
                 }
 
-                ProcessStartInfo psi = new ProcessStartInfo(loaderPath, string.Join(" ", args.Select(a => $"\"{a}\"")));
+                // Grab and remove the user settings path from args array.
+                var userSettingsPath = args[0];
+                ProcessStartInfo psi = new ProcessStartInfo(loaderPath, string.Join(" ", args.Skip(1).Select(a => $"\"{a}\"")));
                 psi.UseShellExecute = false;
                 psi.CreateNoWindow = true;
                 psi.RedirectStandardInput = true;
@@ -85,11 +94,14 @@ namespace HighVoltz.HBRelog
                 {
                     proc.StandardInput.WriteLine("HBRelog");
                     proc.StandardInput.WriteLine(Assembly.GetExecutingAssembly().Location);
+                    proc.StandardInput.WriteLine(userSettingsPath);
                 }
                 return;
             }
 
-            var settingsPath = GlobalSettings.GetSettingsPath();
+            UserSettingsPath = (string)AppDomain.CurrentDomain.GetData("UserSettingsPath");
+            AppDomain.CurrentDomain.SetData("UserSettingsPath", null);
+
             var mutexName = Fnv1($"{GlobalSettings.GetSettingsPath()}|HBRelog|{MachineGuid}").ToString();
             using (Mutex m = new Mutex(true, mutexName, out bool newInstance))
             {

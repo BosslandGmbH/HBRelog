@@ -20,13 +20,16 @@ namespace HighVoltz.Launcher
 
             if (startHBRelog)
             {
+                string userSettingsPath = Console.ReadLine();
                 var hbRelogInstallPath = Path.GetDirectoryName(programPath);
                 var setup = new AppDomainSetup
                 {
                     ApplicationBase = hbRelogInstallPath,
                     PrivateBinPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location)
                 };
-                return AppDomain.CreateDomain("Domain", null, setup).ExecuteAssembly(programPath, args);
+                var domain = AppDomain.CreateDomain("Domain", null, setup);
+                domain.SetData("UserSettingsPath", userSettingsPath);
+                return domain.ExecuteAssembly(programPath, args);
             }
             else
             {
